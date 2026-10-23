@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-23 — PR #123 acceptance and Demo tracking verified
+
+PR #123 is merged as `f1cd09ee` after all22 exact-head gates,original strict six-profile performance,immutable release and bounded source/UX review passed. Actual main parents/tree match the tested composition. Qualified Demo **0.1.0-1975** is running at **http://127.0.0.2:8090/login** with the polished Board filters and authoritative Unassigned feedback. Actual browser sign-in,Organization context,live Board and empty-filter clear/return were verified. Both previous Demo instances retain their processes,data,history and sessions.
+
+The accepted ledger and Demo evidence pass full Git/source/hash/baseline/main-history validation and **all36 delivery contracts,zero failures/skips**,on exact commit `d9e4597e`. The final evidence bookkeeping is structurally/evolution validated;its separate draft tracking PR still requires its own hosted checks before merge.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing bounded Board-filter guidance/focus and canonical empty-assignee behavior integrated. |
+| UX completion | Six bounded Task/Test records and seven exact criteria accepted;four-width keyboard/reflow/200%/Axe/access checks pass. |
+| Test completion | PR123 all22 pass;frontend2993/backend2525;normal browser528 plus two original conditional mail skips,dedicated notifications93,Foundation50,commands80steps;strict6/release pass. Original24/five source deferrals preserved. Exact post-main ledger validation and36contracts pass separately. |
+| MVP readiness | **87Done**;broader PRDs and global MVP remain open. No combined completion percentage. |
+
+Ledger:1,627items,3,924criteria,1,055evidence records. [Qualified CI](../delivery/evidence/trello-polish-123-ci22.json),[bounded acceptance](../delivery/evidence/trello-polish-123-ux-acceptance.json),[main proof](../delivery/evidence/trello-polish-123-main-integration.json),[Demo](../delivery/evidence/trello-polish-123-demo.json),[post-main tracking](../delivery/evidence/trello-polish-123-post-main-tracking.json). Next:reconcile existing Card details/Search gaps before adding visible scope.
+
+---
+
 
 ## 2026-10-23 — PR #123 merged; qualified Board polish Demo refreshed
 
