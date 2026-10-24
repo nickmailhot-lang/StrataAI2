@@ -33,6 +33,8 @@ it.each(['Card text', 'Label name', 'Member name'])('identifies an unapplied %s 
   await admit(); const input = screen.getByRole('textbox', { name }); act(() => input.focus());
   const before = request.mock.calls.length; fireEvent.change(input, { target: { value: 'unsent' } });
   expect(screen.getByText(hint)).toBeVisible(); expect(input).toHaveFocus(); expect(request).toHaveBeenCalledTimes(before);
+  expect(screen.getByRole('status')).not.toHaveTextContent(hint);
+  expect(screen.getByRole('note', { name: 'Unapplied Search filters' })).toHaveTextContent(hint);
 });
 it.each([['Match criteria', 'Match any'], ['Search scope', 'Archived work']])('identifies an unapplied %s selection', async (name, value) => {
   await admit(); const before = request.mock.calls.length;

@@ -104,10 +104,10 @@ export function GlobalSearchPage() {
       {notice && <Alert severity="warning">{notice}</Alert>}
       {page && <Typography>{page.items.length} result{page.items.length === 1 ? '' : 's'} on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
       {acknowledged && <Typography>Search acknowledged.</Typography>}
-      {page && !busy && !notice && unappliedFilters && <Typography>
-        Filter changes are not applied. Select Search to update results. Paging and Refresh results still use the last search.
-      </Typography>}
     </Stack>
+    {page && !busy && !notice && unappliedFilters && <Typography role="note" aria-label="Unapplied Search filters" aria-live="polite">
+      Filter changes are not applied. Select Search to update results. Paging and Refresh results still use the last search.
+    </Typography>}
     {page && !busy && !notice && page.items.length === 0 && <Paper component="section" aria-label="Search guidance" variant="outlined" sx={{ p: 2 }}>
       <Stack spacing={1}>
         <Typography component="h3" variant="h6">{page.nextCursor ? 'Keep searching' : 'No matches on this page'}</Typography>
