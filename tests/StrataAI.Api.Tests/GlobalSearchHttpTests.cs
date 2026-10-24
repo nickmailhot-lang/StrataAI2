@@ -8,6 +8,37 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Global_search_HTTP_binds_optional_expected_actor_before_search_or_acknowledgment()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        var actor = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        foreach (var expected in new[] { Guid.NewGuid().ToString(), Guid.Empty.ToString(), "invalid-actor" })
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/search?q=retained-private-criteria");
+            request.Headers.Add("X-StrataAI-Expected-Actor", expected);
+            using var denied = await owner.SendAsync(request, ct);
+            Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
+            var body = await denied.Content.ReadAsStringAsync(ct);
+            Assert.Contains("session_unavailable", body);
+            Assert.DoesNotContain("retained-private-criteria", body);
+            Assert.DoesNotContain("SEARCH_EXECUTED", body);
+            Assert.DoesNotContain("items", body);
+        }
+        using var multiple = new HttpRequestMessage(HttpMethod.Get, "/search");
+        multiple.Headers.Add("X-StrataAI-Expected-Actor", new[] { actor.ToString(), actor.ToString() });
+        using var multipleDenied = await owner.SendAsync(multiple, ct);
+        Assert.Equal(HttpStatusCode.Unauthorized, multipleDenied.StatusCode);
+        using var bound = new HttpRequestMessage(HttpMethod.Get, "/search");
+        bound.Headers.Add("X-StrataAI-Expected-Actor", actor.ToString());
+        using var admitted = await owner.SendAsync(bound, ct);
+        Assert.Equal(HttpStatusCode.OK, admitted.StatusCode);
+        Assert.Equal(actor, (await admitted.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("interaction").GetProperty("actorId").GetGuid());
+        using var legacy = await owner.GetAsync("/search", ct);
+        Assert.Equal(HttpStatusCode.OK, legacy.StatusCode);
+    }
+
+    [Fact]
     public async Task Global_search_HTTP_returns_authorized_context_and_masks_private_content_and_binds_cursor()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
