@@ -162,8 +162,8 @@ function SearchContent() {
           if (organizationId && actor.current) retainSearchReturn({ organization: organizationId, actor: actor.current, entry: location.key,
             card: item.id, draft, applied: applied.current });
         }}
-        sx={workExperienceEnabled ? { display: 'inline-block', fontWeight: 600, color: 'primary.main', overflowWrap: 'anywhere', mb: 0.5,
-          '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 2 } } : undefined}>{item.title}</Typography>
+        sx={{ scrollMarginBlock: '8px', ...(workExperienceEnabled ? { display: 'inline-block', fontWeight: 600, color: 'primary.main', overflowWrap: 'anywhere', mb: 0.5,
+          '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 2 } } : {}) }}>{item.title}</Typography>
       <Typography variant={workExperienceEnabled ? 'body2' : undefined} color={workExperienceEnabled ? 'text.secondary' : undefined}>{item.boardName} / {item.listName}</Typography>
       <Typography variant={workExperienceEnabled ? 'body2' : undefined}>Labels: {item.labels.join(', ') || 'None'}{item.moreLabels ? ' (more on Card)' : ''}</Typography>
       <Typography variant={workExperienceEnabled ? 'body2' : undefined}>Members: {item.members.join(', ') || 'None'}{item.moreMembers ? ' (more on Card)' : ''}</Typography>
