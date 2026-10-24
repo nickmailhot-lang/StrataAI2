@@ -69,6 +69,7 @@ for(const width of [1280,768,390,320]){
       return r.top>=(header?.bottom??0)&&r.bottom<=innerHeight&&el.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));})).toBe(true);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+    await page.screenshot({path:info.outputPath(`search-card-return-viewport-${width}.png`)});
     await page.screenshot({path:info.outputPath(`search-card-return-${width}.png`),fullPage:true});
     await fresh.press('Enter');await expect(detail).toBeVisible();source.failure=403;
     await detail.getByRole('button',{name:'Close',exact:true}).press('Enter');await expect(page.getByText(/Search is unavailable/)).toBeVisible();
