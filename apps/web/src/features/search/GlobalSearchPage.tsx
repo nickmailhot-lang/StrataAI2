@@ -75,6 +75,8 @@ export function GlobalSearchPage() {
       window.removeEventListener('focus', refresh); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', refresh); };
   }, [load]);
   const searchedWithFilters = Boolean(applied.current.q || applied.current.label || applied.current.member);
+  const unappliedFilters = draft.q.trim() !== applied.current.q || draft.label.trim() !== applied.current.label
+    || draft.member.trim() !== applied.current.member || draft.match !== applied.current.match || draft.scope !== applied.current.scope;
   return <Stack spacing={2} component="section" aria-label="Global Card search"
     sx={workExperienceEnabled ? { '& .MuiButton-root': { textTransform: 'none' } } : undefined}>
     <PageHeader title="Search Cards" variant="h5" description="Search across your accessible Organizations and Boards." />
@@ -102,6 +104,9 @@ export function GlobalSearchPage() {
       {notice && <Alert severity="warning">{notice}</Alert>}
       {page && <Typography>{page.items.length} result{page.items.length === 1 ? '' : 's'} on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
       {acknowledged && <Typography>Search acknowledged.</Typography>}
+      {page && !busy && !notice && unappliedFilters && <Typography>
+        Filter changes are not applied. Select Search to update results. Paging and Refresh results still use the last search.
+      </Typography>}
     </Stack>
     {page && !busy && !notice && page.items.length === 0 && <Paper component="section" aria-label="Search guidance" variant="outlined" sx={{ p: 2 }}>
       <Stack spacing={1}>
