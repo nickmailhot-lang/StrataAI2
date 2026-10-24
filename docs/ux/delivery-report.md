@@ -1,5 +1,24 @@
 # Consolidated PRD delivery report
 
+## 2026-10-23 — Search draft/result context locally validated; draft qualification pending
+
+Existing slice **PRD-16-VS-01-T-03** and its Test now explain when edited filters have not been applied to admitted results. Search explicitly applies edits; paging and refresh retain submitted criteria. Pending-read edits, normalized values, existing acknowledgment/focus/cursor handling and access withdrawal remain covered. Application source15390515; reviewed continuation source **b70bcd75bc9f1ec7e440b0540aa6f912099e3c24**. No API/schema/tenant/navigation changes.
+
+| Metric | Status |
+| --- | --- |
+| Functional implementation | Bounded Search guidance implemented; pending-edit and retained-result regressions added. Settings fixture waits for initial freshness and observes exactly one save/retry request. |
+| UX validation | Actual Organization→Board→Card draft/discard/focus return, real Search draft/result notice and Settings validation/recovery reviewed. Screenshots at320/390/768/1280px and200% inspected; keyboard/Axe/reflow checks pass. |
+| Tests |40 scoped component passes;4+4 current Search browser cases;16+16 broader prepared-source diagnostics;2 real-service Settings cases;build/lint/browser types pass. Full own hosted gates remain pending. Every failed run and its disposition retained. |
+| MVP readiness | Task/Test **Testing**, criteria **Unverified**, **87Done unchanged**. No main integration or broader PRD/global acceptance claimed. |
+
+Windows checkout initially changed hashed JSON newlines. The new attribute preserves exact bytes; only Git blobs matching unchanged recorded hashes were restored. Historical evidence is unchanged. Local component timeouts, wrong-presentation expectations and two Settings fixture failures remain separate Failed evidence. No assertion, timeout, role or required gate was weakened.
+
+[Scoped results](../delivery/evidence/search-applied-reviewed-scoped.json), [visual/journey review](../delivery/evidence/search-applied-reviewed-ux.json), [retained failures](../delivery/evidence/search-applied-reviewed-failures.json). Current immutable release, full real-service role/regression/security/performance qualification and authorized integration remain required. PR124 is a separate tracking dependency; last observed21passing checks and release in progress.
+
+**Next demonstrated UX slice:** Search→Card→Close→Back resets Search to first-use and loses draft/applied context. Reconcile existing session-state ownership, retain criteria within actor/Organization scope, revalidate results and restore focus safely on return; never serialize protected result snapshots or bypass access withdrawal. Existing200% shared-sidebar word wrapping is a separate shell-owner polish lead.
+
+---
+
 ## 2026-10-23 — PR #123 acceptance and Demo tracking verified
 
 PR #123 is merged as `f1cd09ee` after all22 exact-head gates,original strict six-profile performance,immutable release and bounded source/UX review passed. Actual main parents/tree match the tested composition. Qualified Demo **0.1.0-1975** is running at **http://127.0.0.2:8090/login** with the polished Board filters and authoritative Unassigned feedback. Actual browser sign-in,Organization context,live Board and empty-filter clear/return were verified. Both previous Demo instances retain their processes,data,history and sessions.
