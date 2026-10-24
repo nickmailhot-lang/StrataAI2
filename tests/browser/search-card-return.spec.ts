@@ -93,3 +93,17 @@ test('PRD-16 browser Back restores a Viewer search but refuses retained criteria
   await detail.getByRole('button',{name:'Close',exact:true}).press('Enter');await expect(page.getByText(/Search is unavailable/)).toBeVisible();await expect(query).toHaveValue('');
   expect(source.searches.length).toBe(before);await expect(page.getByRole('link',{name:source.title,exact:true})).toHaveCount(0);
 });
+test('PRD-16 pointer Close and actual interval refresh preserve the returned Search target',async({page})=>{
+  const source=await fixture(page);await page.goto(searchPath);
+  const query=page.getByRole('textbox',{name:'Card text',exact:true});await query.fill('landscaping');
+  await page.getByRole('button',{name:'Search',exact:true}).click();
+  const result=page.getByRole('link',{name:source.title,exact:true});await expect(result).toBeVisible();
+  await query.fill('unsent pointer draft');await result.click();
+  await page.getByRole('dialog',{name:'Card details',exact:true}).getByRole('button',{name:'Close',exact:true}).click();
+  await expect(result).toBeFocused();await expect(query).toHaveValue('unsent pointer draft');
+  const before=source.searches.length;
+  // Exercise the real ten-second interval, independently of the online-event
+  // controlled read. This new bounded wait includes that existing interval.
+  await expect.poll(()=>source.searches.length,{timeout:15_000}).toBeGreaterThan(before);
+  await expect(result).toBeFocused();await expect(query).toHaveValue('unsent pointer draft');
+});
