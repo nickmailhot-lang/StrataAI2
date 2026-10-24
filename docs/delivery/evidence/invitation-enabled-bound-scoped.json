@@ -1,0 +1,91 @@
+{
+  "revision": "ddd7c4198a3771fbee702156048074d8357314cf",
+  "at": "2026-10-24T19:19:22.389Z",
+  "result": "Passed",
+  "command": "45 helper/tracker contracts; four native retirement cases; four actual enlarged-text policy consumers; browser types; unchanged-file/budget proof",
+  "ownership": {
+    "prd": "PRD-03",
+    "relatedPrd": "PRD-04",
+    "slice": "PRD-03-VS-05",
+    "task": "PRD-03-VS-05-T-02",
+    "test": "PRD-03-VS-05-T-02-TEST-01",
+    "ux": [
+      "UX-003",
+      "UX-005",
+      "UX-006",
+      "UX-008"
+    ]
+  },
+  "consumer": "Organization/Board invitation permission recovery → freshly admitted email form → original canonical create/retry and private-data-free observations. Only readiness observation is repaired; all original business/security oracles remain mandatory.",
+  "correction": "isEnabled({timeout:500}) bounds only the retiring read-only launcher attachment check. Same5s outer budget, same500ms focus/key/visibility checks, same target visibility; no application/API/schema/event/permission or command changes.",
+  "tests": {
+    "contracts": 45,
+    "native": 4,
+    "widths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "nativeClicks": 1,
+    "postRecoveryInput": "Actual visible email field can be filled; no extra native retry.",
+    "actualPolicyConsumers": 4,
+    "policyText": "200%",
+    "skips": 0,
+    "retries": 0
+  },
+  "proof": {
+    "result": "Passed",
+    "base": "2249a6d7b850b08571dd22cfaec21acfde21021a",
+    "files": [
+      {
+        "path": "tests/browser/invitation-issuer-telemetry.spec.ts",
+        "result": "Byte-identical",
+        "sha256": "f06dfdf15c5bbe59cf2526b38f6d874bbc828f6529bed0702045c0f6e5322b7f"
+      },
+      {
+        "path": "tests/browser/invitationAdmissionTracker.ts",
+        "result": "Byte-identical",
+        "sha256": "6e2fdf4a2221e922196521dd49095e14a296cf3c73c43d78e89b914e4248fa3b"
+      },
+      {
+        "path": "playwright.config.ts",
+        "result": "Byte-identical",
+        "sha256": "a2e91823c036a5a908cc3297a9382e3524bccb665136083100081faf9d593e2f"
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "result": "Byte-identical",
+        "sha256": "ce934b15ac490de91368c3e410f6e2770181aa22eddb3d548127b41de5b02ddb"
+      }
+    ],
+    "businessAndOtherAdmissionHelpers": "Byte-identical",
+    "outerAdmissionBudgets": "Unchanged",
+    "change": "Bound only the read-only review launcher enabled-state attachment query to the existing500ms per-operation budget; original5s outer deadline, native keyboard activation and target visibility remain."
+  },
+  "logs": [
+    {
+      "path": "work/invitation-readonly-bound-green.log",
+      "sha256": "19657afeba9b3a25a036a08fe30dcb4b37b622f8b95f9880f9d32fec0d7e48fc",
+      "text": "(node:29144) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/tests/browser/boardReadTracker.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ star admission observes either mutation verb once when it starts, independently of reply failure (2.5891ms)\r\n✔ star admission cannot be satisfied by reads, siblings, another Board or transport (0.7529ms)\r\n✔ star admission rejects a foreign origin even with the same Board path and method (0.5841ms)\r\n✔ filter command observation counts the actual Cards Apply/Clear route exactly once per request start (0.7039ms)\r\n✔ filter command observation rejects sibling routes, other Boards and reads (3.9414ms)\r\n✔ a foreign-origin filter request cannot satisfy same-origin command admission (0.2867ms)\r\n✔ a filter observer created before navigation qualifies the actual later page origin (3.5628ms)\r\n✔ event-driven readiness observes the qualified second response immediately and cleans up its listeners (2.3393ms)\r\n✔ read observation still fails on timeout or page closure without leaving listeners (15.281ms)\r\n✔ late previous-screen responses cannot satisfy visibility bootstrap readiness (1.5108ms)\r\n✔ Card revision admission ignores previous screens, foreign data, errors and late older revisions (4.7669ms)\r\n(node:18748) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ an admitted action dispatches exactly one Enter and stops at the expected request (24.7754ms)\r\n✔ an ignored keypress admits one request and stops once that request starts (506.0888ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-enabled (9.2124ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-focus (6.4928ms)\r\n✔ an extra request remains a failure even when the launcher has retired (5007.8341ms)\r\n✔ an unexpected initial observation cannot trigger another Enter (0.8909ms)\r\n✔ a control retired before activation is readmitted without replaying a click (127.026ms)\r\n✔ local action observes one native activation and removes its listener (3.5501ms)\r\n✔ only an ignored local keypress is readmitted (491.9072ms)\r\n✔ local activation during focus cannot send another Enter to a retired control (1.6105ms)\r\n✔ a wrong consumer result after activation is not repaired by another activation (3.4496ms)\r\n✔ duplicate local activations remain a failure (5004.0268ms)\r\n✔ an unexpected click cannot be repaired by activating the observed control (4922.0743ms)\r\n✔ a replacement local control cannot receive the original activation (4915.4963ms)\r\n✔ read-only Tab proves native traversal without focusing its destination (2.9838ms)\r\n✔ an unobserved Shift+Tab repeats from its admitted origin only (105.5044ms)\r\n✔ broken keyboard order still fails within the original five-second budget (4929.1718ms)\r\n✔ nonmutating activity review observes its inline region before returning (5.4656ms)\r\n✔ an ignored review activation is retried only until its region opens (114.26ms)\r\n✔ an already-open region does not require its retired launcher (0.79ms)\r\n✔ a review appearing between launcher visibility and enabled observation stays within admission budget (621.7124ms)\r\n✔ review opening during focus cannot activate the retired launcher (110.25ms)\r\n✔ an unopened review remains a failure within the original admission budget (4930.5523ms)\r\n✔ admitted text dispatches one native input event and one insertion (4.7052ms)\r\n✔ only an ignored insertion with no input event can be attempted again (491.711ms)\r\n✔ a draft cleared after native input still fails its value assertion without refilling (4.811ms)\r\n✔ a replacement control cannot receive the earlier input intent (4917.6999ms)\r\n✔ extra native input remains a failure and cannot trigger another insertion (5000.4626ms)\r\n✔ local validation observes one native submit and removes its listener (4.95ms)\r\n✔ local validation retries only a keypress that emitted no submit (492.0442ms)\r\n✔ an observed validation submit during focus cannot dispatch another Enter (113.7769ms)\r\n✔ a submit that retires its form is not replayed while its result is pending (5.491ms)\r\n✔ a retired validation form cannot send a key to a replacement control (4928.3588ms)\r\n✔ duplicate native submits remain a failure without another activation (5003.5494ms)\r\nℹ tests 45\r\nℹ suites 0\r\nℹ pass 45\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 54646.6322\r\n"
+    },
+    {
+      "path": "work/invitation-readonly-bound-native.log",
+      "sha256": "463480ff0475e2d14fc6681f29df2566fe80d41c6e082d29befebcd24808d4bb",
+      "text": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test --config work/invitation-readonly-bound-native.config.ts --output work/invitation-readonly-bound-native-results\r\n\r\nRunning 4 tests using 1 worker\r\n\r\n(node:32824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 work\\invitation-readonly-bound-native.spec.ts:3:43 › 320px permission retry retires between visible and enabled observation (2.2s)\r\n  ok 2 work\\invitation-readonly-bound-native.spec.ts:3:43 › 390px permission retry retires between visible and enabled observation (1.9s)\r\n  ok 3 work\\invitation-readonly-bound-native.spec.ts:3:43 › 768px permission retry retires between visible and enabled observation (2.0s)\r\n  ok 4 work\\invitation-readonly-bound-native.spec.ts:3:43 › 1280px permission retry retires between visible and enabled observation (2.0s)\r\n\r\n  4 passed (10.0s)\r\n"
+    },
+    {
+      "path": "work/invitation-bound-retention.log",
+      "sha256": "f686ffd5594ff53de1ac8904f95ac94d506bd6c2da56d1211e49918195a5dd02",
+      "text": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test --config work/retention-entry-visual.config.ts --grep original retry --output work/invitation-bound-retention-results\r\n\r\nRunning 4 tests using 1 worker\r\n\r\n(node:21400) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 work\\retention-entry-visual-consumer.spec.ts:97:7 › PRD-70: original retry after reload and administrator withdrawal protect private policy work at 320px (9.8s)\r\n  ok 2 work\\retention-entry-visual-consumer.spec.ts:97:7 › PRD-70: original retry after reload and administrator withdrawal protect private policy work at 390px (9.3s)\r\n  ok 3 work\\retention-entry-visual-consumer.spec.ts:97:7 › PRD-70: original retry after reload and administrator withdrawal protect private policy work at 768px (10.1s)\r\n  ok 4 work\\retention-entry-visual-consumer.spec.ts:97:7 › PRD-70: original retry after reload and administrator withdrawal protect private policy work at 1280px (9.7s)\r\n\r\n  4 passed (41.3s)\r\n"
+    },
+    {
+      "path": "work/invitation-readonly-bound-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    }
+  ],
+  "nativeFixture": "import {test,expect} from '@playwright/test';\nimport {openAdmittedReview} from '../tests/browser/keyboardAdmission';\nfor(const width of [320,390,768,1280])test(`${width}px permission retry retires between visible and enabled observation`,async({page})=>{\n await page.setViewportSize({width,height:844});\n await page.setContent('<style>body{font:200% sans-serif}button,input{font:inherit;min-height:44px;max-width:100%;box-sizing:border-box}</style><button>Retry permission check</button><form hidden><label>Invitation email<input type=\"email\"></label></form>');\n await page.evaluate(()=>{document.documentElement.dataset.clicks='0';document.querySelector('button')!.addEventListener('click',()=>{document.documentElement.dataset.clicks=String(Number(document.documentElement.dataset.clicks)+1);});});\n const actual=page.getByRole('button',{name:'Retry permission check',exact:true}),field=page.getByLabel('Invitation email');\n let pressed=false,retired=false;\n const launcher=new Proxy(actual,{get(target,key){\n  if(key==='isVisible')return async()=>{const visible=await target.isVisible();if(pressed&&visible&&!retired){retired=true;await page.evaluate(()=>{document.querySelector('button')!.remove();document.querySelector('form')!.hidden=false;});}return visible;};\n  if(key==='press')return async(...args:Parameters<typeof actual.press>)=>{await target.press(...args);await expect(page.locator('html')).toHaveAttribute('data-clicks','1');pressed=true;};\n  const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value;\n }});\n await openAdmittedReview(launcher,field);\n await expect(field).toBeVisible();await field.fill('review@example.test');await expect(field).toHaveValue('review@example.test');\n await expect(page.locator('html')).toHaveAttribute('data-clicks','1');expect(retired).toBe(true);\n await page.screenshot({path:`work/invitation-readonly-bound-${width}.png`});\n});\r\n",
+  "scope": "Native fixture proves the actual Playwright retirement wait and one click, not the full invitation application. Four real local policy recovery consumers prove shared-helper compatibility and original canonical/withdrawal/Axe behavior. Existing application source0c28 frontend andb47 API remain unchanged local Demo, separate from immutable Production.",
+  "limits": "Original unmodified Production invitation telemetry scenario and complete own replacement source/backend/PostgreSQL/security/browser/performance/immutable-release qualification remain required. Native200%browser zoom, independent review and authorized integration remain incomplete."
+}
