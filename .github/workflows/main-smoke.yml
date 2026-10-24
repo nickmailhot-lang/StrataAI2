@@ -1,0 +1,25 @@
+name: StrataAI2 main smoke
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: main-smoke-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  smoke:
+    uses: ./.github/workflows/feature-runtime.yml
+    with:
+      browser: '["tests/browser/board.spec.ts"]'
+  demo-ready:
+    name: demo-ready
+    needs: smoke
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require current main smoke before demo promotion
+        env:
+          RESULT: ${{ needs.smoke.result }}
+        run: test "$RESULT" = success

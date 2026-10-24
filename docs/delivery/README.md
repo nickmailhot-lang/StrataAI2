@@ -49,7 +49,7 @@ Follow the user-approved [current-build polish milestone](../ux/polish-milestone
 2. Add focused gap tasks and tests, reuse current architecture and UX, implement and run applicable checks.
 3. Record failures, exact source/evidence identity and acceptance independently. Update each slice when it earns its state; do not wait for its parent PRD.
 4. Append a cycle record with completed work, implementation awaiting validation, WIP, blockers/dependencies, next deliverable, PRD changes and evidence. Generate the report from the ledger.
-5. Keep a draft PR while required evidence is incomplete. Existing ARCH-11 source/container/security/RLS/browser gates still apply. After successful review, integration and acceptance, record Done. Closing keywords must never close a parent from a partial slice.
+5. Keep a draft PR while required evidence is incomplete. The impact-selected PR gate and the full release-qualification gates apply under [feature CI](../architecture/feature-ci.md); deferred full tests are not passing acceptance evidence. After successful review, integration and acceptance, record Done. Closing keywords must never close a parent from a partial slice.
 
 CI validates structure and baseline completeness, executes positive/refusal contracts and rejects historical record loss against the pull request base. These controls add to the existing required metadata job. A future intentional requirements change needs an explicit reviewed baseline migration retaining prior definitions/history; do not rerun the initial import over the current ledger. Read the live requirements before starting a slice and record subsequent changes additively. This frozen snapshot is not an automatic ongoing GitHub synchronizer or an approved product-scope reduction.
 
