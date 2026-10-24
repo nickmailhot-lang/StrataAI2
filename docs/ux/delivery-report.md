@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-23 — Search tracking verified on committed93ce8ffa
+
+Draft [PR125](https://github.com/nickmailhot-lang/StrataAI2/pull/125) metadata passed **all36 delivery contracts,0failed/0skipped**, plus source/hash/baseline and actual PR-base history validation on **93ce8ffa**. Local final validator and generated report each exit0. [Complete metadata log](../delivery/evidence/search-applied-reviewed-ci-metadata.json).
+
+The earlier local suite passed35 and failed1 because its final CLI compared an earlier loaded ledger against HEAD after the reporting commit. Current and committed history match; original history is retained. [Failure and disposition](../delivery/evidence/search-applied-reviewed-tracking-interleaving-failed.json). A redundant frozen local rerun was stopped after the hosted exact-revision proof and is **Interrupted**, not Passed.
+
+This final bookkeeping revision requires its own hosted checks. Full application/role/security/performance/immutable-release qualification, review and authorized integration remain pending. PR125 remains draft/unmerged;Task/Test Testing,criteria Unverified,87Done unchanged. No global acceptance or completion percentage.
+
+---
+
 ## 2026-10-23 — Search draft/result context locally validated; draft qualification pending
 
 Existing slice **PRD-16-VS-01-T-03** and its Test now explain when edited filters have not been applied to admitted results. Search explicitly applies edits; paging and refresh retain submitted criteria. Pending-read edits, normalized values, existing acknowledgment/focus/cursor handling and access withdrawal remain covered. Application source15390515; reviewed continuation source **b70bcd75bc9f1ec7e440b0540aa6f912099e3c24**. No API/schema/tenant/navigation changes.
