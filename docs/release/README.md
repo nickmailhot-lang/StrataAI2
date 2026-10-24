@@ -1,3 +1,7 @@
+## CI qualification prerequisite
+
+Use the exact candidate SHA and bundle from a successful [full-sanity run](../architecture/feature-ci.md), including its `full-qualification-<sha>` record. Feature CI and main `demo-ready` smoke do not qualify a production release. A nightly failure blocks promotion until the candidate passes a new complete run.
+
 # Running a StrataAI2 CI release bundle
 
 The release bundle contains the exact web, API, and Worker images tested by CI.

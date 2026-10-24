@@ -1,3 +1,7 @@
+# Current CI profiles
+
+The user-approved 2026-10-24 [feature/full-sanity split](feature-ci.md) supersedes the former every-main-push full-run cadence described below. Each main push retains its smoke run; nightly/manual/tag and risk-selected PR runs retain full qualification. SHA identity rules still apply.
+
 # Retaining CI evidence for main commits
 
 Main pushes and tags use the workflow name and immutable commit SHA for their concurrency group. Different commits retain independent runs; reruns of the same commit still share a group. Pull requests retain their ref-based group and cancellation of superseded runs.

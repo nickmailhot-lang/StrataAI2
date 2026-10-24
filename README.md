@@ -87,7 +87,7 @@ Jump to [documentation navigation](#navigating-the-documentation), [reading path
 | Choose the next implementation dependency | [Canonical ticket dependency audit](docs/ticket-dependencies.md), [linked ticket dependency map](docs/ticket-dependency-map.md) |
 | Review outstanding acceptance and evidence | [Authentication acceptance](docs/architecture/prd-02-acceptance.md), [Organization acceptance](docs/architecture/prd-03-acceptance.md), [Board acceptance](docs/architecture/prd-04-acceptance.md), [sharing and permissions acceptance](docs/architecture/prd-05-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
 | Assess archive, restoration and deletion | [Lifecycle acceptance](docs/architecture/lifecycle-acceptance.md), [deleted content in search and notifications](docs/architecture/lifecycle-acceptance.md#deleted-content-across-search-and-notification-surfaces), [Organization deletion completion](docs/architecture/organization-deletion-lifecycle.md) |
-| Check current requirements and builds | [Open PRD/architecture issues](https://github.com/nickmailhot-lang/StrataAI2/issues), [CI workflow runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) |
+| Check current requirements and builds | [Open PRD/architecture issues](https://github.com/nickmailhot-lang/StrataAI2/issues), [CI workflow runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/full-sanity.yml) |
 
 If you are new to the project, follow the architecture and runtime guides before the local checks below. For a feature question, choose a subject in the documentation index and start with its behavior guide. For deployment, start with the release guide and use the configuration and migration references alongside it.
 
@@ -116,7 +116,7 @@ Open [docs/README.md](docs/README.md), choose **Browse by subject**, and select 
 | First visit | [Architecture overview](docs/architecture/README.md) → [runtime modes](docs/architecture/runtime-modes.md) → [configuration](docs/architecture/configuration.md) → [repository layout](#repository-layout) |
 | Understand or change a feature | [Subject index](docs/README.md#browse-by-subject) → behavior guide → related permissions, storage, and recovery contracts → acceptance record |
 | Implement the next ticket | [Dependency audit](docs/ticket-dependencies.md) → [linked ticket map](docs/ticket-dependency-map.md) → relevant feature contracts → [API host testing](docs/architecture/api-host-testing.md) → [local checks](#local-source-checks) |
-| Assess readiness | Feature acceptance record → evidence for its recorded revision → [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) → [current GitHub requirements](https://github.com/nickmailhot-lang/StrataAI2/issues) |
+| Assess readiness | Feature acceptance record → evidence for its recorded revision → [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/full-sanity.yml) → [current GitHub requirements](https://github.com/nickmailhot-lang/StrataAI2/issues) |
 | Deploy or operate | [Release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [database roles](docs/architecture/runtime-database-roles.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [console logs](docs/architecture/structured-logging.md) → [operator metrics](docs/architecture/operator-metrics.md) |
 
 | Documentation topic | Browse the complete section |
@@ -229,7 +229,7 @@ The canonical work hierarchy is `Organization → Board → List → Card`. User
 | [`tests/`](tests/) | Domain, API-host, restricted persistence, and browser acceptance checks |
 | [`docs/`](docs/) | [Documentation index and subject guides](docs/README.md) |
 | [`scripts/`](scripts/) | Release, operational, and CI verification scripts |
-| [`.github/workflows/`](.github/workflows/) | [Build-once CI](.github/workflows/ci.yml) and repository automation |
+| [`.github/workflows/`](.github/workflows/) | [Feature CI and full sanity](docs/architecture/feature-ci.md) and repository automation |
 
 ## Demo sign-in
 
@@ -282,4 +282,4 @@ API-host tests select an isolated Demo runtime without production database or pr
 
 To run the full restricted PostgreSQL persistence suite locally with Docker and PowerShell, use `./scripts/run-local-persistence-contracts.ps1`. It creates a disposable PostgreSQL 17/pgvector database, applies the migrations, provisions the restricted API/Worker roles, and executes the same persistence program required by CI. See [local PostgreSQL contracts](docs/architecture/api-host-testing.md#local-postgresql-contracts) for isolation, failure inspection, and cleanup. The suite includes actual deletion of 105,000 Cards and can take considerable time; follow its running process through completion.
 
-These source checks are only part of release validation. [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) also verify real PostgreSQL/RLS behavior, restricted runtime capabilities, exact-image integration, native browser workflows, and security evidence. Deploy the tested artifacts using the [release bundle guide](docs/release/README.md).
+Development PRs use [impact-selected feature CI](docs/architecture/feature-ci.md); nightly/manual/release-tag runs provide full qualification. These source checks are only part of release validation. [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/full-sanity.yml) also verify real PostgreSQL/RLS behavior, restricted runtime capabilities, exact-image integration, native browser workflows, and security evidence. Deploy the tested artifacts using the [release bundle guide](docs/release/README.md).

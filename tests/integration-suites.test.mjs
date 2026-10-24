@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { readWorkflow, verifyIntegrationSuites } from '../scripts/ci/verify-integration-suites.mjs';
 
-const source = readFileSync('.github/workflows/ci.yml', 'utf8');
+const source = readFileSync('.github/workflows/full-sanity.yml', 'utf8');
 const registry = JSON.parse(readFileSync('scripts/ci/integration-suites.json', 'utf8'));
 const workflow = () => readWorkflow(source);
 const integration = value => value.jobs['container-integration'];
