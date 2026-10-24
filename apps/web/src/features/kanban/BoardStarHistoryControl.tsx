@@ -18,6 +18,8 @@ function History(props: Props) {
   const [view, setView] = useState<{ page: StarHistoryPage; locale: string; timezone: string }>();
   const [notice, setNotice] = useState<string>();
   const [admission, setAdmission] = useState({ unavailable: props.unavailable, denied: false });
+  // An abandoned private read cannot keep a closed or withdrawn panel busy.
+  const reading = open && !props.unavailable && !admission.denied && busy;
   const pending = useRef<AbortController | undefined>(undefined);
   const refreshQueued = useRef(false);
   const denied = useRef(props.onDenied); denied.current = props.onDenied;
@@ -39,7 +41,9 @@ function History(props: Props) {
     setAdmission({ unavailable: props.unavailable, denied: false }); setView(undefined); setNotice(undefined);
   }
   useEffect(() => {
-    if (!open || props.unavailable || admission.denied) { setView(undefined); return; }
+    if (!open || props.unavailable || admission.denied) {
+      refreshQueued.current = false; setBusy(false); setView(undefined); return;
+    }
     const controller = new AbortController(); pending.current = controller; refreshQueued.current = false;
     const focused = document.activeElement;
     if (!restore.current && [entry.current, next.current, previous.current, retry.current].some(button => button === focused)
@@ -86,18 +90,20 @@ function History(props: Props) {
     };
   }, [open, props.unavailable, admission.denied, props.userId, invalidate]);
   useLayoutEffect(() => {
-    if (!restore.current || busy || props.unavailable || !(ownsRecoveryFocus(document.activeElement, focusOwner.current) || document.activeElement === focusDialog.current)) return;
+    if (!restore.current || reading || props.unavailable || !(ownsRecoveryFocus(document.activeElement, focusOwner.current) || document.activeElement === focusDialog.current)) return;
     if (open && !notice && !view) return;
     const target = admission.denied ? close.current : !open ? entry.current : retained.current?.isConnected && !retained.current.disabled
       ? retained.current : notice ? retry.current : view?.page.nextAfter ? next.current : close.current;
-    if (target && !target.disabled) { target.focus({ preventScroll: true }); restore.current = false; }
-  }, [open, busy, props.unavailable, admission.denied, notice, view]);
+    if (target && !target.disabled) {
+      target.scrollIntoView?.({ block: 'nearest' }); target.focus({ preventScroll: true }); restore.current = false;
+    }
+  }, [open, reading, props.unavailable, admission.denied, notice, view]);
   const visible = props.unavailable || admission.denied ? undefined : view;
   return <Stack spacing={1} onBlur={event => {
     if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current) && event.relatedTarget !== focusDialog.current) restore.current = false;
   }}>
-    <Button ref={entry} disabled={busy || props.unavailable || admission.denied} onClick={event => { activityEvent('board_star_disclosure', 'open'); ownFocus(event.currentTarget); setOpen(true); setPositions([{ after: 0 }]); }}>Review your star history</Button>
-    {open && <Box component="section" aria-label="Your star history" aria-busy={busy}>
+    <Button ref={entry} sx={{ scrollMarginBlock: '8px' }} disabled={reading || props.unavailable || admission.denied} onClick={event => { activityEvent('board_star_disclosure', 'open'); ownFocus(event.currentTarget); setOpen(true); setPositions([{ after: 0 }]); }}>Review your star history</Button>
+    {open && <Box component="section" aria-label="Your star history" aria-busy={reading}>
       <Typography role="status" aria-live="polite">{props.unavailable ? 'Checking history access…' : busy ? 'Loading your star history…' : visible ? `${visible.page.items.length} personal changes on this page.` : ''}</Typography>
       {!props.unavailable && notice && <Alert severity="info">{notice}</Alert>}
       {!props.unavailable && !admission.denied && notice && <Button ref={retry} disabled={busy} onClick={event => { activityEvent('board_star_read', 'retry'); ownFocus(event.currentTarget); setAttempt(value => value + 1); }}>Retry star history</Button>}

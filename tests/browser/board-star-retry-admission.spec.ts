@@ -13,6 +13,7 @@ const boardPath = `/app/${org}/boards/${board}`;
 // remain required in board-star.spec.ts and the complete release gates.
 async function sourceFor(page: Page) {
   const source = { version: 0, holdReads: false, heldReads: 0, denied: false,
+    holdHistory: false, historyReads: 0, heldHistory: 0, releaseHistory: [] as Array<() => void>,
     releaseReads: [] as Array<() => void>, releaseMutation: undefined as (() => void) | undefined,
     writes: [] as Array<{ method: string; key: string | undefined; version: string | null }>, otherWrites: [] as string[] };
   await page.routeWebSocket('**/*', socket => socket.onMessage(message => {
@@ -38,6 +39,13 @@ async function sourceFor(page: Page) {
       board: { id: board, organizationId: org, name: 'Recoverable personal stars', description: null, version: 1, lifecycleState: 'active' },
       access: { canView: true, canEdit: true, canMove: true, canAdminister: false }, lists: [],
     } });
+    if (path === starPath + '/events') {
+      source.historyReads++;
+      if (source.holdHistory) { source.heldHistory++; await new Promise<void>(resolve => source.releaseHistory.push(resolve)); }
+      if (request.failure()) return;
+      return route.fulfill({ status: source.denied ? 403 : 200, json: { organizationId: org, boardId: board, userId: actor,
+        items: [], nextAfter: null } });
+    }
     if (path === starPath && request.method() === 'GET') {
       if (source.holdReads) { source.heldReads++; await new Promise<void>(resolve => source.releaseReads.push(resolve)); }
       if (request.failure()) return;
@@ -58,6 +66,45 @@ async function sourceFor(page: Page) {
 }
 
 for (const width of [1280, 768, 390, 320]) {
+  test(`UX-008 closing private star history restores its admitted opener after read retirement at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page);
+    const release = () => { source.holdHistory = false; source.releaseHistory.splice(0).forEach(resolve => resolve()); };
+    try {
+      await page.goto(boardPath);
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      const dialog = page.getByRole('dialog', { name: 'Board starring', exact: true });
+      await openAdmittedReview(await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Board starring', exact: true }), dialog);
+      const review = dialog.getByRole('button', { name: 'Review your star history', exact: true });
+      const history = dialog.getByRole('region', { name: 'Your star history', exact: true });
+      await openAdmittedReview(review, history);
+      await expect(history.getByText('No recorded star changes on this page. Earlier changes may predate recorded history.')).toBeVisible();
+      source.holdHistory = true;
+      await page.evaluate(() => window.dispatchEvent(new Event('online')));
+      await expect.poll(() => source.heldHistory).toBeGreaterThan(0);
+      const close = history.getByRole('button', { name: 'Close star history', exact: true });
+      await close.focus(); await page.keyboard.press('Enter');
+      await expect(review).toBeFocused(); await expect(review).toBeEnabled(); await expect(history).toHaveCount(0);
+      release();
+      const previousReads = source.historyReads;
+      await openAdmittedReview(review, history);
+      await expect.poll(() => source.historyReads).toBeGreaterThan(previousReads);
+      await expect(history).toHaveAttribute('aria-busy', 'false');
+      await history.getByRole('button', { name: 'Close star history', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect(review).toBeFocused();
+      expect(await review.evaluate(node => {
+        const bounds = node.getBoundingClientRect(), content = node.closest('.MuiDialogContent-root')!.getBoundingClientRect();
+        return bounds.top - 4 >= Math.max(0, content.top) && bounds.bottom + 4 <= Math.min(innerHeight, content.bottom)
+          && node.contains(document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2));
+      })).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      await page.screenshot({ path: test.info().outputPath(`star-history-return-${width}.png`) });
+      source.denied = true; await review.focus(); await page.keyboard.press('Enter');
+      await expect(dialog.getByText('Board starring is unavailable. Check access or sign in.', { exact: true })).toBeVisible();
+      await expect(history).toHaveCount(0); await expect(review).toHaveCount(0);
+      expect(source.writes).toEqual([]); expect(source.otherWrites).toEqual([]);
+    } finally { release(); }
+  });
   test(`UX-008 original star recovery admits one native request and never replays a failed reply at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page);
     const observed = trackBoardStarChanges(page, board);
