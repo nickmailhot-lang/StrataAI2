@@ -44,6 +44,9 @@ for(const width of [1280,768,390,320]){
     await page.getByRole('button',{name:'Next search page',exact:true}).press('Enter');await expect(page.getByText('1 result on this page. Search complete.',{exact:true})).toBeVisible();
     await query.fill('unsent roof');await page.getByRole('textbox',{name:'Label name'}).fill('urgent');await page.getByRole('textbox',{name:'Member name'}).fill('new member');
     await choose(page,'Match criteria','Match any');await choose(page,'Search scope','Archived work');
+    // Run the actual Card/dirty/return journey at enlarged text, rather than
+    // changing text size after return or focusing the result on its behalf.
+    await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
     const original=page.getByRole('link',{name:'Original landscaping Card',exact:true});await original.press('Enter');await expect(page).toHaveURL(new RegExp(cardPath+'$'));
     expect(await page.evaluate(()=>JSON.stringify({history:history.state,session:{...sessionStorage},local:{...localStorage}}))).not.toContain('unsent roof');
     const detail=page.getByRole('dialog',{name:'Card details',exact:true});const title=detail.getByRole('textbox',{name:'Card title',exact:true});await expect(title).toHaveValue('Original landscaping Card');
@@ -62,7 +65,8 @@ for(const width of [1280,768,390,320]){
     await expect(page.getByRole('combobox',{name:'Match criteria'})).toHaveText('Match any');await expect(page.getByRole('combobox',{name:'Search scope'})).toHaveText('Archived work');
     await expect(page.getByText('Search refreshed from the first page.',{exact:true})).toBeVisible();
     const returned=new URLSearchParams(source.searches.at(-1));expect(returned.get('q')).toBe('landscaping');expect(returned.get('label')).toBe('maintenance');expect(returned.get('member')).toBe('council');expect(returned.get('match')).toBe('all');expect(returned.get('scope')).toBe('active');expect(returned.has('after')).toBe(false);
-    await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});await fresh.focus();
+    expect(await fresh.evaluate(el=>{const r=el.getBoundingClientRect(),header=document.querySelector('header')?.getBoundingClientRect();
+      return r.top>=(header?.bottom??0)&&r.bottom<=innerHeight&&el.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));})).toBe(true);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
     await page.screenshot({path:info.outputPath(`search-card-return-${width}.png`),fullPage:true});
