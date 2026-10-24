@@ -71,3 +71,22 @@ it.each([503, 401, 403, 404])('withdraws guidance on %s without weakening draft 
   await screen.findByText(/Search is unavailable/); expect(screen.queryByText(hint)).not.toBeInTheDocument();
   expect(query).toHaveValue(status === 503 ? 'private draft' : '');
 });
+it('keeps edits made during a pending search separate from the criteria that produced its result', async () => {
+  const query = await admit();
+  fireEvent.change(query, { target: { value: 'roof' } });
+  let resolve!: (value: unknown) => void;
+  request.mockResolvedValueOnce(profile).mockImplementationOnce(() => new Promise(r => { resolve = r; })).mockResolvedValueOnce(profile);
+  fireEvent.submit(query.closest('form')!);
+  await waitFor(() => expect(resolve).toBeTypeOf('function'));
+  act(() => query.focus());
+  fireEvent.change(query, { target: { value: 'meeting' } });
+  expect(screen.queryByText(hint)).not.toBeInTheDocument();
+  await act(async () => resolve(result(null)));
+  await screen.findByText(hint);
+  expect(query).toHaveValue('meeting'); expect(query).toHaveFocus();
+  expect(String(request.mock.calls.filter(([path]) => String(path).startsWith('/search?')).at(-1)![0])).toContain('q=roof');
+  queue(null); fireEvent.click(screen.getByRole('button', { name: 'Refresh results' }));
+  await screen.findByText(hint);
+  expect(String(request.mock.calls.filter(([path]) => String(path).startsWith('/search?')).at(-1)![0])).toContain('q=roof');
+  expect(query).toHaveValue('meeting');
+});

@@ -47,6 +47,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(link).toHaveAttribute('href', `/app/${org}/boards/${board}/cards/${card}`);
     await expect(page.getByText(hint, { exact: true })).toHaveCount(0);
     await query.fill('roof'); await expect(page.getByText(hint, { exact: true })).toBeVisible(); await expect(query).toBeFocused();
+    await expect(link).toBeVisible();
     // Changing fields never submits the draft; every existing read still uses
     // the previous applied criteria, even if background reconciliation runs.
     expect(source.searches.every(value => new URLSearchParams(value).get('q') === 'landscaping')).toBe(true);
@@ -57,6 +58,7 @@ for (const width of [1280, 768, 390, 320]) {
     await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');
     await expect(page.getByText('1 result on this page. Search complete.', { exact: true })).toBeVisible();
     await expect(page.getByText(hint, { exact: true })).toBeVisible(); await expect(query).toHaveValue('roof');
+    await expect(link).toBeVisible();
     expect(source.searches.some(value => value.includes('after=context-next') && value.includes('q=landscaping'))).toBe(true);
     await query.press('Enter'); await expect(link).toBeVisible(); await expect(page.getByText(hint, { exact: true })).toHaveCount(0);
     expect(source.searches.some(value => new URLSearchParams(value).get('q') === 'roof' && !new URLSearchParams(value).has('after'))).toBe(true);
