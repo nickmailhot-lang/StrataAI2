@@ -1,0 +1,51 @@
+{
+  "revision": "1b510bc092848770ee2d66f03b068684b39afe93",
+  "at": "2026-10-24T00:23:38.619Z",
+  "result": "Passed",
+  "scope": "Bounded reconciliation only;not implementation acceptance.",
+  "liveRequirements": [
+    "https://github.com/nickmailhot-lang/StrataAI2/issues/10",
+    "https://github.com/nickmailhot-lang/StrataAI2/issues/17"
+  ],
+  "reviewed": [
+    "CardDetailEditor current dirty/remote-conflict/permission/return coverage already exists;do not duplicate.",
+    "GlobalSearchPage validates admitted pages and retains applied criteria across paging/refresh while allowing unsent draft edits. No explanation connects current results to the prior submitted criteria.",
+    "Existing PRD16 Search surface/guidance/focus increments are Done;new gap belongs to existing PRD16VS01. Broader domain Search PRD56 stays deferred."
+  ],
+  "observed": {
+    "demo": "0.1.0-1975 /23f1cf65",
+    "journey": "Actual current browser:Search landscaping→admitted landscaping result→edit field to roof without submit→landscaping result remains with no unapplied-filter notice.",
+    "screenshot": "StrataAI2-search-draft-before.jpg",
+    "sha256": "0c59312404704b271e7cb4ab222314ad95471a2bad21677d650e7ec2faa6cb94"
+  },
+  "boundary": "Add only admitted-result unapplied-filter guidance. No new actions,requests,persistence,roles,schemas,API/events,shared layout or navigation. Existing original submission/actor/epochs/cursors/denial withdrawal remain authoritative.",
+  "ci124": {
+    "revision": "1b510bc092848770ee2d66f03b068684b39afe93",
+    "run": 39997726141,
+    "attempt": 1,
+    "result": "Failed",
+    "jobId": 120588574425,
+    "failedStep": "Start release topology",
+    "cause": "Registry HTTP502 while pulling postgres/metrics supporting images after exact image checksums/load/labels passed. No migration or application command tests executed.",
+    "impact": "Commands unavailable;required-ci failed;release skipped. PR remains draft/unmerged.",
+    "resolution": "One failed-jobs-only rerun on unchanged head with assertions,deadlines and workflow unmodified. Retain this initial failure separately.",
+    "safeWitness": [
+      "2026-10-23T18:35:17.0973331Z  postgres Pulling ",
+      "2026-10-23T18:35:17.0973666Z  metrics-collector Pulling ",
+      "2026-10-23T18:35:17.2911772Z  postgres  Interrupted",
+      "2026-10-23T18:35:17.2912771Z received unexpected HTTP status: 502 Bad Gateway",
+      "2026-10-23T18:35:17.2960821Z ##[error]Process completed with exit code 1."
+    ]
+  },
+  "newTestFailure": {
+    "result": "Failed",
+    "counts": {
+      "passed": 38,
+      "failed": 1
+    },
+    "logSha256": "54e2fbe350801d33a9717fdb931bf0949e93634a16ede343f9dddd3762142baa",
+    "cause": "New paging mock returned the same cursor that was just consumed. Existing strict parser rejected it as a repeated continuation,correctly withdrawing the result. Fix mock to canonical final null cursor;preserve all assertions,parser and deadlines.",
+    "owner": "Codex",
+    "resolution": "New fixture correction only;original logs retained. Fresh scoped run required."
+  }
+}

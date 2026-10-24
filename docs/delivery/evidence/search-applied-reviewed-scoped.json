@@ -1,0 +1,103 @@
+{
+  "revision": "b70bcd75bc9f1ec7e440b0540aa6f912099e3c24",
+  "at": "2026-10-24T01:05:08.129Z",
+  "result": "Passed",
+  "scope": "Bounded local validation; not full hosted qualification, independent approval, integration or MVP acceptance.",
+  "applicationRevision": "153905157774f2374dd6425839cc091aca3b3f57",
+  "applicationIdentity": "GlobalSearchPage application source is unchanged at this revision; later commits strengthen tests and preserve evidence checkout bytes. Default browser run uses current isolated Vite source. Rollback serves compiled15390515 with identical Search component blob; it is not a fresh immutable release.",
+  "component": {
+    "passed": 40,
+    "failed": 0,
+    "files": 3,
+    "sourceRevisionAtRun": "e7d3dea918ad0a7846077baa4b9cdc1ca9dd552c"
+  },
+  "dedicatedBrowser": {
+    "defaultPassed": 4,
+    "rollbackPassed": 4,
+    "failed": 0,
+    "widths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "keyboard": true,
+    "textSize": "200%",
+    "axe": true,
+    "sourceRevisionAtRun": "e7d3dea918ad0a7846077baa4b9cdc1ca9dd552c"
+  },
+  "broaderBrowser": {
+    "defaultPassed": 16,
+    "rollbackPassed": 16,
+    "failed": 0,
+    "boundary": "Prepared/mixed test-source diagnostic runs; application source unchanged. Dedicated final Search cases were rerun after committing stronger assertions."
+  },
+  "settings": {
+    "passed": 2,
+    "failed": 0,
+    "widths": [
+      1280,
+      390
+    ],
+    "runtime": "isolated Demo, compiled15390515",
+    "sourceRevisionAtRun": "b70bcd75bc9f1ec7e440b0540aa6f912099e3c24",
+    "coverage": "Real API validation, concurrent administrator change, draft review, lost response, identical original retry version/key/body, later canonical state, reload and Axe. Disposable new accounts/Organizations only."
+  },
+  "quality": {
+    "build": 0,
+    "lint": 0,
+    "browserTypes": 0
+  },
+  "logs": [
+    {
+      "path": "work/search-components-qualified.log",
+      "sha256": "fe1222525c53c4a66771b7b81c6888192a5e4f957a714a59e582ec65bb74b413",
+      "text": "\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/apps/web\r\n\r\n\r\n Test Files  3 passed (3)\r\n      Tests  40 passed (40)\r\n   Start at  17:57:02\r\n   Duration  25.09s (tests 45%, import 34%, environment 15%, setup 3%, transform 2%)\r\n\r\n"
+    },
+    {
+      "path": "work/search-current.log",
+      "sha256": "4e867259592fc87aa484cb189168fa9f14dc65c65a5fb030eec22853975d0183",
+      "text": "\r\nRunning 4 tests using 1 worker\r\n\r\n(node:18960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 1280px (11.5s)\r\n  ok 2 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 768px (10.2s)\r\n  ok 3 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 390px (10.6s)\r\n  ok 4 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 320px (10.6s)\r\n\r\n  4 passed (45.4s)\r\n"
+    },
+    {
+      "path": "work/search-current-rollback.log",
+      "sha256": "c5c98b31f22f520ec90b2ab0db0f868b4ed6dfd6668fa98aa95c41af45cd4efb",
+      "text": "\r\nRunning 4 tests using 1 worker\r\n\r\n(node:22452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 1280px (4.7s)\r\n  ok 2 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 768px (4.6s)\r\n  ok 3 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 390px (4.1s)\r\n  ok 4 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 320px (4.3s)\r\n\r\n  4 passed (20.9s)\r\n"
+    },
+    {
+      "path": "work/search-default.log",
+      "sha256": "34669aab858afb501f5b169a1766fe2559cf8869ae7df3774b961b9eb938a52e",
+      "text": "\r\nRunning 16 tests using 1 worker\r\n\r\n(node:40100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok  1 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 1280px (11.2s)\r\n  ok  2 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 768px (13.6s)\r\n  ok  3 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 390px (16.5s)\r\n  ok  4 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 320px (13.6s)\r\n  ok  5 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 1280px (26.7s)\r\n  ok  6 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px (20.0s)\r\n  ok  7 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 768px (22.4s)\r\n  ok  8 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px (16.6s)\r\n  ok  9 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 390px (18.2s)\r\n  ok 10 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px (11.3s)\r\n  ok 11 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 320px (13.7s)\r\n  ok 12 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px (8.8s)\r\n  ok 13 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 1280px (11.2s)\r\n  ok 14 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 768px (11.2s)\r\n  ok 15 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 390px (11.0s)\r\n  ok 16 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 320px (13.4s)\r\n\r\n  16 passed (4.1m)\r\n"
+    },
+    {
+      "path": "work/search-rollback.log",
+      "sha256": "54d95a22f849f73d7ddc98ffeba929361a5e75ca8a6ce39f3398dcdd971a9c24",
+      "text": "\r\nRunning 16 tests using 1 worker\r\n\r\n(node:40168) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok  1 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 1280px (6.6s)\r\n  ok  2 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 768px (6.0s)\r\n  ok  3 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 390px (7.3s)\r\n  ok  4 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 320px (6.5s)\r\n  ok  5 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 1280px (8.0s)\r\n  ok  6 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px (7.5s)\r\n  ok  7 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 768px (7.9s)\r\n  ok  8 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px (7.8s)\r\n  ok  9 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 390px (9.2s)\r\n  ok 10 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px (9.9s)\r\n  ok 11 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 320px (8.6s)\r\n  ok 12 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px (7.6s)\r\n  ok 13 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 1280px (8.6s)\r\n  ok 14 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 768px (9.7s)\r\n  ok 15 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 390px (9.1s)\r\n  ok 16 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 320px (7.8s)\r\n\r\n  16 passed (2.3m)\r\n"
+    },
+    {
+      "path": "work/settings-final.log",
+      "sha256": "b556f564bdf143d0d672657c24c56660cc638f3301b438bb7f9f88a1f4cc68a2",
+      "text": "\r\nRunning 2 tests using 1 worker\r\n\r\n(node:25256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\organization-settings.spec.ts:10:7 › PRD-03-TC-01/06/08/11/12: keyboard Organization metadata review and lost acknowledgment at 1280px (8.3s)\r\n  ok 2 tests\\browser\\organization-settings.spec.ts:10:7 › PRD-03-TC-01/06/08/11/12: keyboard Organization metadata review and lost acknowledgment at 390px (10.0s)\r\n\r\n  2 passed (21.2s)\r\n"
+    },
+    {
+      "path": "work/build.log",
+      "sha256": "3d86fd07ec6d19961af2155cfdd88f01f3f1a2ce7ecdf716d98b93b33ffc4477",
+      "text": "npm notice run strataai2@0.1.0 build\r\nnpm notice run npm --workspace @strataai/web run build\r\nnpm notice run @strataai/web@0.1.0 build\r\nnpm notice run tsc --noEmit && vite build\r\nvite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12060 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.34 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-DpEFf0jG.js   1,646.52 kB │ gzip: 459.21 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 20.80s\r\n"
+    },
+    {
+      "path": "work/lint-final.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "path": "work/browser-types-final.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    }
+  ],
+  "pending": [
+    "Full current-head hosted source/backend/PostgreSQL/role/security/browser/performance/immutable release gates",
+    "Current-source review and authorized main integration",
+    "Final committed tracking validation"
+  ]
+}

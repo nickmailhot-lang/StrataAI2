@@ -1,0 +1,62 @@
+{
+  "revision": "8f9aa6acd33da767f781d4ca30b2a360954cd2bd",
+  "at": "2026-10-24T10:57:24.594Z",
+  "result": "Passed",
+  "command": "Owned current Demo priority journeys; review only, no source change",
+  "review": {
+    "head": "7119a8151c34ec8a028076a113021632fe8d75bb",
+    "frontend": "0c28b8a98d88815c768cababdebaad3fc84979bf",
+    "api": "b47e580e72f6af5de2d5614293287b5364ad6590",
+    "mode": "Owned local Demo; compatible unchanged API source; separate from immutable Production CI.",
+    "codeChanged": false,
+    "reviewOnly": true,
+    "navigation": {
+      "widths": [
+        1280,
+        390
+      ],
+      "result": "Actual Organization→Work→Board→Card→Close restores actual Card link focus."
+    },
+    "settings": {
+      "widths": [
+        1280,
+        390
+      ],
+      "result": "Server validation preserves unsaved name and canonical profile; valid save persists; an actual competing profile update produces conflict without overwriting the draft; explicit discard/latest shows canonical latest state; subsequent save persists.",
+      "gap": "Only conflict recovery requires discarding edits and retyping. Explicit latest reload returns focus to BODY.",
+      "log": "work/settings-journey-review.log",
+      "screenshots": "work/settings-journey-review-results"
+    },
+    "admission": {
+      "width": 390,
+      "result": "A controlled503 on only the disposable Organization's surface-access endpoint withdraws private accessible Search; newer draft survives explicit retry.",
+      "gap": "Focus is BODY both during withdrawal and after successful recovery.",
+      "log": "work/search-admission-review.log",
+      "screenshots": "work/search-admission-review-results"
+    },
+    "nextCandidate": {
+      "owner": "PRD-02, subject to live requirements reconciliation before implementation",
+      "ux": [
+        "UX-005",
+        "UX-006",
+        "UX-008"
+      ],
+      "task": "Review the latest profile without discarding edited fields; explicitly approve applying them against a reviewed current version, then save and confirm canonical state. Preserve unedited server changes, actor binding and original-command rules; restore owned focus.",
+      "why": "Actual desktop/phone conflict recovery currently requires abandoning preserved work. Admission retry focus is a separately demonstrated follow-up."
+    },
+    "limits": "Inspection passes are not full feature/UX acceptance. No new Task/Done claim, source change or CI qualification inferred; native200% zoom and independent review remain pending."
+  },
+  "logs": [
+    {
+      "path": "work/settings-journey-review.log",
+      "sha256": "38091b0879b00f5e25ca9ba91b0d5f805e0386354d0024e3fa9ad47a7fa8322d",
+      "text": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test --config=work/settings-journey-review.config.ts --output=work/settings-journey-review-results\r\n\r\nRunning 2 tests using 1 worker\r\n\r\n(node:29772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n{\"width\":1280,\"inspectionOnly\":true,\"navigation\":\"Organization→Work→Board→Card→Close restores actual Card focus\",\"profile\":\"real validation400;successful canonical save;real competing version409 preserves draft;explicit discard/latest;successful canonical save\",\"recoveryFocus\":{\"tag\":\"BODY\",\"text\":\"\\n    Skip to main contentStrataAI2Organization: Settings review 1280Organization\"}}\r\n  ok 1 work\\settings-journey-review.spec.ts:2:35 › inspect Organization Work Card return and profile recovery at 1280px (3.3s)\r\n{\"width\":390,\"inspectionOnly\":true,\"navigation\":\"Organization→Work→Board→Card→Close restores actual Card focus\",\"profile\":\"real validation400;successful canonical save;real competing version409 preserves draft;explicit discard/latest;successful canonical save\",\"recoveryFocus\":{\"tag\":\"BODY\",\"text\":\"\\n    Skip to main contentStrataAI2Organization: Settings review 390Organizations\"}}\r\n  ok 2 work\\settings-journey-review.spec.ts:2:35 › inspect Organization Work Card return and profile recovery at 390px (3.1s)\r\n\r\n  2 passed (7.9s)\r\n"
+    },
+    {
+      "path": "work/search-admission-review.log",
+      "sha256": "0fcab5d63095fd855109c8f41addbcfb186769c35065176ffec2c96e95eaa3c2",
+      "text": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test --config=work/search-admission-review.config.ts --output=work/search-admission-review-results\r\n\r\nRunning 1 test using 1 worker\r\n\r\n(node:28356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n{\"source\":\"7119a815/app0c28;APIb47e580e;controlled503onownedOrganizationonly\",\"inspectionOnly\":true,\"observed\":[{\"stage\":\"withdrawn\",\"focus\":{\"tag\":\"BODY\",\"text\":\"\\n    Skip to main contentStrataAI2Organization: Admission UX review 1792828106488OrganizationsWorkNo\"},\"privateSearchAccessible\":0},{\"stage\":\"recovered\",\"focus\":{\"tag\":\"BODY\",\"text\":\"\\n    Skip to main contentStrataAI2Organization: Admission UX review 1792828106488OrganizationsWorkNo\"},\"draftRetained\":true}]}\r\n  ok 1 work\\search-admission-review.spec.ts:2:5 › inspect temporary admission failure after returned Search criteria are edited (2.7s)\r\n\r\n  1 passed (3.9s)\r\n"
+    }
+  ],
+  "limits": "Separate compatible local Demo/frontend source revisions are in the review. Does not qualify immutable Production or native browser zoom. Next Profile conflict gap is a lead requiring livePRD02 reconciliation, not implementation."
+}

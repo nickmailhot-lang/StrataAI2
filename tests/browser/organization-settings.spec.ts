@@ -2,7 +2,7 @@ import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import type { Request } from '@playwright/test';
 import { scopedBoardWorker } from './scopedBoardWorker';
-import { openAdmittedReview } from './keyboardAdmission';
+import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 import { openOrganizationActions } from './organizationActionAdmission';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -60,8 +60,10 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await openAdmittedReview(page.getByRole('link', { name: 'Organization settings', exact: true }), page.getByLabel(/^Organization name/));
     await expect(page.getByLabel(/^Organization name/)).toHaveValue('Organization metadata');
     const runtime = await context.request.get('/api/runtime'); expect(runtime.status()).toBe(200);
-    if ((await runtime.json()).mode === 'production')
-      await expect(page.getByText('Current settings checked. Review any saved changes before replacing them with your draft.', { exact: true })).toBeVisible();
+    expect(['production', 'demo']).toContain((await runtime.json()).mode);
+    // Both runtimes reconcile the initial live subscription. Finish that read
+    // before editing; an edit during it correctly requires explicit review.
+    await expect(page.getByText('Current settings checked. Review any saved changes before replacing them with your draft.', { exact: true })).toBeVisible();
     await page.getByLabel('Logo URL').fill('http://example.test/logo.png');
     await page.getByRole('button', { name: 'Save Organization settings' }).click();
     await expect(page.getByText('Use a secure HTTPS logo URL without embedded credentials, or leave it empty.')).toBeVisible();
@@ -86,7 +88,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const response = await route.fetch(); expect(response.status()).toBe(200);
       if (writes.length === 1) await route.abort('timedout'); else await route.fulfill({ response });
     });
-    await page.getByRole('button', { name: 'Save Organization settings' }).focus(); await page.keyboard.press('Enter');
+    await pressObservedRequest(page.getByRole('button', { name: 'Save Organization settings' }), () => writes.length, 1);
     await expect(page.getByText(/Your save could not be confirmed/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Load current settings' })).toBeDisabled();
     await expect(page.getByLabel(/^Organization name/)).toBeDisabled();
@@ -94,7 +96,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       data: { name: 'Later administrator update', description: 'Later description', logoUrl: null, version: 3 } })).status()).toBe(200);
     await expect.poll(() => settled(4), { timeout: 30_000 }).toBe(true);
     await expect(page.getByRole('button', { name: 'Retry original save' })).toBeEnabled();
-    await page.getByRole('button', { name: 'Retry original save' }).focus(); await page.keyboard.press('Enter');
+    await pressObservedRequest(page.getByRole('button', { name: 'Retry original save' }), () => writes.length, 2);
     await expect(page.getByText(/Original save acknowledgment recovered/)).toBeVisible();
     await page.getByRole('button', { name: 'Load current settings' }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('Name: Later administrator update')).toBeVisible();

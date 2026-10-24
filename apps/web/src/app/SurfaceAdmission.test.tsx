@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider, useParams } from 'react-router-dom';
 import { SurfaceAdmission } from './SurfaceAdmission';
+import { forgetSearchReturn, readSearchReturn, retainSearchReturn } from '../features/search/searchReturn';
 import { useState } from 'react';
 import { Dialog } from '@mui/material';
 import type { watchOperationalLifecycle } from '../features/organizations/operationalLifecycleLive';
@@ -26,10 +27,13 @@ it.each([true,false])('confirms session loss after the outer boundary retires pr
   const router=createMemoryRouter([{path:'/:organizationId',element:<SurfaceAdmission surface="INTERNAL"><div>Private child draft</div></SurfaceAdmission>},
     {path:'/login',element:<div>Sign in again</div>}],{initialEntries:[`/${liveOrg}`]});render(<RouterProvider router={router}/>);
   await screen.findByText('Private child draft');await waitFor(()=>expect(operational.options).toBeDefined());gone=true;
+  const criteria={q:'private retained search',label:'',member:'',match:'all' as const,scope:'active' as const};
+  retainSearchReturn({organization:liveOrg,actor:liveActor,card:liveActor,entry:'search-origin',draft:criteria,applied:criteria});
   act(()=>operational.options!.denied(sessionGone?401:404,false));
   expect(screen.queryByText('Private child draft')).not.toBeInTheDocument();
   if(sessionGone){await screen.findByText('Sign in again');expect(router.state.location.pathname).toBe('/login');}
   else{await screen.findByText('Access to this Organization surface is unavailable.');expect(router.state.location.pathname).toBe(`/${liveOrg}`);}
+  expect(readSearchReturn(liveOrg,'search-origin')).toBeUndefined();forgetSearchReturn();
 });
 it.each(['SUSPENDED', 'DEACTIVATED'] as const)('withdraws operational content immediately for live %s and checks fresh admission on reactivation', async status => {
   const fetcher = vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile)) : response(liveOrg));

@@ -1,0 +1,101 @@
+{
+  "revision": "0c28b8a98d88815c768cababdebaad3fc84979bf",
+  "at": "2026-10-24T06:33:40.284Z",
+  "result": "Passed",
+  "user": "Admitted authenticated Board viewer inspecting personal star history.",
+  "entry": "Board actions → Board starring → Review your star history",
+  "outcome": "Close a pending/reconciled history read, return to an enabled visible opener, reopen through a fresh account-bound read, and withdraw private content on denial without writes.",
+  "ownership": {
+    "prd": "PRD-04",
+    "slice": "PRD-04-VS-02",
+    "task": "PRD-04-VS-02-T-02",
+    "source": "BOARD-FR-005;UXA-02/03/04/05/06/07/08",
+    "ux": [
+      "UX-003",
+      "UX-005",
+      "UX-006",
+      "UX-008"
+    ],
+    "liveRequirement": {
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/5",
+      "updatedAt": "2026-10-17T19:29:26Z",
+      "inspectedAt": "2026-10-24T06:33:40.284Z"
+    }
+  },
+  "implementation": "Active-read loading invariant and abort retirement; original own-focus restoration scrolls into view with8px clearance. No API/event/schema/permission/command changes.",
+  "tests": {
+    "components": 60,
+    "files": 4,
+    "defaultBrowser": 14,
+    "rollbackBrowser": 14,
+    "retries": 0,
+    "skips": 0,
+    "includes": "All6 Search return cases in each presentation, plus4 original star retry and4 new history return/reopen/denial cases. Widths320/390/768/1280;200% enlarged text throughout new history workflow; strict native focus/ring/hit checks, Axe and no writes."
+  },
+  "visual": "Rendered four-width screenshots inspected; final320px ring verified unobscured after owned scroll. Standard dialog content scroll remains purposeful at200% text. Shared sidebar word wrapping remains separate debt. Native browser zoom remains unverified after earlier control-service stop.",
+  "screenshots": [
+    {
+      "width": 320,
+      "path": "docs/delivery/evidence/star-history-retirement-320.png",
+      "sha256": "7231a7e4873c0e97b02c64f3af1cba492bcead8332820bcd6e1ffb7d90bf50c7"
+    },
+    {
+      "width": 390,
+      "path": "docs/delivery/evidence/star-history-retirement-390.png",
+      "sha256": "b4161ba36b350fe8b3405a2456d49e7f9ad5f8d4f3ff246b3ecf9fb42442bf03"
+    },
+    {
+      "width": 768,
+      "path": "docs/delivery/evidence/star-history-retirement-768.png",
+      "sha256": "53a18cf233f1ce2f88cd8ef426e814771d7815a550517749866553056e99014a"
+    },
+    {
+      "width": 1280,
+      "path": "docs/delivery/evidence/star-history-retirement-1280.png",
+      "sha256": "38e1b221e3e797cae2ed639617164903340c08d4277e00e310d8438f6ca72d20"
+    }
+  ],
+  "logs": [
+    {
+      "path": "work/star-history-final-build.log",
+      "sha256": "f65aa6ddce84356e621b94f2ab777295953cc689681efa1fdfd8516ab125e013",
+      "text": "npm notice run strataai2@0.1.0 build\r\nnpm notice run npm --workspace @strataai/web run build\r\nnpm notice run @strataai/web@0.1.0 build\r\nnpm notice run tsc --noEmit && vite build\r\nvite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12061 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.34 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-Bsql94UD.js   1,649.17 kB │ gzip: 460.07 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 7.92s\r\n"
+    },
+    {
+      "path": "work/star-history-final-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "path": "work/star-history-final-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "path": "work/star-history-final-consumers.log",
+      "sha256": "cfb93347fe709016b6acba29121a7a3b847343c5a74b0040e9391768208ac8c2",
+      "text": "npm notice run strataai2@0.1.0 test\r\nnpm notice run npm --workspace @strataai/web run test BoardStarHistory.test.tsx BoardStarControl.test.tsx boardStarLive.test.ts boardStarSync.test.ts\r\nnpm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run BoardStarHistory.test.tsx BoardStarControl.test.tsx boardStarLive.test.ts boardStarSync.test.ts\r\n\r\n RUN  v5.0.5 C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/apps/web\r\n\r\n\r\n Test Files  4 passed (4)\r\n      Tests  60 passed (60)\r\n   Start at  23:31:15\r\n   Duration  23.31s (import 32%, environment 31%, tests 29%, setup 6%, transform 2%)\r\n\r\n"
+    },
+    {
+      "path": "work/star-history-final-browser.log",
+      "sha256": "0b8361ceb53e865c2f2d0c79b05828d59d0fe065bff4cef18ba8b94efa816058",
+      "text": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test tests/browser/board-star-retry-admission.spec.ts tests/browser/search-card-return.spec.ts --output=work/star-history-final-browser-results\r\n\r\nRunning 14 tests using 1 worker\r\n\r\n(node:38080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok  1 tests\\browser\\board-star-retry-admission.spec.ts:69:7 › UX-008 closing private star history restores its admitted opener after read retirement at 1280px (3.0s)\r\n  ok  2 tests\\browser\\board-star-retry-admission.spec.ts:108:7 › UX-008 original star recovery admits one native request and never replays a failed reply at 1280px (3.8s)\r\n  ok  3 tests\\browser\\board-star-retry-admission.spec.ts:69:7 › UX-008 closing private star history restores its admitted opener after read retirement at 768px (3.5s)\r\n  ok  4 tests\\browser\\board-star-retry-admission.spec.ts:108:7 › UX-008 original star recovery admits one native request and never replays a failed reply at 768px (4.2s)\r\n  ok  5 tests\\browser\\board-star-retry-admission.spec.ts:69:7 › UX-008 closing private star history restores its admitted opener after read retirement at 390px (3.5s)\r\n  ok  6 tests\\browser\\board-star-retry-admission.spec.ts:108:7 › UX-008 original star recovery admits one native request and never replays a failed reply at 390px (3.8s)\r\n  ok  7 tests\\browser\\board-star-retry-admission.spec.ts:69:7 › UX-008 closing private star history restores its admitted opener after read retirement at 320px (2.9s)\r\n  ok  8 tests\\browser\\board-star-retry-admission.spec.ts:108:7 › UX-008 original star recovery admits one native request and never replays a failed reply at 320px (3.1s)\r\n  ok  9 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 1280px (5.8s)\r\n  ok 10 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 768px (5.8s)\r\n  ok 11 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 390px (6.0s)\r\n  ok 12 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 320px (7.0s)\r\n  ok 13 tests\\browser\\search-card-return.spec.ts:88:5 › PRD-16 browser Back restores a Viewer search but refuses retained criteria after an account change (2.2s)\r\n  ok 14 tests\\browser\\search-card-return.spec.ts:96:5 › PRD-16 pointer Close and actual interval refresh preserve the returned Search target (12.2s)\r\n\r\n  14 passed (1.2m)\r\n"
+    },
+    {
+      "path": "work/star-history-final-rollback-build.log",
+      "sha256": "973733df92fb1dfa5bf26072f8e0205e6355bd5f7ec8138f7f7c62ee49a8b8ba",
+      "text": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run vite build --outDir ../../work/star-history-rollback-build\r\nvite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12061 modules transformed.\r\n\r\n(!) outDir C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\work\\star-history-rollback-build is not inside project root and will not be emptied.\r\nUse --emptyOutDir to override.\r\n\r\nrendering chunks...\r\ncomputing gzip size...\r\n../../work/star-history-rollback-build/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\n../../work/star-history-rollback-build/index.html                     0.57 kB │ gzip:   0.34 kB\r\n../../work/star-history-rollback-build/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\n../../work/star-history-rollback-build/assets/index-B5bQyUzH.js   1,644.78 kB │ gzip: 458.73 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 9.75s\r\n"
+    },
+    {
+      "path": "work/star-history-final-rollback.log",
+      "sha256": "c3b1d1095ea73e9313335225784ae37cb9f128714ac7816f80ad7b96d5b98d70",
+      "text": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test tests/browser/board-star-retry-admission.spec.ts tests/browser/search-card-return.spec.ts --output=work/star-history-final-rollback-results\r\n\r\nRunning 14 tests using 1 worker\r\n\r\n(node:15912) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok  1 tests\\browser\\board-star-retry-admission.spec.ts:69:7 › UX-008 closing private star history restores its admitted opener after read retirement at 1280px (4.9s)\r\n  ok  2 tests\\browser\\board-star-retry-admission.spec.ts:108:7 › UX-008 original star recovery admits one native request and never replays a failed reply at 1280px (4.6s)\r\n  ok  3 tests\\browser\\board-star-retry-admission.spec.ts:69:7 › UX-008 closing private star history restores its admitted opener after read retirement at 768px (3.5s)\r\n  ok  4 tests\\browser\\board-star-retry-admission.spec.ts:108:7 › UX-008 original star recovery admits one native request and never replays a failed reply at 768px (3.7s)\r\n  ok  5 tests\\browser\\board-star-retry-admission.spec.ts:69:7 › UX-008 closing private star history restores its admitted opener after read retirement at 390px (2.3s)\r\n  ok  6 tests\\browser\\board-star-retry-admission.spec.ts:108:7 › UX-008 original star recovery admits one native request and never replays a failed reply at 390px (3.2s)\r\n  ok  7 tests\\browser\\board-star-retry-admission.spec.ts:69:7 › UX-008 closing private star history restores its admitted opener after read retirement at 320px (2.4s)\r\n  ok  8 tests\\browser\\board-star-retry-admission.spec.ts:108:7 › UX-008 original star recovery admits one native request and never replays a failed reply at 320px (3.5s)\r\n  ok  9 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 1280px (5.9s)\r\n  ok 10 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 768px (5.5s)\r\n  ok 11 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 390px (5.4s)\r\n  ok 12 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 320px (5.4s)\r\n  ok 13 tests\\browser\\search-card-return.spec.ts:88:5 › PRD-16 browser Back restores a Viewer search but refuses retained criteria after an account change (1.8s)\r\n  ok 14 tests\\browser\\search-card-return.spec.ts:96:5 › PRD-16 pointer Close and actual interval refresh preserve the returned Search target (11.7s)\r\n\r\n  14 passed (1.1m)\r\n"
+    },
+    {
+      "path": "work/star-history-browser-partition.log",
+      "sha256": "55568a3f35636885c06d4658bcf5cd678c87b5026a3e672e3960942155074e16",
+      "text": "Browser shard coverage: 544 cases in 181 intact files; 137/135/139/133 cases across all four shards.\r\n"
+    }
+  ],
+  "limits": "Controlled local source qualification only. Original real-service multi-account scenario, own complete CI, six strict performance profiles, immutable release and independent review remain required. No main integration or MVP acceptance."
+}
