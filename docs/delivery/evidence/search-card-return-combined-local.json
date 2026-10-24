@@ -1,0 +1,118 @@
+{
+  "revision": "ce3ff58c68b137d52bc5070a0e5ea5ffd668d42b",
+  "at": "2026-10-24T03:02:31.351Z",
+  "result": "Passed",
+  "scope": "Exact recorded local source only; full hosted qualification, independent review and authorized integration remain separate.",
+  "exits": {
+    "lint": 0,
+    "build": 0,
+    "browserTypes": 0,
+    "board": 0,
+    "components": 0,
+    "api": 0,
+    "defaultBrowser": 0,
+    "rollbackBrowser": 0,
+    "rollbackBuild": 0
+  },
+  "counts": {
+    "scopedComponents": 120,
+    "unchangedBoardRerun": 43,
+    "realApiHttp": 2,
+    "compiledDefaultBrowser": 5,
+    "compiledRollbackBrowser": 5
+  },
+  "screenshots": [
+    {
+      "width": 320,
+      "path": "docs/delivery/evidence/search-card-return-320.png",
+      "sha256": "097ed81d451f68fd77166856779d6069a208dfa702a3174465a81b8a11c2af10",
+      "kind": "Actual viewport900px height, native return focus,200% text; not fullPage fixed-header composite."
+    },
+    {
+      "width": 390,
+      "path": "docs/delivery/evidence/search-card-return-390.png",
+      "sha256": "2ff27bd9013c1089f6c94ff236849a37750cf1a573b6da4d87e3231432b0f21b",
+      "kind": "Actual viewport900px height, native return focus,200% text; not fullPage fixed-header composite."
+    },
+    {
+      "width": 768,
+      "path": "docs/delivery/evidence/search-card-return-768.png",
+      "sha256": "792ced042a556ea47ac8202c7acac22e770641c577aa2ad4472bd899aea6f68f",
+      "kind": "Actual viewport900px height, native return focus,200% text; not fullPage fixed-header composite."
+    },
+    {
+      "width": 1280,
+      "path": "docs/delivery/evidence/search-card-return-1280.png",
+      "sha256": "b375593acdd665cbe5b6ea6d0c5579e9f40aa63abdf88dafa169ac7e9dffada7",
+      "kind": "Actual viewport900px height, native return focus,200% text; not fullPage fixed-header composite."
+    }
+  ],
+  "logs": [
+    {
+      "path": "work/pr125-patched-board-rerun.log",
+      "sha256": "69a226d091a57333366f3a7c3f4bbc7856e5e0b81cde803c72b33132d9808181",
+      "text": "\r\n RUN  v5.0.5 C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/apps/web\r\n\r\n\r\n Test Files  2 passed (2)\r\n      Tests  43 passed (43)\r\n   Start at  19:52:10\r\n   Duration  219.11s (import 50%, tests 47%, environment 2%, transform 1%)\r\n\r\n     Import  135 modules were evaluated 252 times · 109.07s total, 50% of tracked time\r\n             ~50.64s faster with isolate: false — shared modules are evaluated once per worker instead of once per file\r\n             learn more: https://vitest.dev/guide/improving-performance#test-isolation\r\n\r\n"
+    },
+    {
+      "path": "work/search-return-combined-components.log",
+      "sha256": "41a0e01f65870e10520a75edea79b19ee9234f01bb9168c8d46890f83bcdbf74",
+      "text": "\r\n RUN  v5.0.5 C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/apps/web\r\n\r\n\r\n Test Files  8 passed (8)\r\n      Tests  120 passed (120)\r\n   Start at  19:56:13\r\n   Duration  102.06s (import 37%, tests 37%, environment 20%, setup 4%, transform 1%)\r\n\r\n     Import  53 modules were evaluated 160 times · 37.14s total, 37% of tracked time\r\n             ~24.83s faster with isolate: false — shared modules are evaluated once per worker instead of once per file\r\n             learn more: https://vitest.dev/guide/improving-performance#test-isolation\r\n\r\n"
+    },
+    {
+      "path": "work/search-return-combined-api.log",
+      "sha256": "7f5cb58d6042c480ac7f6c4b348f952515cf64b1b5bf942304048f2656272dc0",
+      "text": "xUnit.net v3 In-Process Runner v4.0.1+8ed8aa354c (64-bit .NET 10.0.12)\r\n  Discovering: StrataAI.Api.Tests\r\n  Discovered:  StrataAI.Api.Tests\r\n  Starting:    StrataAI.Api.Tests\r\n  Finished:    StrataAI.Api.Tests (ID = '91f74e86e922ea1234b8bcad1262391d2294b06fdb844a3f0bc4c78f0adb8447')\r\n=== TEST EXECUTION SUMMARY ===\r\n   StrataAI.Api.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 11.966s\r\n"
+    },
+    {
+      "path": "work/search-return-combined-build.log",
+      "sha256": "387cff32bda4772d38f34e9dd3588f30e5b01d9eead65c1ebf0c1448add335c2",
+      "text": "npm notice run @strataai/web@0.1.0 build\r\nnpm notice run tsc --noEmit && vite build\r\nvite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12061 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.33 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-iheyiunm.js   1,648.91 kB │ gzip: 459.98 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 9.69s\r\n"
+    },
+    {
+      "path": "work/search-return-combined-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "path": "work/search-return-combined-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "path": "work/search-return-combined-rollback-build.log",
+      "sha256": "f55a89e256c9cd3c1ca62764c1e2b273165b62d6aec5adcab0a3a85451d74dad",
+      "text": "vite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12061 modules transformed.\r\n\r\n(!) outDir C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\work\\search-return-combined-rollback-dist is not inside project root and will not be emptied.\r\nUse --emptyOutDir to override.\r\n\r\nrendering chunks...\r\ncomputing gzip size...\r\nwork/search-return-combined-rollback-dist/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\nwork/search-return-combined-rollback-dist/index.html                     0.57 kB │ gzip:   0.34 kB\r\nwork/search-return-combined-rollback-dist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\nwork/search-return-combined-rollback-dist/assets/index-DVfSZ04N.js   1,644.53 kB │ gzip: 458.63 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 9.77s\r\n"
+    },
+    {
+      "path": "work/search-return-combined-default.log",
+      "sha256": "062198b5c1b1a2762aec61802e6bc3c637f7a4f9b358692dfe2e885eec4a5962",
+      "text": "\r\nRunning 5 tests using 1 worker\r\n\r\n(node:14028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 1280px (7.5s)\r\n  ok 2 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 768px (7.2s)\r\n  ok 3 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 390px (5.5s)\r\n  ok 4 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 320px (6.8s)\r\n  ok 5 tests\\browser\\search-card-return.spec.ts:80:5 › PRD-16 browser Back restores a Viewer search but refuses retained criteria after an account change (2.2s)\r\n\r\n  5 passed (31.6s)\r\n"
+    },
+    {
+      "path": "work/search-return-combined-rollback.log",
+      "sha256": "156a0a27ea9e9cfc2ec50bd10db1c1b94b1aee02d41ea3995ea110058bb384f2",
+      "text": "\r\nRunning 5 tests using 1 worker\r\n\r\n(node:33904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 1280px (8.5s)\r\n  ok 2 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 768px (6.6s)\r\n  ok 3 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 390px (6.4s)\r\n  ok 4 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 320px (6.3s)\r\n  ok 5 tests\\browser\\search-card-return.spec.ts:80:5 › PRD-16 browser Back restores a Viewer search but refuses retained criteria after an account change (2.3s)\r\n\r\n  5 passed (32.8s)\r\n"
+    }
+  ],
+  "limits": "API tests use the previously built e234d3ad assembly, whose relevant API and API-test source is unchanged in this combined revision. Exact current immutable backend/release qualification remains hosted CI. Browser checks use controlled authorized fixtures, actual rendered compiled UI and unchanged strict assertions, zero retries.200% test coverage enlarges text; it does not claim a native browser zoom-control measurement.",
+  "user": "Internal Organization member/Contributor or Viewer returning from an admitted Search Card.",
+  "task": "Inspect Card, keep or discard its unsaved edits, return to the same Search entry, then refine the query.",
+  "reproducedProblem": "Search unmounted and lost submitted filters and unsent edits; normal Close could lose Search context. Reusing stale snapshots/cursors would be unsafe after account/access changes.",
+  "outcome": "All five unsent fields survive separately from applied criteria. Results are freshly authorized under the same account, restart first-page traversal and explain the refresh. Original Card dirty guard remains; denial/logout clear memory and transient failures offer an explicit bounded retry. Focus returns to fresh Card or stable feedback without stealing it after intervening input.",
+  "ownership": {
+    "prd": "PRD-16",
+    "slice": "PRD-16-VS-01",
+    "task": "PRD-16-VS-01-T-04",
+    "ux": [
+      "UX-003",
+      "UX-005",
+      "UX-006",
+      "UX-007",
+      "UX-008"
+    ],
+    "relatedConsumer": "PRD-09 Card details"
+  },
+  "boundaries": "One criteria-only tab-local record tied to actor/Organization/history entry. No result snapshots/cursors/grants or private search text serialized in URL/history/storage; optional expected-actor header refuses races before Search execution. No endpoint/body/event/schema change.",
+  "visual": "Actual rendered native Card/Search journey reviewed; four widths320/390/768/1280, keyboard,200% enlarged text, strict native focus viewport/hit bounds and Axe in both Work presentations. Existing shared sidebar awkward word wrapping at200% remains a separate shell polish lead.",
+  "qualification": "Scoped local passes only; full source/backend/PostgreSQL/roles/security/browser/performance/immutable-release CI, independent review and authorized target integration remain pending."
+}

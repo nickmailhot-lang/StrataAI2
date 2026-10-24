@@ -1,5 +1,27 @@
 # Consolidated PRD delivery report
 
+## 2026-10-23 — Search Card return implemented; PR125 security repair awaiting own full CI
+
+**PRD-16-VS-01-T-04** completes the existing admitted Search→Card→Close/Back→refine journey for Contributors and Viewers. Previously Search unmounted, lost submitted filters and unsent edits, and its links did not opt into the existing Card return behavior. All five draft fields now survive separately from the applied query, within one tab/account/Organization/history entry. Returning withholds private fields/results until fresh account checks and an authorized read succeed, restarts from the first page and explains the refresh. Fresh Card focus has viewport clearance; intervening input cancels asynchronous focus restoration. Missing results, transient retry, account/access loss, confirmed sign-out and the original Card dirty guard are covered.
+
+The optional expected-account request header rejects an account-change race before Search or acknowledgment execution. Existing clients may omit it. No endpoint/body/event/schema or tenant/role restriction changed. No result snapshots, cursors or grants are retained; search text is not serialized in URLs, history or browser storage. Owning PRD16VS01; related Card consumer PRD09; UX-003/005/006/007/008.
+
+| Metric | Status |
+| --- | --- |
+| Functional implementation | Combined application source **ce3ff58c68b137d52bc5070a0e5ea5ffd668d42b** contains the complete bounded return workflow and ordinary locked security patches. |
+| UX validation | Actual rendered Search/Card return reviewed. Compiled default and rollback journeys pass at320/390/768/1280px, keyboard,200% enlarged text, strict native-focus bounds/hit tests, Axe, Viewer and withdrawal. The200% evidence enlarges text; it does not claim a native browser zoom-control measurement. Actual service review used a compatible earlier disposable API; current immutable service qualification remains required. |
+| Local tests | Combined120 scoped components,43 unchanged Board cases,2 real ASP.NET HTTP cases,5+5 compiled browser cases; build/lint/browser types and installed/lock audits pass. API assembly was built at sourcee234d3ad; relevant API/test source is unchanged. Earlier21+21 broader browser passes retain their own prepatch revisions. |
+| Hosted qualification | Original PR125 source0f26de21 failed security audit on vulnerable Vitest/mocker5.0.2 and locked undici8.11.2. Patched to Vitest5.0.5/undici8.12.3; audits now zero. Its14 earlier passing checks and remaining active groups do not qualify the combined revision. Full own source/backend/PostgreSQL/role/security/browser/strict-performance/immutable-release gates remain required. |
+| Integration / MVP | DraftPR125 remains unmerged. T03 security rework and T04 Task/Test are **Testing**, criteria **Unverified**, **87Done unchanged**. No broader PRD closure or product-completion percentage. |
+
+Original failures remain Failed: initial premature focus, noncanonical new fixtures, zero-selected API invocation, clipped enlarged-text focus and wrapped rollback hit target. Fixes retain the strict parser, keyboard/hit/viewport assertions, roles, retries and deadlines. The dependency-only full local run had **3005pass/2five-second timeouts/24existing capacity skips**; both complete affected Board files then passed43 unchanged tests in isolation. That rerun does not relabel the original full run. Current full hosted qualification must pass independently. Original security input artifact provider/internal checksums were verified; skipped downstream scans were not called passed.
+
+[Combined local evidence](../delivery/evidence/search-card-return-combined-local.json), [retained UX failures](../delivery/evidence/search-card-return-retained-failures.json), [original security failure](../delivery/evidence/search-card-return-original-security-failed.json), [dependency repair](../delivery/evidence/search-card-return-security-patch.json), [failed full local run](../delivery/evidence/search-card-return-patched-full-local-failed.json). Reviewed viewport evidence: [320](../delivery/evidence/search-card-return-320.png), [390](../delivery/evidence/search-card-return-390.png), [768](../delivery/evidence/search-card-return-768.png), [1280](../delivery/evidence/search-card-return-1280.png).
+
+**Next:** finish this combined PR's own qualification first. The next demonstrated visual lead is awkward shared-sidebar word wrapping at enlarged text; reconcile shell ownership and demonstrate its navigation benefit before a separate narrow slice. Preserve both isolated source histories and all failed evidence; no duplicate PR or main integration is implied.
+
+---
+
 ## 2026-10-23 — Search tracking verified on committed93ce8ffa
 
 Draft [PR125](https://github.com/nickmailhot-lang/StrataAI2/pull/125) metadata passed **all36 delivery contracts,0failed/0skipped**, plus source/hash/baseline and actual PR-base history validation on **93ce8ffa**. Local final validator and generated report each exit0. [Complete metadata log](../delivery/evidence/search-applied-reviewed-ci-metadata.json).
