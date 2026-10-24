@@ -60,8 +60,10 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await openAdmittedReview(page.getByRole('link', { name: 'Organization settings', exact: true }), page.getByLabel(/^Organization name/));
     await expect(page.getByLabel(/^Organization name/)).toHaveValue('Organization metadata');
     const runtime = await context.request.get('/api/runtime'); expect(runtime.status()).toBe(200);
-    if ((await runtime.json()).mode === 'production')
-      await expect(page.getByText('Current settings checked. Review any saved changes before replacing them with your draft.', { exact: true })).toBeVisible();
+    expect(['production', 'demo']).toContain((await runtime.json()).mode);
+    // Both runtimes reconcile the initial live subscription. Finish that read
+    // before editing; an edit during it correctly requires explicit review.
+    await expect(page.getByText('Current settings checked. Review any saved changes before replacing them with your draft.', { exact: true })).toBeVisible();
     await page.getByLabel('Logo URL').fill('http://example.test/logo.png');
     await page.getByRole('button', { name: 'Save Organization settings' }).click();
     await expect(page.getByText('Use a secure HTTPS logo URL without embedded credentials, or leave it empty.')).toBeVisible();
