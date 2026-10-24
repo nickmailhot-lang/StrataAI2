@@ -87,3 +87,30 @@ it('survives StrictMode initialization and aborted effect replay without losing 
   saved();request.mockImplementation(async p=>p==='/me'?profile():page());mount(true);
   await screen.findByRole('link',{name:'Fresh Card'});expect(screen.getByRole('textbox',{name:'Card text'})).toHaveValue(draft.q);
 });
+it('keeps returned Card focus on safe feedback during background refresh, then on the fresh result',async()=>{
+  saved();queue();mount();const link=await screen.findByRole('link',{name:'Fresh Card'});await waitFor(()=>expect(link).toHaveFocus());
+  let finish!:(value:unknown)=>void;
+  request.mockResolvedValueOnce(profile()).mockImplementationOnce(()=>new Promise(r=>{finish=r;})).mockResolvedValueOnce(profile());
+  fireEvent(window,new Event('online'));await waitFor(()=>expect(finish).toBeTypeOf('function'));
+  expect(screen.getByRole('status')).toHaveFocus();expect(screen.queryByRole('link',{name:'Fresh Card'})).not.toBeInTheDocument();
+  await act(async()=>finish(page('Revalidated Card')));
+  await waitFor(()=>expect(screen.getByRole('link',{name:'Revalidated Card'})).toHaveFocus());
+  expect(screen.getByRole('textbox',{name:'Card text'})).toHaveValue(draft.q);
+});
+it.each([false,true])('keeps background refresh focus safe when the Card disappears or access is lost (%s)',async denied=>{
+  saved();queue();mount();await waitFor(()=>expect(screen.getByRole('link',{name:'Fresh Card'})).toHaveFocus());
+  if(denied)request.mockRejectedValueOnce(new WorkRequestError(403,null));else queue('unused',false);
+  fireEvent(window,new Event('online'));
+  await screen.findByText(denied?/Search is unavailable/:/0 results on this page/);
+  expect(screen.getByRole('status')).toHaveFocus();expect(screen.queryByRole('link',{name:'Fresh Card'})).not.toBeInTheDocument();
+  expect(screen.getByRole('textbox',{name:'Card text'})).toHaveValue(denied?'':draft.q);
+});
+it('does not reclaim background-refresh focus after intervening keyboard input',async()=>{
+  saved();queue();mount();await waitFor(()=>expect(screen.getByRole('link',{name:'Fresh Card'})).toHaveFocus());
+  let finish!:(value:unknown)=>void;
+  request.mockResolvedValueOnce(profile()).mockImplementationOnce(()=>new Promise(r=>{finish=r;})).mockResolvedValueOnce(profile());
+  fireEvent(window,new Event('online'));await waitFor(()=>expect(finish).toBeTypeOf('function'));
+  expect(screen.getByRole('status')).toHaveFocus();
+  const other=screen.getByRole('button',{name:'Other task'});act(()=>other.focus());fireEvent.keyDown(other,{key:'Tab'});
+  await act(async()=>finish(page()));await screen.findByRole('link',{name:'Fresh Card'});expect(other).toHaveFocus();
+});

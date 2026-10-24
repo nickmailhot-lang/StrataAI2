@@ -34,6 +34,14 @@ function SearchContent() {
   const epoch = useRef(0); const alive = useRef(false);
   const feedback = useRef<HTMLDivElement>(null); const paging = useRef<HTMLDivElement>(null);
   const load = useCallback(async (criteria: Criteria, after?: string, kind: 'use' | 'retry' | 'reconnect' = 'use', restoring?: SearchReturn) => {
+    // Revalidation withdraws old results. Keep a focused Card attached to safe
+    // feedback, then restore only its freshly admitted replacement. Any user
+    // input during the read releases that temporary focus ownership.
+    const focusedResult = [...links.current].find(([, node]) => node === document.activeElement);
+    if (focusedResult) {
+      returnFocus.current = focusedResult[0]; returnFocusAllowed.current = true;
+      focusBoardReturn(feedback.current);
+    }
     // Move focus before a paging control retires. Reads must not interrupt an
     // edited filter or reclaim focus later when an asynchronous result arrives.
     if (paging.current?.contains(document.activeElement)) {
@@ -135,7 +143,7 @@ function SearchContent() {
       <Button type="submit" variant="contained" disabled={busy || returning}>Search</Button>
     </Stack>
     <Stack ref={feedback} role="status" aria-live="polite" tabIndex={-1}
-      sx={{ '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 4, borderRadius: 1 } }}>{busy && <Typography>Searching…</Typography>}
+      sx={{ scrollMarginBlock: '8px', '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 4, borderRadius: 1 } }}>{busy && <Typography>Searching…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
       {page && <Typography>{page.items.length} result{page.items.length === 1 ? '' : 's'} on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
       {acknowledged && <Typography>Search acknowledged.</Typography>}

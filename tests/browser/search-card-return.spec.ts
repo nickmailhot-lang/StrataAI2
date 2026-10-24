@@ -65,6 +65,14 @@ for(const width of [1280,768,390,320]){
     await expect(page.getByRole('combobox',{name:'Match criteria'})).toHaveText('Match any');await expect(page.getByRole('combobox',{name:'Search scope'})).toHaveText('Archived work');
     await expect(page.getByText('Search refreshed from the first page.',{exact:true})).toBeVisible();
     const returned=new URLSearchParams(source.searches.at(-1));expect(returned.get('q')).toBe('landscaping');expect(returned.get('label')).toBe('maintenance');expect(returned.get('member')).toBe('council');expect(returned.get('match')).toBe('all');expect(returned.get('scope')).toBe('active');expect(returned.has('after')).toBe(false);
+    // A later automatic/online refresh must not drop the returned Card's
+    // keyboard focus to body while protected old results are withdrawn.
+    source.hold=true;await page.evaluate(()=>window.dispatchEvent(new Event('online')));
+    await expect.poll(()=>source.waiters.length).toBeGreaterThan(0);
+    await expect(page.getByRole('status')).toBeFocused();await expect(fresh).toHaveCount(0);
+    expect(await page.getByRole('status').evaluate(el=>{const r=el.getBoundingClientRect(),header=document.querySelector('header')?.getBoundingClientRect();
+      return r.top>=(header?.bottom??0)&&r.bottom<=innerHeight;})).toBe(true);
+    source.hold=false;source.waiters.splice(0).forEach(resolve=>resolve());await expect(fresh).toBeFocused();
     expect(await fresh.evaluate(el=>{const r=el.getBoundingClientRect(),header=document.querySelector('header')?.getBoundingClientRect();
       return r.top>=(header?.bottom??0)&&r.bottom<=innerHeight&&el.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));})).toBe(true);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
