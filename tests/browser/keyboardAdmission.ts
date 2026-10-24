@@ -180,7 +180,9 @@ export async function openAdmittedReview(button: Locator, dialog: Locator) {
     if (await dialog.isVisible()) return;
     // A successful opening can retire its launcher before the protected read
     // finishes. Observe the target instead of waiting on that retired control.
-    if (await button.isVisible() && await button.isEnabled()) {
+    // Bound the enabled query too: disappearance after isVisible must not
+    // consume the entire admission budget while the target becomes available.
+    if (await button.isVisible() && await button.isEnabled({ timeout: 500 })) {
       await button.focus({ timeout: 500 });
       await expect(button).toBeFocused({ timeout: 500 });
       await expect(button).toBeEnabled({ timeout: 500 });

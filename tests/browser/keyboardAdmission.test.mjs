@@ -195,7 +195,15 @@ class ReviewLauncher {
   focused = false;
   constructor(region, mode = 'normal') { this.region = region; this.mode = mode; }
   async isVisible() { return !this.region.visible; }
-  async isEnabled() { return true; }
+  async isEnabled(options) {
+    if (this.mode === 'retires-during-enabled') {
+      this.region.visible = true;
+      this.enabledTimeout = options?.timeout;
+      await new Promise(resolve => setTimeout(resolve, options?.timeout ?? 5_500));
+      throw new Error('Launcher retired while the review became available');
+    }
+    return true;
+  }
   async focus() {
     this.focuses++; this.focused = true;
     if (this.mode === 'opens-during-focus') this.region.visible = true;
@@ -224,6 +232,12 @@ test('an ignored review activation is retried only until its region opens', asyn
 test('an already-open region does not require its retired launcher', async () => {
   const region = new ReviewRegion(); region.visible = true; const launcher = new ReviewLauncher(region);
   await openAdmittedReview(launcher, region);
+  assert.equal(launcher.focuses, 0); assert.equal(launcher.presses, 0);
+});
+test('a review appearing between launcher visibility and enabled observation stays within admission budget', { timeout: 10_000 }, async () => {
+  const region = new ReviewRegion(), launcher = new ReviewLauncher(region, 'retires-during-enabled');
+  await openAdmittedReview(launcher, region);
+  assert.equal(region.visible, true); assert.equal(launcher.enabledTimeout, 500);
   assert.equal(launcher.focuses, 0); assert.equal(launcher.presses, 0);
 });
 test('review opening during focus cannot activate the retired launcher', async () => {
