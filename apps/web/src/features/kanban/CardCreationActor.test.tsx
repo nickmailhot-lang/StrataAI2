@@ -52,7 +52,9 @@ describe('PRD-08-VS-04 Card creation identity', () => {
     expect(writes).toHaveLength(2); expect(writes[0].path).toBe(`/lists/list/cards?expectedActorId=${actor}`);
     expect(writes[1]).toEqual(writes[0]); expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
     expect(fetcher.mock.calls.filter(([path]) => path === '/me')).toHaveLength(1);
-    expect(screen.getByRole('alert')).toHaveFocus();
+    // Private fields retire before MUI finishes exposing the background again.
+    // Require the accessible refusal and its owned focus after modal cleanup.
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveFocus());
   });
 
   it.each(['unavailable', 'invalid'] as const)('allows explicit entry retry after %s identity without exposing a form or writing', async scenario => {
