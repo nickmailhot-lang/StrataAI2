@@ -228,7 +228,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         shutil.copyfile(self.images/'build-metadata.json',self.root/'image-artifacts/build-metadata.json')
         for name in ('README.md','promotion-and-rollback.md'):
             shutil.copyfile(repo/'docs/release'/name,self.bundle/name)
-        assembly=(repo/'.github/workflows/ci.yml').read_text().split('      - name: Assemble release bundle\n',1)[1]
+        assembly=(repo/'.github/workflows/full-sanity.yml').read_text().split('      - name: Assemble release bundle\n',1)[1]
         snippet=re.search(r"(?ms)^          python3 - <<'PY'\n(.*?)^          PY$",assembly).group(1)
         result=subprocess.run([sys.executable,'-c',textwrap.dedent(snippet)],cwd=self.root,capture_output=True,timeout=15)
         self.assertEqual(result.returncode,0)
