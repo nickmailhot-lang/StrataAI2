@@ -325,3 +325,30 @@ test('duplicate native submits remain a failure without another activation', { t
   await assert.rejects(pressObservedValidation(button, form));
   assert.equal(button.presses, 1); assert.equal(form.submissions, 2); assert.equal(form.disposed, true);
 });
+
+test('a foreground refresh replacing a focused review launcher re-admits focus before one activation', async () => {
+  const region = new ReviewRegion();
+  class RefreshingReviewLauncher extends ReviewLauncher {
+    generation = 0;
+    focusedGeneration = -1;
+    async focus() {
+      this.focuses++;
+      this.focusedGeneration = this.generation;
+      // Protected metadata refresh retires the focused node before Enter.
+      if (this.focuses === 1) this.generation++;
+    }
+    async _expect(expression) {
+      const matches = !this.region.visible && (expression !== 'to.be.focused' || this.focusedGeneration === this.generation);
+      return { matches, received: matches, log: [], timedOut: !matches };
+    }
+    async press(key) {
+      assert.equal(this.focusedGeneration, this.generation, 'Never activate a replacement without fresh focus');
+      await super.press(key);
+    }
+  }
+  const launcher = new RefreshingReviewLauncher(region);
+  await openAdmittedReview(launcher, region);
+  assert.equal(region.visible, true);
+  assert.equal(launcher.focuses, 2);
+  assert.equal(launcher.presses, 1);
+});
