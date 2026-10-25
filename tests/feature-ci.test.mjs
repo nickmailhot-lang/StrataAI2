@@ -135,3 +135,14 @@ test('root test command forwards CLI flags through the npm workspace to the inst
   assert.equal(result.status, 0, result.stderr);
   assert.ok(result.stdout.includes(`vitest/${version}`), 'Flags must reach Vitest rather than being consumed by npm run');
 });
+
+test('all full-qualification .NET consumers install the verified SDK without floating channel resolution', () => {
+  const full = workflow('full-sanity');
+  for (const job of ['dotnet-quality', 'postgres-integration', 'security']) {
+    const setup = full.jobs[job].steps.filter(step => step.uses?.startsWith('actions/setup-dotnet@'));
+    assert.equal(setup.length, 1, `${job} must retain one SDK setup`);
+    assert.equal(setup[0].with['dotnet-version'], '10.0.402', `${job} must not resolve an unavailable floating release`);
+    assert.equal(setup[0].with.cache, true);
+    assert.equal(setup[0].with['cache-dependency-path'], '**/packages.lock.json');
+  }
+});
