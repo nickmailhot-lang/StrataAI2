@@ -128,3 +128,10 @@ test('qualification record rejects evidence from another revision or workflow ru
   assert.ok(steps.findIndex(step => step.name === 'Record exact revision and immutable images qualified by full sanity') > steps.findIndex(step => step.name === 'Verify bundle unchanged after startup smoke'));
   assert.equal(steps.find(step => step.name === 'Record exact revision and immutable images qualified by full sanity').if, undefined);
 });
+
+test('root test command forwards CLI flags through the npm workspace to the installed Vitest runner', () => {
+  const version = JSON.parse(readFileSync('node_modules/vitest/package.json', 'utf8')).version;
+  const result = spawnSync('npm', ['test', '--', '--help'], { encoding: 'utf8', timeout: 15_000 });
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(result.stdout.includes(`vitest/${version}`), 'Flags must reach Vitest rather than being consumed by npm run');
+});

@@ -11,7 +11,7 @@
     "delivery:report": "node scripts/delivery-progress.mjs report",
     "delivery:test": "node --test tests/delivery-progress.test.mjs",
     "build": "npm --workspace @strataai/web run build",
-    "test": "npm --workspace @strataai/web run test",
+    "test": "npm --workspace @strataai/web run test --",
     "typecheck": "npm --workspace @strataai/web run typecheck",
     "typecheck:browser": "tsc -p tsconfig.browser.json",
     "lint": "npm --workspace @strataai/web run lint"

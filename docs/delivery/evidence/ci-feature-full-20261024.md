@@ -29,3 +29,20 @@ Run 40136553493 on proposed head `0e8467e16732822437f6c83607b6d5ba242b30ac` fail
 Repair: point the existing assembly test at `full-sanity.yml`, retaining its real shell-snippet execution, exact-source links and bundle-integrity assertions. Also run its 47-case suite in the early selector preflight to catch this class of wiring regression before long integration work. No release/runtime assertions or failure conditions were weakened.
 
 Local repair checks: 47 release-artifact tests and 156 other report/evidence/recovery/provider/image-label tests pass (203 total). All 36 feature CI checks, Actionlint and whitespace checks pass. An additional attempt to run `release_auth_policy_test.py` fails locally because Docker Compose is absent (17 tests, 22 failing assertions/subtests); this is a local environment blocker, not claimed passing evidence. That unchanged suite still runs in hosted full sanity. Updated-head hosted qualification remains pending.
+
+## Dependency audit and feature test flag repair
+
+Run 40153286932 at proposed head `dd6b912a0a3dee1320572bec26c31b4d03aa1be4` passed selector/metadata, full web and .NET source quality, the complete PostgreSQL job and exact-image builds. Its security job failed `npm audit --audit-level=high`: Undici 8.11.2 had a high finding, while Vitest/@vitest/mocker 5.0.2 had moderate findings. Other integration work was still running when inspected. Retain the original security failure; do not treat passed source/image stages as a qualified release.
+
+Repair: pin the existing Vitest dependency to 5.0.5, keep its matching mocker/spy packages, and refresh the compatible transitive jsdom Undici dependency to 8.12.3 in the lockfile. Preserve original native-platform lock metadata that older local npm would otherwise drop. The maintainer advisories identify fixed lines at Vitest mocker 5.0.3 and Undici 8.12.2:
+
+- https://github.com/vitest-dev/vitest/security/advisories/GHSA-qxg6-89mg-rqv8
+- https://github.com/nodejs/undici/security/advisories/GHSA-xjj6-f33q-929c
+
+The actual local `npm audit --audit-level=moderate` now reports zero vulnerabilities. The security threshold and all security assertions remain unchanged.
+
+During validation, the root npm test wrapper consumed option arguments before the workspace runner. Add the npm argument separator so the fast CI `--changed` option reaches Vitest. A regression invokes the real root command with `--help` and requires the installed Vitest version in its output. The first probe used `--version` after the `run` subcommand, which did not exit early and timed out; `--help` is the supported bounded probe. The original unbounded local full-suite attempt was interrupted and rerun with two workers after fixing forwarding; neither interrupted attempt is passing evidence.
+
+Local validation: 395 combined CI contract checks pass, including the actual CLI forwarding regression; browser collection retains all 530 cases in 179 intact files and the complete four-shard union (133/135/131/131). TypeScript, browser TypeScript, lint, production build, generated runtime drift, Actionlint and locked-install dry run pass. The critical three-file unit baseline passes all 37 tests. Full patched unit-suite result is recorded below after completion. Hosted qualification of the new head remains mandatory; no parent PRD or MVP acceptance changes.
+
+Full patched frontend suite: 215 files passed and one existing capacity file deferred; 2,993 tests passed and the original 24 capacity tests remained skipped (3,017 total). The complete run used two workers and finished in 289.59 seconds. No new skipped cases or assertion/retry changes were introduced. This is local source evidence, separate from hosted release qualification.
