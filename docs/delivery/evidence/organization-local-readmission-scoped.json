@@ -1,0 +1,61 @@
+{
+  "revision": "8f9aa6acd33da767f781d4ca30b2a360954cd2bd",
+  "at": "2026-10-24T10:57:24.594Z",
+  "result": "Passed",
+  "command": "node --test keyboardAdmission.test.mjs boardReadTracker.test.mjs; eight native Chromium cases; browser types; lint",
+  "ownership": {
+    "prd": "PRD-03",
+    "slice": "PRD-03-VS-06",
+    "task": "PRD-03-VS-06-T-03",
+    "test": "PRD-03-VS-06-T-03-TEST-02",
+    "ux": [
+      "UX-003",
+      "UX-005",
+      "UX-006",
+      "UX-008"
+    ],
+    "liveRequirement": "https://github.com/nickmailhot-lang/StrataAI2/issues/3"
+  },
+  "tests": {
+    "contracts": 44,
+    "native": 8,
+    "widths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "enlargedText": "200%",
+    "retries": 0,
+    "skips": 0
+  },
+  "preserves": "Exactly one matched native click; ignored keypress may retry only before any click; post-click retirement, duplicate clicks, incorrect consumer outcome and unrelated click cannot cause replay. Original production Organization-action role, canonical state, no-write, Tab/ShiftTab, collapse, Axe and five-second/120-second predicates unchanged.",
+  "logs": [
+    {
+      "path": "work/organization-admission-final-contracts2.log",
+      "sha256": "6f6348adb59b86678941f13d6b296eef92ece2942ecef55cba48c05306b5afdb",
+      "text": "(node:19272) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/tests/browser/boardReadTracker.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ star admission observes either mutation verb once when it starts, independently of reply failure (2.0933ms)\r\n✔ star admission cannot be satisfied by reads, siblings, another Board or transport (0.5449ms)\r\n✔ star admission rejects a foreign origin even with the same Board path and method (0.3011ms)\r\n✔ filter command observation counts the actual Cards Apply/Clear route exactly once per request start (0.4745ms)\r\n✔ filter command observation rejects sibling routes, other Boards and reads (0.5899ms)\r\n✔ a foreign-origin filter request cannot satisfy same-origin command admission (0.4973ms)\r\n✔ a filter observer created before navigation qualifies the actual later page origin (2.4086ms)\r\n✔ event-driven readiness observes the qualified second response immediately and cleans up its listeners (4.9531ms)\r\n✔ read observation still fails on timeout or page closure without leaving listeners (21.3302ms)\r\n✔ late previous-screen responses cannot satisfy visibility bootstrap readiness (1.9031ms)\r\n✔ Card revision admission ignores previous screens, foreign data, errors and late older revisions (14.4988ms)\r\n(node:35608) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ an admitted action dispatches exactly one Enter and stops at the expected request (17.3097ms)\r\n✔ an ignored keypress admits one request and stops once that request starts (484.4761ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-enabled (2.692ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-focus (2.6222ms)\r\n✔ an extra request remains a failure even when the launcher has retired (5012.8271ms)\r\n✔ an unexpected initial observation cannot trigger another Enter (2.5779ms)\r\n✔ a control retired before activation is readmitted without replaying a click (107.0803ms)\r\n✔ local action observes one native activation and removes its listener (2.7623ms)\r\n✔ only an ignored local keypress is readmitted (476.7809ms)\r\n✔ local activation during focus cannot send another Enter to a retired control (1.4769ms)\r\n✔ a wrong consumer result after activation is not repaired by another activation (3.5805ms)\r\n✔ duplicate local activations remain a failure (5003.5368ms)\r\n✔ an unexpected click cannot be repaired by activating the observed control (4939.694ms)\r\n✔ a replacement local control cannot receive the original activation (4919.1198ms)\r\n✔ read-only Tab proves native traversal without focusing its destination (2.9605ms)\r\n✔ an unobserved Shift+Tab repeats from its admitted origin only (107.3934ms)\r\n✔ broken keyboard order still fails within the original five-second budget (4930.2338ms)\r\n✔ nonmutating activity review observes its inline region before returning (3.0525ms)\r\n✔ an ignored review activation is retried only until its region opens (120.3444ms)\r\n✔ an already-open region does not require its retired launcher (0.6703ms)\r\n✔ review opening during focus cannot activate the retired launcher (107.5867ms)\r\n✔ an unopened review remains a failure within the original admission budget (4923.7888ms)\r\n✔ admitted text dispatches one native input event and one insertion (5.0629ms)\r\n✔ only an ignored insertion with no input event can be attempted again (497.1487ms)\r\n✔ a draft cleared after native input still fails its value assertion without refilling (3.993ms)\r\n✔ a replacement control cannot receive the earlier input intent (4933.3046ms)\r\n✔ extra native input remains a failure and cannot trigger another insertion (5011.0217ms)\r\n✔ local validation observes one native submit and removes its listener (3.5866ms)\r\n✔ local validation retries only a keypress that emitted no submit (480.3401ms)\r\n✔ an observed validation submit during focus cannot dispatch another Enter (106.7132ms)\r\n✔ a submit that retires its form is not replayed while its result is pending (2.4898ms)\r\n✔ a retired validation form cannot send a key to a replacement control (4919.1084ms)\r\n✔ duplicate native submits remain a failure without another activation (5005.2885ms)\r\nℹ tests 44\r\nℹ suites 0\r\nℹ pass 44\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 53390.4668\r\n"
+    },
+    {
+      "path": "work/organization-admission-native-final.log",
+      "sha256": "7ef79115a669fc01d678d080476ffcd57cc2995cfc6a4f81ef990e197d21df9f",
+      "text": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test --config work/organization-admission-native.config.ts --output work/organization-admission-native-final-results\r\n\r\nRunning 8 tests using 1 worker\r\n\r\n(node:40376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 work\\organization-admission-native.spec.ts:3:80 › 320px native summary replacement before activation (1.3s)\r\n  ok 2 work\\organization-admission-native.spec.ts:3:80 › 320px native summary replacement after activation (426ms)\r\n  ok 3 work\\organization-admission-native.spec.ts:3:80 › 390px native summary replacement before activation (1.2s)\r\n  ok 4 work\\organization-admission-native.spec.ts:3:80 › 390px native summary replacement after activation (447ms)\r\n  ok 5 work\\organization-admission-native.spec.ts:3:80 › 768px native summary replacement before activation (1.3s)\r\n  ok 6 work\\organization-admission-native.spec.ts:3:80 › 768px native summary replacement after activation (522ms)\r\n  ok 7 work\\organization-admission-native.spec.ts:3:80 › 1280px native summary replacement before activation (1.1s)\r\n  ok 8 work\\organization-admission-native.spec.ts:3:80 › 1280px native summary replacement after activation (528ms)\r\n\r\n  8 passed (8.3s)\r\n"
+    },
+    {
+      "path": "work/organization-admission-final-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "path": "work/organization-admission-final-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    }
+  ],
+  "nativeFixture": {
+    "path": "work/organization-admission-native.spec.ts",
+    "source": "import {test,expect} from '@playwright/test';\nimport {pressObservedLocalAction} from '../tests/browser/keyboardAdmission';\nfor(const width of [320,390,768,1280])for(const mode of ['before','after'])test(`${width}px native summary replacement ${mode} activation`,async({page})=>{\n await page.setViewportSize({width,height:900});\n await page.setContent(`<style>body{font:200% sans-serif}summary{min-height:44px}</style><details open><summary>Organization actions</summary><a href=\"#settings\">Organization settings</a></details>`);\n await page.evaluate(mode=>{\n  const first=document.querySelector('summary')!;const details=document.querySelector('details')!;\n  document.documentElement.dataset.clicks='0';\n  const replace=()=>first.replaceWith(first.cloneNode(true));\n  document.addEventListener('click',()=>{document.documentElement.dataset.clicks=String(Number(document.documentElement.dataset.clicks)+1);},true);\n  if(mode==='after')details.addEventListener('toggle',()=>{if(!details.open)replace();},{once:true});\n  if(mode==='before')first.addEventListener('focus',replace,{once:true});\n },mode);\n await pressObservedLocalAction(page.locator('summary'));\n await expect(page.locator('details')).toHaveJSProperty('open',false);\n await expect(page.locator('html')).toHaveAttribute('data-clicks','1');\n await page.locator('summary').focus();await expect(page.locator('summary')).toBeFocused();\n await page.keyboard.press('Enter');await expect(page.getByRole('link',{name:'Organization settings'})).toBeVisible();\n await expect(page.locator('html')).toHaveAttribute('data-clicks','2');\n await page.screenshot({path:`work/organization-admission-native-${width}-${mode}.png`});\n});\r\n"
+  },
+  "visual": "Native summary fixture screenshot inspected at320px; proves browser activation only, not application visual acceptance. Existing actual application and Search four-width screenshots retain their original source scope. Native browser zoom still unverified.",
+  "qualification": "Own replacement complete CI and original Production role workflow remain required. No source application, API, event, schema, permissions or command changes in this correction."
+}

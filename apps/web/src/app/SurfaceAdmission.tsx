@@ -10,6 +10,7 @@ import { forgetOrganizationRetentionPolicyChanges } from '../features/records/re
 import { forgetOrganizationRetentionSourceClassifications } from '../features/records/retentionSourceRecovery';
 import { forgetHoldIntents } from '../features/records/retentionHoldClient';
 import { signInReturnPath } from '../features/auth/signInReturnPath';
+import { forgetSearchReturn } from '../features/search/searchReturn';
 
 type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previouslyAdmitted?: boolean };
 
@@ -48,6 +49,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       forgetOrganizationRetentionPolicyChanges(organizationId);
       forgetOrganizationRetentionSourceClassifications(organizationId);
       forgetHoldIntents(undefined, organizationId);
+      forgetSearchReturn(organizationId);
     }
   }, [surface, organizationId, scope, result]);
   const theme = useTheme();
@@ -72,8 +74,10 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       // Only a fresh authenticated HTTP refusal redirects; membership/Portal
       // denial and transport uncertainty do not become a sign-out decision.
       void boundedWorkRead(signal=>workRequest<unknown>('/me',{signal}),controller.signal).catch(reason=>{
-        if (!retired && !controller.signal.aborted && reason instanceof WorkRequestError && reason.status===401)
+        if (!retired && !controller.signal.aborted && reason instanceof WorkRequestError && reason.status===401) {
+          forgetSearchReturn();
           navigate('/login',{replace:true,state:sessionReturn.current ? {returnTo:sessionReturn.current} : undefined});
+        }
       }).finally(()=>{if(sessionPending===controller)sessionPending=undefined;});
     };
     confirmSession.current=checkSession;

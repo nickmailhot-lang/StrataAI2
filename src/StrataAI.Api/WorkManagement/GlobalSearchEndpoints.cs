@@ -11,6 +11,12 @@ public static partial class WorkManagementEndpoints
         {
             context.Response.Headers.CacheControl = "private, no-store";
             var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            // Existing clients may omit the header. Browser reads bind to the
+            // freshly checked actor before criteria are evaluated or recorded.
+            if (context.Request.Headers.TryGetValue("X-StrataAI-Expected-Actor", out var expected)
+                && (expected.Count != 1 || !Guid.TryParse(expected[0], out var expectedActor)
+                    || expectedActor == Guid.Empty || expectedActor != actor.Value))
+                return ErrorFor("session_unavailable");
             var mode = (match ?? "all").ToLowerInvariant();
             var lifecycle = (scope ?? "active").ToLowerInvariant() switch
             {

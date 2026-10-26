@@ -1,0 +1,49 @@
+{
+  "revision": "b70bcd75bc9f1ec7e440b0540aa6f912099e3c24",
+  "at": "2026-10-24T01:05:08.129Z",
+  "result": "Passed",
+  "scope": "Bounded local validation; not full hosted qualification, independent approval, integration or MVP acceptance.",
+  "review": "Bounded developer visual and interaction review; no independent human or screen-reader acceptance claimed.",
+  "screenshots": [
+    {
+      "width": 320,
+      "textSize": "200%",
+      "path": "docs/delivery/evidence/search-applied-reviewed-320.png",
+      "sha256": "9e5a3fd275c4fa80a8371c867330201daeb3534f633eadd84f056d96210983ec"
+    },
+    {
+      "width": 390,
+      "textSize": "200%",
+      "path": "docs/delivery/evidence/search-applied-reviewed-390.png",
+      "sha256": "0a1ef596e47c3fe770dc0983beb8cf24f9106ef04344245e274c2b71d7d2ecd3"
+    },
+    {
+      "width": 768,
+      "textSize": "200%",
+      "path": "docs/delivery/evidence/search-applied-reviewed-768.png",
+      "sha256": "0fd49e40811417ed606c7d5b2da7b2d1d51fb65b383e9bf59506dc4d1f1d067d"
+    },
+    {
+      "width": 1280,
+      "textSize": "200%",
+      "path": "docs/delivery/evidence/search-applied-reviewed-1280.png",
+      "sha256": "2e97eb609b21ca52a080f056cc6c62a9b881e13a565c55e85c30c4c378738e44"
+    }
+  ],
+  "journeys": [
+    "Current1975 Demo: Organization → Council Operations → Card title draft → Close → discard prompt → discard temporary review edit → original unchanged Card link receives focus.",
+    "Compiled15390515 QA: header Search → landscaping → admitted landscaping result → edit roof → original result remains with unapplied-filter explanation. No edit-triggered submission.",
+    "QA Settings: insecure logo URL → submit → field-specific validation plus safe reference and field focus; draft retained. Clear invalid draft → Load current settings → current settings match draft."
+  ],
+  "visual": "320/390/768/1280 screenshots at200% inspected. Notice and result text wrap without horizontal page overflow; focus remains on edited field. Existing shared sidebar labels split words at200% on tablet/desktop; record as separate shell polish lead, not a new defect introduced or closed by this slice.",
+  "nextDemonstratedGap": {
+    "journey": "Search landscaping → edit roof without submit → open admitted result → Close → Board → browser Back → Search",
+    "observed": "Search is reset to first-use; draft and prior criteria/results are lost.",
+    "nextSlice": "Reconcile existing Search return/session-state ownership. Preserve actor/Organization-bound draft and submitted criteria, revalidate results on return, restore focus only to an admitted result, clear on account/scope/access loss, never persist protected result snapshots in URLs/storage. Existing routes and Board return contracts stay authoritative."
+  },
+  "pr124": {
+    "head": "1b510bc092848770ee2d66f03b068684b39afe93",
+    "state": "Draft and unmerged",
+    "lastObserved": "21 checks passed; release-bundle in progress. Earlier external registry502 retained in existing audit. This PR cannot qualify the new Search head."
+  }
+}

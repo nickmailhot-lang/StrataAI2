@@ -176,6 +176,20 @@ it('withholds history when the post-read account changes and publishes denial', 
   await waitFor(() => expect(denied).toHaveBeenCalledTimes(1));
   expect(screen.queryByText('You changed your Board star (revision 1).')).not.toBeInTheDocument();
 });
+it('keeps the opener available when a queued identity refresh coincides with closing history', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : page)));
+  render(<Dialog open transitionDuration={0}><BoardStarHistory {...props} /></Dialog>);
+  const review = screen.getByRole('button', { name: 'Review your star history' });
+  fireEvent.click(review); await screen.findByRole('listitem');
+  const close = screen.getByRole('button', { name: 'Close star history' });
+  act(() => {
+    vi.mocked(watchIdentity).mock.calls[0][0].invalidate();
+    close.focus(); fireEvent.click(close);
+  });
+  await waitFor(() => expect(review).toBeEnabled());
+  await waitFor(() => expect(review).toHaveFocus());
+  expect(screen.queryByRole('region', { name: 'Your star history' })).not.toBeInTheDocument();
+});
 it('returns focus when closed during a pending read and fences the late private page', async () => {
   let finish!: (value: Response) => void; let signal: AbortSignal | undefined;
   vi.stubGlobal('fetch', vi.fn(async (path: string, options?: RequestInit) => {
@@ -202,6 +216,13 @@ it('aborts on admission withdrawal and ignores a late protected page', async () 
   fireEvent.click(screen.getByRole('button', { name: 'Review your star history' }));
   await waitFor(() => expect(finish).toBeDefined());
   view.rerender(<BoardStarHistory {...props} unavailable />);
-  expect(signal?.aborted).toBe(true); finish(response(page));
+  expect(signal?.aborted).toBe(true);
+  expect(screen.getByRole('region', { name: 'Your star history' })).toHaveAttribute('aria-busy', 'false');
+  fireEvent.click(screen.getByRole('button', { name: 'Close star history' }));
+  expect(screen.getByRole('button', { name: 'Review your star history' })).toBeDisabled();
+  view.rerender(<BoardStarHistory {...props} />);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Review your star history' })).toHaveFocus());
+  expect(screen.getByRole('button', { name: 'Review your star history' })).toBeEnabled();
+  finish(response(page));
   await waitFor(() => expect(screen.queryByText('You changed your Board star (revision 1).')).not.toBeInTheDocument());
 });
