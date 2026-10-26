@@ -183,3 +183,20 @@ export async function openFocusedInvitationReview(launcher: Locator, dialog: Loc
     await expect(cancel).toBeFocused({ timeout: 500 });
   }).toPass({ timeout: 5_000 });
 }
+
+// Collapsing a native disclosure is read-only. Re-admit its current control if
+// a protected foreground refresh replaces it; never toggle an already-closed
+// disclosure or use this state-based helper for a business submission.
+export async function closeAdmittedDisclosure(launcher: Locator, details: Locator) {
+  await expect(async () => {
+    await expect(launcher).toBeVisible({ timeout: 500 });
+    if (await details.getAttribute('open', { timeout: 500 }) !== null) {
+      await launcher.focus({ timeout: 500 });
+      await expect(launcher).toBeFocused({ timeout: 500 });
+      await expect(launcher).toBeEnabled({ timeout: 500 });
+      if (await details.getAttribute('open', { timeout: 500 }) !== null)
+        await launcher.press('Enter', { timeout: 500 });
+    }
+    await expect.poll(() => details.getAttribute('open', { timeout: 500 }), { timeout: 500 }).toBeNull();
+  }).toPass({ timeout: 5_000 });
+}

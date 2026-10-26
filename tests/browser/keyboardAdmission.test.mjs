@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { expect } from '@playwright/test';
-import { fillAdmittedInput, openAdmittedReview, pressObservedLocalAction, pressObservedRequest, pressObservedValidation, tabAdmittedFocus } from './keyboardAdmission.ts';
+import { closeAdmittedDisclosure, fillAdmittedInput, openAdmittedReview, pressObservedLocalAction, pressObservedRequest, pressObservedValidation, tabAdmittedFocus } from './keyboardAdmission.ts';
 
 // The real Playwright expectations/polling drive this isolated Locator protocol
 // fixture. Product browser cases separately prove native UI and HTTP behavior.
@@ -351,4 +351,39 @@ test('a foreground refresh replacing a focused review launcher re-admits focus b
   assert.equal(region.visible, true);
   assert.equal(launcher.focuses, 2);
   assert.equal(launcher.presses, 1);
+});
+
+class DisclosureLauncher extends ReviewLauncher {
+  open = true;
+  generation = 0;
+  focusedGeneration = -1;
+  async getAttribute() { return this.open ? '' : null; }
+  async focus() {
+    this.focuses++; this.focusedGeneration = this.generation;
+    if (this.mode === 'replaced-during-focus' && this.focuses === 1) this.generation++;
+    if (this.mode === 'closed-during-focus') this.open = false;
+  }
+  async _expect(expression) {
+    const matches = expression !== 'to.be.focused' || this.focusedGeneration === this.generation;
+    return { matches, received: matches, log: [], timedOut: !matches };
+  }
+  async press(key) {
+    assert.equal(key, 'Enter'); assert.equal(this.focusedGeneration, this.generation);
+    this.presses++; this.open = !this.open;
+  }
+}
+test('disclosure replacement requires fresh focus and exactly one native collapse', async () => {
+  const control = new DisclosureLauncher(new ReviewRegion(), 'replaced-during-focus');
+  await closeAdmittedDisclosure(control, control);
+  assert.equal(control.open, false); assert.equal(control.focuses, 2); assert.equal(control.presses, 1);
+});
+test('an already-collapsed disclosure is not reopened', async () => {
+  const control = new DisclosureLauncher(new ReviewRegion()); control.open = false;
+  await closeAdmittedDisclosure(control, control);
+  assert.equal(control.focuses, 0); assert.equal(control.presses, 0);
+});
+test('a refresh collapsing the disclosure during focus cannot toggle it open again', async () => {
+  const control = new DisclosureLauncher(new ReviewRegion(), 'closed-during-focus');
+  await closeAdmittedDisclosure(control, control);
+  assert.equal(control.open, false); assert.equal(control.presses, 0);
 });
