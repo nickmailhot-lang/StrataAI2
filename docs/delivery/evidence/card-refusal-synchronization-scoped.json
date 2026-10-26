@@ -1,0 +1,58 @@
+{
+  "revision": "5596cb36fd01911d40cec5d8ab35ed48d35ac01e",
+  "at": "2026-10-24T16:08:06.898Z",
+  "result": "Passed",
+  "command": "CardCreationActor7 cases before/after; unchanged-oracle check; lint and types",
+  "user": "Authenticated Card creator recovering an uncertain save under the original account, then receiving definitive account refusal.",
+  "entry": "Board/List → Add card → Create → lost acknowledgment → explicit original retry → private withdrawal → accessible focused sign-in feedback.",
+  "ownership": {
+    "prd": "PRD-08",
+    "slice": "PRD-08-VS-04",
+    "task": "PRD-08-VS-04-T-01",
+    "test": "PRD-08-VS-04-T-01-TEST-02",
+    "ux": [
+      "UX-005",
+      "UX-006",
+      "UX-008"
+    ]
+  },
+  "correction": "Only the final accessible feedback/focus assertion awaits asynchronous modal cleanup. Application source and original command/account/privacy behavior unchanged.",
+  "oracles": {
+    "result": "Passed",
+    "base": "c06dface1b6db432eb62a603c1f7bf406f51c112",
+    "path": "apps/web/src/features/kanban/CardCreationActor.test.tsx",
+    "preservedExpectationCalls": 31,
+    "change": "Only await the identical accessible-role/focus assertion using the existing Testing Library bounded wait. No hidden-role allowance, focus operation, action/retry, skip, test timeout or default-wait override added."
+  },
+  "tests": {
+    "before": 7,
+    "after": 7,
+    "skips": 0,
+    "retries": 0,
+    "interpretation": "The unchanged local baseline also passes7, documenting intermittent scheduling rather than a deterministic local reproduction. It does not erase the own hosted failure. The corrected7 pass and static31-expectation preservation qualify only this local scope; own complete replacement frontend and CI remain mandatory."
+  },
+  "logs": [
+    {
+      "path": "work/card-creation-actor-before.log",
+      "sha256": "7fcdfeba9f3f032cadbbcc270f3452d3d69a36638d3c6def65e9b134000ef687",
+      "text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/CardCreationActor.test.tsx\r\n\r\n RUN  v5.0.5 C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/apps/web\r\n\r\n\r\n Test Files  1 passed (1)\r\n      Tests  7 passed (7)\r\n   Start at  09:01:19\r\n   Duration  115.61s (import 55%, environment 33%, setup 6%, tests 5%, transform 1%)\r\n\r\n"
+    },
+    {
+      "path": "work/card-creation-actor-after.log",
+      "sha256": "77833ac75a865aadd3dbaf3be9c59c8f510340144c747bf1f3506d22b42a9402",
+      "text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/CardCreationActor.test.tsx\r\n\r\n RUN  v5.0.5 C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/apps/web\r\n\r\n\r\n Test Files  1 passed (1)\r\n      Tests  7 passed (7)\r\n   Start at  09:03:07\r\n   Duration  57.85s (import 83%, tests 10%, environment 4%, transform 2%, setup 1%)\r\n\r\n"
+    },
+    {
+      "path": "work/card-creation-actor-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "path": "work/card-creation-actor-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624",
+      "text": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\n"
+    }
+  ],
+  "visual": "Test-only synchronization; no rendered application changes. Preserve prior actual Card/refusal responsive evidence at its recorded source, including original035 browser group1. No new native200% zoom acceptance.",
+  "limits": "Full replacement3027-case frontend, backend, PostgreSQL, security, Production browser, six strict performance profiles, immutable release, independent review and authorized integration still required."
+}

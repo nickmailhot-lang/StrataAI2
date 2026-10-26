@@ -1,0 +1,17 @@
+{
+  "revision": "35c1775ac5a2ea2f8ac6a73c348a45fe41bac0e1",
+  "at": "2026-10-23T17:34:13.459577+00:00",
+  "result": {
+    "merged": true,
+    "sha": "f1cd09ee80e91379a575a051835784d829af9565"
+  },
+  "actualTree": "88dbdc642b4fa52162f70453795f1e96c14743d8",
+  "parents": [
+    "ad992105a5f0068f9f3a32e5d7519271e32b5cb6",
+    "35c1775ac5a2ea2f8ac6a73c348a45fe41bac0e1"
+  ],
+  "testedSynthetic": "23f1cf65e7c4cd5bc5ba0ed1193062d13af0a451",
+  "originMainAncestry": "Passed",
+  "normalExpectedHeadMerge": "Passed",
+  "limits": "Six bounded increments only; no global MVP or parent PRD closure."
+}

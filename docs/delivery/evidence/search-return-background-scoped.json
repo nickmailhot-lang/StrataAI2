@@ -1,0 +1,98 @@
+{
+  "revision": "b47e580e72f6af5de2d5614293287b5364ad6590",
+  "at": "2026-10-24T03:26:41.518Z",
+  "result": "Passed",
+  "applicationRevision": "fcc77e031f80b936ff8b29f7a70d9623b35fa2a0",
+  "pointerTestRevision": "b47e580e72f6af5de2d5614293287b5364ad6590",
+  "components": {
+    "passed": 124,
+    "files": 8,
+    "scope": "Prepared core fix against11933, before the later feedback scroll-margin-only adjustment; exact current full hosted suite remains required."
+  },
+  "browser": {
+    "defaultBroader": 21,
+    "defaultPointerAndRealInterval": 1,
+    "rollbackBroader": 22,
+    "retries": 0,
+    "scope": "Compiledfcc77 app. Default21 usedfcc77 tests; appended pointer test and rollback22 useb47e580e. Four widths,200% enlarged text, held background read privacy/focus, viewport/hit checks, original Card guard, Viewer/account withdrawal and Axe. Native browser zoom not claimed."
+  },
+  "quality": {
+    "lint": 0,
+    "browserTypes": 0,
+    "build": 0
+  },
+  "screenshots": [
+    {
+      "width": 320,
+      "path": "docs/delivery/evidence/search-return-background-320.png",
+      "sha256": "a94da399830af2fb89d1cda8f4b75f961a7d1122e2c8cd9d012e22592c38b1e0",
+      "kind": "Actual viewport after held background revalidation and native focus restoration at200% text."
+    },
+    {
+      "width": 390,
+      "path": "docs/delivery/evidence/search-return-background-390.png",
+      "sha256": "ed8310346d4bba0bfd2ee04d5ce41c7d9d7e5b4355ca2214c0ff43a22d5998ee",
+      "kind": "Actual viewport after held background revalidation and native focus restoration at200% text."
+    },
+    {
+      "width": 768,
+      "path": "docs/delivery/evidence/search-return-background-768.png",
+      "sha256": "768914e1307188515cb3c29ae3b91090c7e7a823a3e8a44995a2fb598d9f6275",
+      "kind": "Actual viewport after held background revalidation and native focus restoration at200% text."
+    },
+    {
+      "width": 1280,
+      "path": "docs/delivery/evidence/search-return-background-1280.png",
+      "sha256": "655039ab54ebe435626b710899aaf798436729c6e058320a2eef7e619000bf21",
+      "kind": "Actual viewport after held background revalidation and native focus restoration at200% text."
+    }
+  ],
+  "logs": [
+    {
+      "path": "work/search-return-background-consumers.log",
+      "sha256": "5fb2d1de741c1af4fedd7030673a41a8738196c4e1efd08993ca68ff2b128032",
+      "text": "\r\n RUN  v5.0.5 C:/Users/nickm/Documents/Codex/2026-10-23/strata-ux-review/apps/web\r\n\r\n\r\n Test Files  8 passed (8)\r\n      Tests  124 passed (124)\r\n   Start at  20:12:30\r\n   Duration  120.68s (import 40%, tests 37%, environment 19%, setup 4%, transform 1%)\r\n\r\n     Import  53 modules were evaluated 160 times · 46.73s total, 40% of tracked time\r\n             ~31.25s faster with isolate: false — shared modules are evaluated once per worker instead of once per file\r\n             learn more: https://vitest.dev/guide/improving-performance#test-isolation\r\n\r\n"
+    },
+    {
+      "path": "work/search-return-background-build.log",
+      "sha256": "aa835b1f62a1bb3abfb793f1e4487f2ff45b49516c4738b13fe893f331eaa3de",
+      "text": "npm notice run @strataai/web@0.1.0 build\r\nnpm notice run tsc --noEmit && vite build\r\nvite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12061 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.34 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-DywWoR_J.js   1,649.05 kB │ gzip: 460.02 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 11.19s\r\n"
+    },
+    {
+      "path": "work/search-return-background-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "path": "work/search-return-background-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "path": "work/search-return-background-last-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "path": "work/search-return-background-default.log",
+      "sha256": "f8f292de9f326e9491f84f536fd4406e32f150fe70fe7dd606236a8da7fd6428",
+      "text": "\r\nRunning 21 tests using 1 worker\r\n\r\n(node:36268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok  1 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 1280px (5.6s)\r\n  ok  2 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 768px (3.7s)\r\n  ok  3 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 390px (2.9s)\r\n  ok  4 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 320px (3.0s)\r\n  ok  5 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 1280px (7.3s)\r\n  ok  6 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 768px (7.7s)\r\n  ok  7 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 390px (6.4s)\r\n  ok  8 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 320px (6.2s)\r\n  ok  9 tests\\browser\\search-card-return.spec.ts:88:5 › PRD-16 browser Back restores a Viewer search but refuses retained criteria after an account change (2.0s)\r\n  ok 10 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 1280px (5.0s)\r\n  ok 11 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px (5.1s)\r\n  ok 12 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 768px (5.1s)\r\n  ok 13 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px (5.0s)\r\n  ok 14 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 390px (4.7s)\r\n  ok 15 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px (4.3s)\r\n  ok 16 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 320px (4.1s)\r\n  ok 17 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px (4.3s)\r\n  ok 18 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 1280px (5.5s)\r\n  ok 19 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 768px (5.1s)\r\n  ok 20 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 390px (4.9s)\r\n  ok 21 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 320px (4.6s)\r\n\r\n  21 passed (1.8m)\r\n"
+    },
+    {
+      "path": "work/search-return-background-pointer.log",
+      "sha256": "c6311e64ad9e4d87ffcab64b8573be046357581ad4373de720d920279ee96e23",
+      "text": "\r\nRunning 1 test using 1 worker\r\n\r\n(node:34960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\search-card-return.spec.ts:96:5 › PRD-16 pointer Close and actual interval refresh preserve the returned Search target (12.8s)\r\n\r\n  1 passed (15.2s)\r\n"
+    },
+    {
+      "path": "work/search-return-background-rollback-build.log",
+      "sha256": "03e8ec743e3a677819d85bb07c4593d5b3a0bab96360225c51cc8cc7a133ccd7",
+      "text": "vite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12061 modules transformed.\r\n\r\n(!) outDir C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\work\\search-return-combined-rollback-dist is not inside project root and will not be emptied.\r\nUse --emptyOutDir to override.\r\n\r\nrendering chunks...\r\ncomputing gzip size...\r\nwork/search-return-combined-rollback-dist/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\nwork/search-return-combined-rollback-dist/index.html                     0.57 kB │ gzip:   0.34 kB\r\nwork/search-return-combined-rollback-dist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\nwork/search-return-combined-rollback-dist/assets/index-DU6trqZZ.js   1,644.66 kB │ gzip: 458.67 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 13.86s\r\n"
+    },
+    {
+      "path": "work/search-return-background-rollback-correct.log",
+      "sha256": "c4462b4931fef0c8426fcb39568348f37bc379a6fd3a6a432ae82213df8866e0",
+      "text": "\r\nRunning 22 tests using 1 worker\r\n\r\n(node:16932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok  1 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 1280px (4.4s)\r\n  ok  2 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 768px (3.8s)\r\n  ok  3 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 390px (3.4s)\r\n  ok  4 tests\\browser\\search-applied-context.spec.ts:14:7 › PRD-16 applied Search context survives edited filters and withdraws safely at 320px (2.9s)\r\n  ok  5 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 1280px (6.0s)\r\n  ok  6 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 768px (6.0s)\r\n  ok  7 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 390px (6.1s)\r\n  ok  8 tests\\browser\\search-card-return.spec.ts:38:7 › PRD-16 Search Card return preserves drafts and refreshes authorized results at 320px (6.5s)\r\n  ok  9 tests\\browser\\search-card-return.spec.ts:88:5 › PRD-16 browser Back restores a Viewer search but refuses retained criteria after an account change (1.9s)\r\n  ok 10 tests\\browser\\search-card-return.spec.ts:96:5 › PRD-16 pointer Close and actual interval refresh preserve the returned Search target (11.7s)\r\n  ok 11 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 1280px (5.1s)\r\n  ok 12 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px (5.9s)\r\n  ok 13 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 768px (4.7s)\r\n  ok 14 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px (4.9s)\r\n  ok 15 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 390px (4.1s)\r\n  ok 16 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px (4.3s)\r\n  ok 17 tests\\browser\\trello-card-search.spec.ts:78:7 › PRD-09 Trello Card context, dirty return and private withdrawal at 320px (4.1s)\r\n  ok 18 tests\\browser\\trello-card-search.spec.ts:122:7 › PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px (4.8s)\r\n  ok 19 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 1280px (5.1s)\r\n  ok 20 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 768px (5.2s)\r\n  ok 21 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 390px (4.8s)\r\n  ok 22 tests\\browser\\ux-search-guidance.spec.ts:11:7 › UX-007 Search first-use, empty continuation and safe recovery at 320px (4.5s)\r\n\r\n  22 passed (1.9m)\r\n"
+    }
+  ],
+  "limits": "Scoped controlled passes only. Live later background-tab focus remains unresolved and native zoom/foreground review blocked. Full own hosted source/backend/PostgreSQL/role/security/browser/performance/release, independent review and authorized integration remain required."
+}

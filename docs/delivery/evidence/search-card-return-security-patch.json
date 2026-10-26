@@ -1,0 +1,85 @@
+{
+  "revision": "3de35d17529d6a9b2548edff80dcf249c3e1f923",
+  "at": "2026-10-24T03:02:31.560Z",
+  "result": "Passed",
+  "scope": "Exact recorded local source only; full hosted qualification, independent review and authorized integration remain separate.",
+  "implementation": "3de35d17",
+  "versions": {
+    "vitest": "5.0.5",
+    "undici": "8.12.3"
+  },
+  "isolatedRuntime": "Owned locked dependency install; prior other-checkout dependency junction targets remain untouched.",
+  "quality": {
+    "build": 0,
+    "lint": 0,
+    "browserTypes": 0,
+    "audit": 0
+  },
+  "lockAudit": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {},
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "dependencies": {
+        "prod": 195,
+        "dev": 208,
+        "optional": 27,
+        "peer": 8,
+        "peerOptional": 0,
+        "total": 402
+      }
+    }
+  },
+  "installedAudit": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {},
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "dependencies": {
+        "prod": 195,
+        "dev": 208,
+        "optional": 27,
+        "peer": 8,
+        "peerOptional": 0,
+        "total": 402
+      }
+    }
+  },
+  "logs": [
+    {
+      "path": "work/pr125-locked-install.log",
+      "sha256": "9c4fde48043bd44eb013c955f0d9170ecd7b3a81da00e0b343271db425d2c688",
+      "text": "\r\nadded 376 packages, and audited 378 packages in 5m\r\n\r\n135 packages are looking for funding\r\n  run `npm fund` for details\r\n\r\nfound 0 vulnerabilities\r\n"
+    },
+    {
+      "path": "work/pr125-patched-build.log",
+      "sha256": "345a7a96990d882543c9596aa447a660445f06d21fa536b6a1d9b63a3a13b502",
+      "text": "npm notice run strataai2@0.1.0 build\r\nnpm notice run npm --workspace @strataai/web run build\r\nnpm notice run @strataai/web@0.1.0 build\r\nnpm notice run tsc --noEmit && vite build\r\nvite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12060 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.34 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-DpEFf0jG.js   1,646.52 kB │ gzip: 459.21 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 13.28s\r\n"
+    },
+    {
+      "path": "work/pr125-patched-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "path": "work/pr125-patched-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    }
+  ],
+  "limits": "Security-only source3de35d17 local checks; complete current container scans remain required."
+}

@@ -69,32 +69,54 @@ test('an unexpected initial observation cannot trigger another Enter', async () 
 });
 
 class LocalAction extends Locator {
-  node = Object.assign(new EventTarget(), { isConnected: true });
+  document = new EventTarget();
+  node = Object.assign(new EventTarget(), { isConnected: true, ownerDocument: this.document });
   observation;
   disposed = false;
   result = 'original';
   async evaluateHandle(callback) {
     const observed = callback(this.node); this.observation = observed;
-    return { evaluate: async fn => fn(observed), dispose: async () => { this.disposed = true; } };
+    return { evaluate: async (fn, arg) => fn(observed, arg?.fixtureNode ?? arg), dispose: async () => { this.disposed = true; } };
+  }
+  async elementHandle() {
+    const node = this.node;
+    return { fixtureNode: node, evaluate: async fn => fn(node), press: async key => {
+      assert.equal(node, this.node); await this.press(key);
+    }, dispose: async () => {} };
+  }
+  click() {
+    this.node.dispatchEvent(new Event('click'));
+    const event = new Event('click'); event.composedPath = () => [this.node, this.document];
+    this.document.dispatchEvent(event);
   }
   async focus() {
     this.focuses++;
     if (this.mode === 'replaced') this.node.isConnected = false;
-    if (this.mode === 'activated-during-focus') { this.node.dispatchEvent(new Event('click')); this.retired = true; }
+    if (this.mode === 'readmitted' && this.focuses === 1) {
+      this.node.isConnected = false;
+      this.node = Object.assign(new EventTarget(), { isConnected: true, ownerDocument: this.document });
+    }
+    if (this.mode === 'activated-during-focus') { this.click(); this.retired = true; }
+    if (this.mode === 'unexpected-click') this.document.dispatchEvent(new Event('click'));
   }
   async press(key) {
     assert.equal(key, 'Enter'); assert.equal(this.node.isConnected, true); this.presses++;
     if (this.mode === 'ignored-first' && this.presses === 1) return;
-    this.node.dispatchEvent(new Event('click'));
-    if (this.mode === 'duplicate') this.node.dispatchEvent(new Event('click'));
+    this.click();
+    if (this.mode === 'duplicate') this.click();
     if (this.mode !== 'wrong-result') this.result = 'current';
     this.retired = true;
   }
 }
+test('a control retired before activation is readmitted without replaying a click', { timeout: 10_000 }, async () => {
+  const button = new LocalAction('readmitted'); await pressObservedLocalAction(button);
+  assert.equal(button.presses, 1); assert.equal(button.focuses, 2);
+  assert.equal(button.observation.state.count, 1);
+});
 test('local action observes one native activation and removes its listener', async () => {
   const button = new LocalAction('normal'); await pressObservedLocalAction(button);
   assert.equal(button.presses, 1); assert.equal(button.observation.state.count, 1); assert.equal(button.disposed, true);
-  button.node.dispatchEvent(new Event('click')); assert.equal(button.observation.state.count, 1);
+  button.click(); assert.equal(button.observation.state.count, 1);
 });
 test('only an ignored local keypress is readmitted', { timeout: 10_000 }, async () => {
   const button = new LocalAction('ignored-first'); await pressObservedLocalAction(button);
@@ -111,6 +133,11 @@ test('a wrong consumer result after activation is not repaired by another activa
 test('duplicate local activations remain a failure', { timeout: 10_000 }, async () => {
   const button = new LocalAction('duplicate'); await assert.rejects(pressObservedLocalAction(button));
   assert.equal(button.presses, 1); assert.equal(button.observation.state.count, 2);
+});
+test('an unexpected click cannot be repaired by activating the observed control', { timeout: 10_000 }, async () => {
+  const button = new LocalAction('unexpected-click'); await assert.rejects(pressObservedLocalAction(button));
+  assert.equal(button.presses, 0); assert.equal(button.observation.state.count, 1);
+  assert.equal(button.observation.state.matched, 0);
 });
 test('a replacement local control cannot receive the original activation', { timeout: 10_000 }, async () => {
   const button = new LocalAction('replaced'); await assert.rejects(pressObservedLocalAction(button));
@@ -168,7 +195,15 @@ class ReviewLauncher {
   focused = false;
   constructor(region, mode = 'normal') { this.region = region; this.mode = mode; }
   async isVisible() { return !this.region.visible; }
-  async isEnabled() { return true; }
+  async isEnabled(options) {
+    if (this.mode === 'retires-during-enabled') {
+      this.region.visible = true;
+      this.enabledTimeout = options?.timeout;
+      await new Promise(resolve => setTimeout(resolve, options?.timeout ?? 5_500));
+      throw new Error('Launcher retired while the review became available');
+    }
+    return true;
+  }
   async focus() {
     this.focuses++; this.focused = true;
     if (this.mode === 'opens-during-focus') this.region.visible = true;
@@ -197,6 +232,12 @@ test('an ignored review activation is retried only until its region opens', asyn
 test('an already-open region does not require its retired launcher', async () => {
   const region = new ReviewRegion(); region.visible = true; const launcher = new ReviewLauncher(region);
   await openAdmittedReview(launcher, region);
+  assert.equal(launcher.focuses, 0); assert.equal(launcher.presses, 0);
+});
+test('a review appearing between launcher visibility and enabled observation stays within admission budget', { timeout: 10_000 }, async () => {
+  const region = new ReviewRegion(), launcher = new ReviewLauncher(region, 'retires-during-enabled');
+  await openAdmittedReview(launcher, region);
+  assert.equal(region.visible, true); assert.equal(launcher.enabledTimeout, 500);
   assert.equal(launcher.focuses, 0); assert.equal(launcher.presses, 0);
 });
 test('review opening during focus cannot activate the retired launcher', async () => {

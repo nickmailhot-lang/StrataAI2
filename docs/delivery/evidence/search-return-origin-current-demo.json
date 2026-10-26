@@ -1,0 +1,44 @@
+{
+  "revision": "b47e580e72f6af5de2d5614293287b5364ad6590",
+  "at": "2026-10-24T03:38:58.702Z",
+  "result": {
+    "passed": 1,
+    "failed": 0,
+    "retries": 0,
+    "actualIntervalCycles": 2,
+    "searchReads": 4,
+    "liveConnectionFailures": 0,
+    "finalFocus": "A: Review landscaping proposals",
+    "draft": "roof draft",
+    "alerts": []
+  },
+  "runtime": {
+    "mode": "demo",
+    "revision": "b47e580e72f6af5de2d5614293287b5364ad6590",
+    "version": "1.0.0",
+    "api": "127.0.0.7:5190",
+    "preview": "127.0.0.4:5187",
+    "publicOrigin": "http://127.0.0.4:5187",
+    "liveOrigin": "http://127.0.0.4:5187"
+  },
+  "appRevision": "fcc77e031f80b936ff8b29f7a70d9623b35fa2a0",
+  "testRevision": "b47e580e72f6af5de2d5614293287b5364ad6590",
+  "setup": "Fresh process-local Demo API, public seeded account, a new owned Organization/Board/List/Card via canonical authenticated commands. Prior QA and qualified Demo instances preserved. Private activity keys remain untracked outside served assets.",
+  "build": {
+    "command": "dotnet build src/StrataAI.Api/StrataAI.Api.csproj --no-restore -o work/search-return-current-api",
+    "log": "  StrataAI.Domain -> C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\work\\search-return-current-api\\StrataAI.Domain.dll\r\n  StrataAI.Application -> C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\work\\search-return-current-api\\StrataAI.Application.dll\r\n  StrataAI.Infrastructure -> C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\work\\search-return-current-api\\StrataAI.Infrastructure.dll\r\n  StrataAI.Api -> C:\\Users\\nickm\\Documents\\Codex\\2026-10-23\\strata-ux-review\\work\\search-return-current-api\\StrataAI.Api.dll\r\n\r\nBuild succeeded.\r\n    0 Warning(s)\r\n    0 Error(s)\r\n\r\nTime Elapsed 00:00:45.23\r\n",
+    "sha256": "362cfc3c08d9caed34a177bbffe1b554610308dfce2e6950816d76e9ba9cf3a7"
+  },
+  "log": {
+    "path": "work/search-return-origin-canonical.log",
+    "sha256": "9d34bfa800de3811a4edd258169433b579dedb5c7ac971c248fc685bcdd3df2a",
+    "redaction": "Only ephemeral SignalR connection id query tokens omitted from the retained transcript; original log hash retained.",
+    "text": "\r\nRunning 1 test using 1 worker\r\n\r\n(node:34464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n[{\"runtime\":{\"service\":\"strataai-api\",\"mode\":\"demo\",\"revision\":\"b47e580e72f6af5de2d5614293287b5364ad6590\",\"version\":\"1.0.0\"}},{\"socket\":\"ws://127.0.0.4:5187/organizations/live/operational-lifecycle?id=[redacted]\"},{\"socket\":\"ws://127.0.0.4:5187/organizations/live/metadata?id=[redacted]\"},{\"socket\":\"ws://127.0.0.4:5187/boards/live?id=[redacted]\"},{\"searches\":4,\"liveFailures\":[],\"active\":\"A\",\"text\":\"Review landscaping proposals\",\"alerts\":[]}]\r\n  ok 1 work\\search-return-origin.spec.ts:3:5 › current Demo with exact live origin preserves Search through two real refresh intervals (23.7s)\r\n\r\n  1 passed (25.6s)\r\n"
+  },
+  "screenshot": {
+    "path": "docs/delivery/evidence/search-return-origin-live.png",
+    "sha256": "3e958174e16fea6d28112d15e610187355b528e950fddec3a1c02fc301d09e6a"
+  },
+  "resolution": "Resolves the prior background-tab focus observation through a valid current Demo topology with healthy live connections. Failed historical runs remain Failed; no native foreground/zoom control measurement inferred.",
+  "limits": "Local current Demo build, not immutable Production qualification. Own full current CI, native security/roles/regressions/performance/release, independent review and authorized integration remain required. Native200% browser zoom remains blocked after Windows browser-control policy stopped the review;200% enlarged-text evidence is separate."
+}

@@ -21,32 +21,49 @@ export async function pressAdmittedAction(button: Locator, key: 'Enter' | 'Space
 }
 
 // Local review actions have no HTTP request to observe. Admit one native click
-// on the original control, then leave its consumer result to caller assertions.
+// on an admitted control, then leave its consumer result to caller assertions.
 // Never retry an activated action or apply this helper to a business command.
 export async function pressObservedLocalAction(button: Locator) {
   const observation = await button.evaluateHandle(node => {
-    const state = { count: 0 };
-    const onClick = () => { state.count++; };
-    node.addEventListener('click', onClick, { capture: true });
-    return { node, state, onClick };
+    const state = { count: 0, matched: 0, node };
+    const document = node.ownerDocument;
+    const onClick = (event: Event) => {
+      state.count++;
+      if (event.composedPath().includes(state.node)) state.matched++;
+    };
+    document.addEventListener('click', onClick, { capture: true });
+    return { state, document, onClick };
   });
   try {
     await expect(async () => {
       if (await observation.evaluate(o => o.state.count) === 0) {
-        expect(await observation.evaluate(o => o.node.isConnected)).toBe(true);
-        await expect(button).toBeEnabled({ timeout: 500 });
-        if (await observation.evaluate(o => o.state.count) === 0) await button.focus({ timeout: 500 });
-        if (await observation.evaluate(o => o.state.count) === 0) await expect(button).toBeFocused({ timeout: 500 });
-        if (await observation.evaluate(o => o.state.count) === 0) await expect(button).toBeEnabled({ timeout: 500 });
-        if (await observation.evaluate(o => o.state.count) === 0) {
-          expect(await observation.evaluate(o => o.node.isConnected)).toBe(true);
-          await button.press('Enter', { timeout: 500 });
+        // Access refresh may replace a launcher before it receives any click.
+        // Rebind only before activation, and press the exact observed element:
+        // a Locator keypress could silently retarget an unobserved replacement.
+        const admitted = await button.elementHandle({ timeout: 500 });
+        expect(admitted).not.toBeNull();
+        try {
+          await observation.evaluate((o, node) => {
+            if (o.state.count === 0 && node) o.state.node = node;
+          }, admitted!);
+          expect(await admitted!.evaluate(node => node.isConnected)).toBe(true);
+          await expect(button).toBeEnabled({ timeout: 500 });
+          if (await observation.evaluate(o => o.state.count) === 0) await button.focus({ timeout: 500 });
+          if (await observation.evaluate(o => o.state.count) === 0) await expect(button).toBeFocused({ timeout: 500 });
+          if (await observation.evaluate(o => o.state.count) === 0) await expect(button).toBeEnabled({ timeout: 500 });
+          if (await observation.evaluate(o => o.state.count) === 0) {
+            expect(await admitted!.evaluate(node => node.isConnected)).toBe(true);
+            await admitted!.press('Enter', { timeout: 500 });
+          }
+        } finally {
+          await admitted?.dispose();
         }
       }
       await expect.poll(() => observation.evaluate(o => o.state.count), { timeout: 500 }).toBe(1);
+      expect(await observation.evaluate(o => o.state.matched)).toBe(1);
     }).toPass({ timeout: 5_000 });
   } finally {
-    await observation.evaluate(o => o.node.removeEventListener('click', o.onClick, { capture: true }));
+    await observation.evaluate(o => o.document.removeEventListener('click', o.onClick, { capture: true }));
     await observation.dispose();
   }
 }
@@ -163,7 +180,9 @@ export async function openAdmittedReview(button: Locator, dialog: Locator) {
     if (await dialog.isVisible()) return;
     // A successful opening can retire its launcher before the protected read
     // finishes. Observe the target instead of waiting on that retired control.
-    if (await button.isVisible() && await button.isEnabled()) {
+    // Bound the enabled query too: disappearance after isVisible must not
+    // consume the entire admission budget while the target becomes available.
+    if (await button.isVisible() && await button.isEnabled({ timeout: 500 })) {
       await button.focus({ timeout: 500 });
       await expect(button).toBeFocused({ timeout: 500 });
       await expect(button).toBeEnabled({ timeout: 500 });

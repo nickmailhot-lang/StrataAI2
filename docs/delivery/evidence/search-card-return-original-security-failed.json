@@ -1,0 +1,207 @@
+{
+  "revision": "0f26de21a19857e8a1106b51262d166ed68b3dfe",
+  "at": "2026-10-24T03:02:31.560Z",
+  "result": "Failed",
+  "scope": "Exact recorded local source only; full hosted qualification, independent review and authorized integration remain separate.",
+  "testedMerge": "0d923f66e22fb510df344c3b00faf23fc86fc803",
+  "build": "0.1.0-1979",
+  "cause": "Vitest/@vitest/mocker5.0.2 and locked undici8.11.2 carry newly reported advisories: two moderate packages and one high package. Audit failed; downstream vulnerability/SBOM/secret/container checks were skipped, not passed.",
+  "correction": "Normal exact Vitest5.0.5 patch and locked undici8.12.3 update, including declared patch graph. No forced override, workflow change or audit threshold relaxation.",
+  "original": {
+    "head": "0f26de21a19857e8a1106b51262d166ed68b3dfe",
+    "job": {
+      "id": 120747920877,
+      "head_sha": "0f26de21a19857e8a1106b51262d166ed68b3dfe",
+      "name": "security",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    "logTruncated": false,
+    "log": "﻿2026-10-24T02:02:20.9644540Z Current runner version: '2.338.0'\n2026-10-24T02:02:20.9664303Z ##[group]Runner Image Provisioner\n2026-10-24T02:02:20.9665264Z Hosted Compute Agent\n2026-10-24T02:02:20.9665824Z Version: 20261012.601\n2026-10-24T02:02:20.9666321Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d\n2026-10-24T02:02:20.9666964Z Build Date: 2026-10-12T17:48:21Z\n2026-10-24T02:02:20.9667530Z Worker ID: {cdfbeea3-e09e-41f1-9aaa-8b28d3e7e47b}\n2026-10-24T02:02:20.9668143Z Region: westus3\n2026-10-24T02:02:20.9668638Z Cloud: Azure\n2026-10-24T02:02:20.9669081Z ##[endgroup]\n2026-10-24T02:02:20.9670216Z ##[group]Operating System\n2026-10-24T02:02:20.9670726Z Ubuntu\n2026-10-24T02:02:20.9671145Z 24.04.5\n2026-10-24T02:02:20.9671703Z LTS\n2026-10-24T02:02:20.9672125Z ##[endgroup]\n2026-10-24T02:02:20.9672650Z ##[group]Runner Image\n2026-10-24T02:02:20.9673151Z Image: ubuntu-24.04\n2026-10-24T02:02:20.9673608Z Version: 20261012.334.1\n2026-10-24T02:02:20.9674916Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md\n2026-10-24T02:02:20.9676233Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334\n2026-10-24T02:02:20.9677005Z ##[endgroup]\n2026-10-24T02:02:20.9677943Z ##[group]GITHUB_TOKEN Permissions\n2026-10-24T02:02:20.9679442Z Contents: read\n2026-10-24T02:02:20.9679912Z Metadata: read\n2026-10-24T02:02:20.9680455Z ##[endgroup]\n2026-10-24T02:02:20.9682025Z Secret source: Actions\n2026-10-24T02:02:20.9682891Z Cache mode: write\n2026-10-24T02:02:20.9683445Z Prepare workflow directory\n2026-10-24T02:02:21.0145395Z Prepare all required actions\n2026-10-24T02:02:21.0185561Z Getting action download info\n2026-10-24T02:02:21.3017198Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)\n2026-10-24T02:02:21.6910832Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)\n2026-10-24T02:02:22.3819499Z Download action repository 'actions/setup-node@v7' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)\n2026-10-24T02:02:23.1368237Z Download action repository 'actions/setup-dotnet@v6' (SHA:a98b56852c35b8e3190ac28c8c2271da59106c68)\n2026-10-24T02:02:23.8788804Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)\n2026-10-24T02:02:24.6804028Z Complete job name: security\n2026-10-24T02:02:24.7456752Z ##[group]Run actions/checkout@v7\n2026-10-24T02:02:24.7457181Z with:\n2026-10-24T02:02:24.7457377Z   repository: nickmailhot-lang/StrataAI2\n2026-10-24T02:02:24.7459207Z   token: ***\n2026-10-24T02:02:24.7459403Z   ssh-strict: true\n2026-10-24T02:02:24.7459580Z   ssh-user: git\n2026-10-24T02:02:24.7459757Z   persist-credentials: true\n2026-10-24T02:02:24.7459951Z   clean: true\n2026-10-24T02:02:24.7460130Z   sparse-checkout-cone-mode: true\n2026-10-24T02:02:24.7460347Z   fetch-depth: 1\n2026-10-24T02:02:24.7460517Z   fetch-tags: false\n2026-10-24T02:02:24.7460702Z   show-progress: true\n2026-10-24T02:02:24.7460870Z   lfs: false\n2026-10-24T02:02:24.7461023Z   submodules: false\n2026-10-24T02:02:24.7461204Z   set-safe-directory: true\n2026-10-24T02:02:24.7461410Z   allow-unsafe-pr-checkout: false\n2026-10-24T02:02:24.7461731Z env:\n2026-10-24T02:02:24.7461893Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:24.7462087Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:24.7462298Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:24.7462556Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:24.7462868Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:24.7463118Z ##[endgroup]\n2026-10-24T02:02:24.8270466Z Syncing repository: nickmailhot-lang/StrataAI2\n2026-10-24T02:02:24.8271947Z ##[group]Getting Git version info\n2026-10-24T02:02:24.8272436Z Working directory is '/home/runner/work/StrataAI2/StrataAI2'\n2026-10-24T02:02:24.8273145Z [command]/usr/bin/git version\n2026-10-24T02:02:24.9352455Z git version 2.55.0\n2026-10-24T02:02:24.9369485Z ##[endgroup]\n2026-10-24T02:02:24.9378988Z Temporarily overriding HOME='/home/runner/work/_temp/6b0d7d39-9487-40ca-a94d-88d33f729d23' before making global git config changes\n2026-10-24T02:02:24.9380290Z Adding repository directory to the temporary git global config as a safe directory\n2026-10-24T02:02:24.9384111Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/StrataAI2/StrataAI2\n2026-10-24T02:02:24.9631276Z Deleting the contents of '/home/runner/work/StrataAI2/StrataAI2'\n2026-10-24T02:02:24.9633979Z ##[group]Determining repository object format\n2026-10-24T02:02:24.9635687Z ##[endgroup]\n2026-10-24T02:02:24.9636133Z ##[group]Initializing the repository\n2026-10-24T02:02:24.9639174Z [command]/usr/bin/git init /home/runner/work/StrataAI2/StrataAI2\n2026-10-24T02:02:25.0073930Z hint: Using 'master' as the name for the initial branch. This default branch name\n2026-10-24T02:02:25.0074512Z hint: will change to \"main\" in Git 3.0. To configure the initial branch name\n2026-10-24T02:02:25.0075047Z hint: to use in all of your new repositories, which will suppress this warning,\n2026-10-24T02:02:25.0075383Z hint: call:\n2026-10-24T02:02:25.0075547Z hint:\n2026-10-24T02:02:25.0075804Z hint: \tgit config --global init.defaultBranch <name>\n2026-10-24T02:02:25.0076055Z hint:\n2026-10-24T02:02:25.0076304Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\n2026-10-24T02:02:25.0076698Z hint: 'development'. The just-created branch can be renamed via this command:\n2026-10-24T02:02:25.0077178Z hint:\n2026-10-24T02:02:25.0077420Z hint: \tgit branch -m <name>\n2026-10-24T02:02:25.0077697Z hint:\n2026-10-24T02:02:25.0078080Z hint: Disable this message with \"git config set advice.defaultBranchName false\"\n2026-10-24T02:02:25.0078510Z Initialized empty Git repository in /home/runner/work/StrataAI2/StrataAI2/.git/\n2026-10-24T02:02:25.0087643Z [command]/usr/bin/git remote add origin https://github.com/nickmailhot-lang/StrataAI2\n2026-10-24T02:02:25.0315813Z ##[endgroup]\n2026-10-24T02:02:25.0316326Z ##[group]Disabling automatic garbage collection\n2026-10-24T02:02:25.0319530Z [command]/usr/bin/git config --local gc.auto 0\n2026-10-24T02:02:25.0351238Z ##[endgroup]\n2026-10-24T02:02:25.0351728Z ##[group]Setting up auth\n2026-10-24T02:02:25.0352299Z Removing SSH command configuration\n2026-10-24T02:02:25.0356526Z [command]/usr/bin/git config --local --name-only --get-regexp core\\.sshCommand\n2026-10-24T02:02:25.0387069Z [command]/usr/bin/git submodule foreach --recursive sh -c \"git config --local --name-only --get-regexp 'core\\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\"\n2026-10-24T02:02:25.2126116Z Removing HTTP extra header\n2026-10-24T02:02:25.2130563Z [command]/usr/bin/git config --local --name-only --get-regexp http\\.https\\:\\/\\/github\\.com\\/\\.extraheader\n2026-10-24T02:02:25.2160430Z [command]/usr/bin/git submodule foreach --recursive sh -c \"git config --local --name-only --get-regexp 'http\\.https\\:\\/\\/github\\.com\\/\\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\"\n2026-10-24T02:02:25.2341771Z Removing includeIf entries pointing to credentials config files\n2026-10-24T02:02:25.2346317Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\\.gitdir:\n2026-10-24T02:02:25.2375138Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url\n2026-10-24T02:02:25.2569950Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config http.https://github.com/.extraheader AUTHORIZATION: basic ***\n2026-10-24T02:02:25.2604938Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git.path /home/runner/work/_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config\n2026-10-24T02:02:25.2633755Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config\n2026-10-24T02:02:25.2666193Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config\n2026-10-24T02:02:25.2695686Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config\n2026-10-24T02:02:25.2723294Z ##[endgroup]\n2026-10-24T02:02:25.2723759Z ##[group]Fetching the repository\n2026-10-24T02:02:25.2728984Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0d923f66e22fb510df344c3b00faf23fc86fc803:refs/remotes/pull/125/merge\n2026-10-24T02:02:27.8912110Z From https://github.com/nickmailhot-lang/StrataAI2\n2026-10-24T02:02:27.8912606Z  * [new ref]         0d923f66e22fb510df344c3b00faf23fc86fc803 -> pull/125/merge\n2026-10-24T02:02:27.8916665Z ##[endgroup]\n2026-10-24T02:02:27.8917018Z ##[group]Determining the checkout info\n2026-10-24T02:02:27.8917628Z ##[endgroup]\n2026-10-24T02:02:27.8921800Z [command]/usr/bin/git sparse-checkout disable\n2026-10-24T02:02:27.9085142Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig\n2026-10-24T02:02:27.9113481Z ##[group]Checking out the ref\n2026-10-24T02:02:27.9117283Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/125/merge\n2026-10-24T02:02:28.1419717Z Note: switching to 'refs/remotes/pull/125/merge'.\n2026-10-24T02:02:28.1420079Z \n2026-10-24T02:02:28.1420335Z You are in 'detached HEAD' state. You can look around, make experimental\n2026-10-24T02:02:28.1420939Z changes and commit them, and you can discard any commits you make in this\n2026-10-24T02:02:28.1421316Z state without impacting any branches by switching back to a branch.\n2026-10-24T02:02:28.1421547Z \n2026-10-24T02:02:28.1421731Z If you want to create a new branch to retain commits you create, you may\n2026-10-24T02:02:28.1422087Z do so (now or later) by using -c with the switch command. Example:\n2026-10-24T02:02:28.1422299Z \n2026-10-24T02:02:28.1422397Z   git switch -c <new-branch-name>\n2026-10-24T02:02:28.1422557Z \n2026-10-24T02:02:28.1422663Z Or undo this operation with:\n2026-10-24T02:02:28.1422791Z \n2026-10-24T02:02:28.1422871Z   git switch -\n2026-10-24T02:02:28.1423028Z \n2026-10-24T02:02:28.1423203Z Turn off this advice by setting config variable advice.detachedHead to false\n2026-10-24T02:02:28.1423442Z \n2026-10-24T02:02:28.1423905Z HEAD is now at 0d923f6 Merge 0f26de21a19857e8a1106b51262d166ed68b3dfe into f1cd09ee80e91379a575a051835784d829af9565\n2026-10-24T02:02:28.1440134Z ##[endgroup]\n2026-10-24T02:02:28.1488215Z [command]/usr/bin/git log -1 --format=%H\n2026-10-24T02:02:28.1515759Z 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:28.1716914Z ##[group]Run actions/download-artifact@v8\n2026-10-24T02:02:28.1717162Z with:\n2026-10-24T02:02:28.1717403Z   name: strataai-images-0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:28.1717711Z   path: image-artifacts\n2026-10-24T02:02:28.1717914Z   merge-multiple: false\n2026-10-24T02:02:28.1718112Z   repository: nickmailhot-lang/StrataAI2\n2026-10-24T02:02:28.1718342Z   run-id: 40048856026\n2026-10-24T02:02:28.1718547Z   skip-decompress: false\n2026-10-24T02:02:28.1718748Z   digest-mismatch: error\n2026-10-24T02:02:28.1718932Z env:\n2026-10-24T02:02:28.1719101Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:28.1719313Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:28.1719529Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:28.1719797Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:28.1720115Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:28.1720363Z ##[endgroup]\n2026-10-24T02:02:28.2772823Z Downloading single artifact\n2026-10-24T02:02:28.5090507Z Preparing to download the following artifacts:\n2026-10-24T02:02:28.5091551Z - strataai-images-0d923f66e22fb510df344c3b00faf23fc86fc803 (ID: 12543379546, Size: 518368431, Expected Digest: sha256:b7a1360bcaf33a73f696088fc1b1d535e24db3f32637546072b275d98757ff46)\n2026-10-24T02:02:28.9491645Z Redirecting to blob download url: https://productionresultssa6.blob.core.windows.net/actions-results/ee05856e-6427-8db7-80af-b5d3f1008cd0/workflow-job-run-555db187-4987-51ee-bb69-7ef55d9c3ffc/artifacts/be016ce8635d746f63fe5cda5bf41fb40d4a865e0f0adb6bea20a3fccc72f86f.zip\n2026-10-24T02:02:28.9494156Z Starting download of artifact to: /home/runner/work/StrataAI2/StrataAI2/image-artifacts\n2026-10-24T02:02:29.1993654Z (node:2114) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.\n2026-10-24T02:02:29.1994493Z (Use `node --trace-deprecation ...` to show where the warning was created)\n2026-10-24T02:02:37.5248296Z SHA256 digest of downloaded artifact is b7a1360bcaf33a73f696088fc1b1d535e24db3f32637546072b275d98757ff46\n2026-10-24T02:02:37.5249059Z Artifact download completed successfully.\n2026-10-24T02:02:37.5249460Z Total of 1 artifact(s) downloaded\n2026-10-24T02:02:37.5253867Z Download artifact has finished successfully\n2026-10-24T02:02:37.5414099Z ##[group]Run set -euo pipefail\n2026-10-24T02:02:37.5414557Z \u001b[36;1mset -euo pipefail\u001b[0m\n2026-10-24T02:02:37.5415140Z \u001b[36;1m(cd image-artifacts && sha256sum --check SHA256SUMS)\u001b[0m\n2026-10-24T02:02:37.5416845Z \u001b[36;1mjq -e --arg repository \"$GITHUB_REPOSITORY\" --arg revision \"$GITHUB_SHA\" --arg run \"$GITHUB_RUN_ID\" --arg version \"$STRATAAI_BUILD_VERSION\" '.repository == $repository and .commitSha == $revision and .imageTag == $revision and .workflowRunId == $run and .version == $version' image-artifacts/build-metadata.json >/dev/null\u001b[0m\n2026-10-24T02:02:37.5418484Z \u001b[36;1mmkdir -p security-artifacts\u001b[0m\n2026-10-24T02:02:37.5419069Z \u001b[36;1mcp image-artifacts/build-metadata.json security-artifacts/build-metadata.json\u001b[0m\n2026-10-24T02:02:37.5419907Z \u001b[36;1mcp image-artifacts/image-provenance.json security-artifacts/image-provenance.json\u001b[0m\n2026-10-24T02:02:37.6427889Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}\n2026-10-24T02:02:37.6428201Z env:\n2026-10-24T02:02:37.6428474Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:37.6428716Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:37.6428909Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:37.6429183Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:37.6429505Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:37.6429776Z   STRATAAI_BUILD_VERSION: 0.1.0-1979\n2026-10-24T02:02:37.6429990Z ##[endgroup]\n2026-10-24T02:02:37.6763864Z strataai-web.tar.gz: OK\n2026-10-24T02:02:37.8139096Z strataai-api.tar.gz: OK\n2026-10-24T02:02:37.9929253Z strataai-worker.tar.gz: OK\n2026-10-24T02:02:37.9929652Z build-metadata.json: OK\n2026-10-24T02:02:37.9929975Z image-provenance.json: OK\n2026-10-24T02:02:38.0102240Z ##[group]Run actions/setup-node@v7\n2026-10-24T02:02:38.0102582Z with:\n2026-10-24T02:02:38.0102835Z   node-version: 24\n2026-10-24T02:02:38.0103114Z   cache: npm\n2026-10-24T02:02:38.0130934Z   check-latest: false\n2026-10-24T02:02:38.0134244Z   token: ***\n2026-10-24T02:02:38.0134531Z   package-manager-cache: true\n2026-10-24T02:02:38.0134991Z env:\n2026-10-24T02:02:38.0135251Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:38.0135586Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:38.0135888Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:38.0136328Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:38.0136844Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:38.0137258Z ##[endgroup]\n2026-10-24T02:02:38.1351773Z Found in cache @ /opt/hostedtoolcache/node/24.21.0/x64\n2026-10-24T02:02:38.8646862Z ##[group]Environment details\n2026-10-24T02:02:40.5032703Z node: v24.21.0\n2026-10-24T02:02:40.5032989Z npm: 11.19.0\n2026-10-24T02:02:40.5033253Z yarn: 1.22.22\n2026-10-24T02:02:40.5033743Z ##[endgroup]\n2026-10-24T02:02:40.5047149Z [command]/opt/hostedtoolcache/node/24.21.0/x64/bin/npm config get cache\n2026-10-24T02:02:40.7775402Z /home/runner/.npm\n2026-10-24T02:02:41.0146236Z Cache hit for: node-cache-Linux-x64-npm-0837c2ed0388a3fffc8f63cde0b8d0afa3fec158042eb6fb3f2a14c7304edbf9\n2026-10-24T02:02:41.4852981Z Received 678 of 678 (100.0%), 0.0 MBs/sec\n2026-10-24T02:02:41.4853311Z Cache Size: ~0 MB (678 B)\n2026-10-24T02:02:41.4877813Z [command]/usr/bin/tar -xf /home/runner/work/_temp/98586fb6-3719-4f23-84ba-22ce0b92c975/cache.tzst -P -C /home/runner/work/StrataAI2/StrataAI2 --use-compress-program unzstd\n2026-10-24T02:02:41.5094318Z Cache restored successfully\n2026-10-24T02:02:41.5098613Z Cache restored from key: node-cache-Linux-x64-npm-0837c2ed0388a3fffc8f63cde0b8d0afa3fec158042eb6fb3f2a14c7304edbf9\n2026-10-24T02:02:41.5230247Z ##[group]Run actions/setup-dotnet@v6\n2026-10-24T02:02:41.5230495Z with:\n2026-10-24T02:02:41.5230670Z   dotnet-version: 10.0.x\n2026-10-24T02:02:41.5230887Z   cache: false\n2026-10-24T02:02:41.5231058Z env:\n2026-10-24T02:02:41.5231233Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:41.5231451Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:41.5231644Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:41.5231927Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:41.5232260Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:41.5232527Z ##[endgroup]\n2026-10-24T02:02:41.6278928Z [command]/home/runner/work/_actions/actions/setup-dotnet/v6/externals/install-dotnet.sh --skip-non-versioned-files --runtime dotnet --channel LTS\n2026-10-24T02:02:41.8360979Z dotnet-install: Attempting to download using aka.ms link https://builds.dotnet.microsoft.com/dotnet/Runtime/10.0.13/dotnet-runtime-10.0.13-linux-x64.tar.gz\n2026-10-24T02:02:42.2996546Z dotnet-install: Remote file https://builds.dotnet.microsoft.com/dotnet/Runtime/10.0.13/dotnet-runtime-10.0.13-linux-x64.tar.gz size is 36648012 bytes.\n2026-10-24T02:02:42.2997995Z dotnet-install: Extracting archive from https://builds.dotnet.microsoft.com/dotnet/Runtime/10.0.13/dotnet-runtime-10.0.13-linux-x64.tar.gz\n2026-10-24T02:02:42.8688847Z dotnet-install: Downloaded file size is 36648012 bytes.\n2026-10-24T02:02:42.8690009Z dotnet-install: The remote and local file sizes are equal.\n2026-10-24T02:02:42.8918373Z dotnet-install: Installed version is 10.0.13\n2026-10-24T02:02:42.8969068Z dotnet-install: Adding to current process PATH: `/usr/share/dotnet`. Note: This change will be visible only when sourcing script.\n2026-10-24T02:02:42.8970468Z dotnet-install: Note that the script does not resolve dependencies during installation.\n2026-10-24T02:02:42.8971804Z dotnet-install: To check the list of dependencies, go to https://learn.microsoft.com/dotnet/core/install, select your operating system and check the \"Dependencies\" section.\n2026-10-24T02:02:42.8972819Z dotnet-install: Installation finished successfully.\n2026-10-24T02:02:42.8990476Z [command]/home/runner/work/_actions/actions/setup-dotnet/v6/externals/install-dotnet.sh --skip-non-versioned-files --channel 10.0\n2026-10-24T02:02:43.0957876Z dotnet-install: Attempting to download using aka.ms link https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.402/dotnet-sdk-10.0.402-linux-x64.tar.gz\n2026-10-24T02:02:44.9757847Z dotnet-install: Remote file https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.402/dotnet-sdk-10.0.402-linux-x64.tar.gz size is 240279509 bytes.\n2026-10-24T02:02:44.9759294Z dotnet-install: Extracting archive from https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.402/dotnet-sdk-10.0.402-linux-x64.tar.gz\n2026-10-24T02:02:48.8563525Z dotnet-install: Downloaded file size is 240279509 bytes.\n2026-10-24T02:02:48.8564520Z dotnet-install: The remote and local file sizes are equal.\n2026-10-24T02:02:49.0630748Z dotnet-install: Installed version is 10.0.402\n2026-10-24T02:02:49.0681451Z dotnet-install: Adding to current process PATH: `/usr/share/dotnet`. Note: This change will be visible only when sourcing script.\n2026-10-24T02:02:49.0682654Z dotnet-install: Note that the script does not resolve dependencies during installation.\n2026-10-24T02:02:49.0684099Z dotnet-install: To check the list of dependencies, go to https://learn.microsoft.com/dotnet/core/install, select your operating system and check the \"Dependencies\" section.\n2026-10-24T02:02:49.0685482Z dotnet-install: Installation finished successfully.\n2026-10-24T02:02:49.0805576Z ##[group]Run npm ci\n2026-10-24T02:02:49.0805831Z \u001b[36;1mnpm ci\u001b[0m\n2026-10-24T02:02:49.0905464Z shell: /usr/bin/bash -e {0}\n2026-10-24T02:02:49.0905701Z env:\n2026-10-24T02:02:49.0905884Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:49.0906106Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:49.0906306Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:49.0906586Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:49.0906916Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:49.0907183Z   DOTNET_ROOT: /usr/share/dotnet\n2026-10-24T02:02:49.0907386Z ##[endgroup]\n2026-10-24T02:02:57.2463861Z \n2026-10-24T02:02:57.2464682Z added 376 packages, and audited 378 packages in 8s\n2026-10-24T02:02:57.2465336Z \n2026-10-24T02:02:57.2465618Z 135 packages are looking for funding\n2026-10-24T02:02:57.2466044Z   run `npm fund` for details\n2026-10-24T02:02:57.2522026Z \n2026-10-24T02:02:57.2522551Z 3 vulnerabilities (2 moderate, 1 high)\n2026-10-24T02:02:57.2522895Z \n2026-10-24T02:02:57.2523231Z To address issues that do not require attention, run:\n2026-10-24T02:02:57.2523643Z   npm audit fix\n2026-10-24T02:02:57.2523806Z \n2026-10-24T02:02:57.2524006Z To address all issues, run:\n2026-10-24T02:02:57.2524380Z   npm audit fix --force\n2026-10-24T02:02:57.2524564Z \n2026-10-24T02:02:57.2525043Z Run `npm audit` for details.\n2026-10-24T02:02:57.3076690Z ##[group]Run npm audit --audit-level=high\n2026-10-24T02:02:57.3076995Z \u001b[36;1mnpm audit --audit-level=high\u001b[0m\n2026-10-24T02:02:57.3132631Z shell: /usr/bin/bash -e {0}\n2026-10-24T02:02:57.3132859Z env:\n2026-10-24T02:02:57.3133040Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:57.3133267Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:57.3133471Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:57.3134113Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:57.3134474Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:57.3135178Z   DOTNET_ROOT: /usr/share/dotnet\n2026-10-24T02:02:57.3135407Z ##[endgroup]\n2026-10-24T02:02:57.7481331Z # npm audit report\n2026-10-24T02:02:57.7481599Z \n2026-10-24T02:02:57.7481869Z @vitest/mocker  5.0.0-beta.1 - 5.0.2\n2026-10-24T02:02:57.7482305Z Severity: moderate\n2026-10-24T02:02:57.7483357Z Vitest: Code injection via unauthenticated manual mock registration - https://github.com/advisories/GHSA-qxg6-89mg-rqv8\n2026-10-24T02:02:57.7485036Z Vitest: Windows backslash traversal bypasses the @vitest/mocker redirect allowlist fix - https://github.com/advisories/GHSA-xp26-3454-mjgp\n2026-10-24T02:02:57.7485965Z fix available via `npm audit fix --force`\n2026-10-24T02:02:57.7486636Z Will install vitest@5.0.5, which is outside the stated dependency range\n2026-10-24T02:02:57.7487220Z node_modules/@vitest/mocker\n2026-10-24T02:02:57.7487628Z   vitest  5.0.0-beta.1 - 5.0.2\n2026-10-24T02:02:57.7488126Z   Depends on vulnerable versions of @vitest/mocker\n2026-10-24T02:02:57.7488594Z   node_modules/vitest\n2026-10-24T02:02:57.7488800Z \n2026-10-24T02:02:57.7488965Z undici  8.0.0 - 8.12.1\n2026-10-24T02:02:57.7489278Z Severity: high\n2026-10-24T02:02:57.7490335Z undici vulnerable to Denial of Service via unbounded memory in the EventSource parser - https://github.com/advisories/GHSA-4qv8-2p9j-2685\n2026-10-24T02:02:57.7491817Z undici vulnerable to Subresource Integrity bypass via non-lowercase algorithm tokens - https://github.com/advisories/GHSA-f72v-6w45-q472\n2026-10-24T02:02:57.7493199Z undici vulnerable to Denial of Service via unhandled error on excessive content-encodings - https://github.com/advisories/GHSA-xjj6-f33q-929c\n2026-10-24T02:02:57.7493959Z fix available via `npm audit fix`\n2026-10-24T02:02:57.7494272Z node_modules/undici\n2026-10-24T02:02:57.7494424Z \n2026-10-24T02:02:57.7494653Z 3 vulnerabilities (2 moderate, 1 high)\n2026-10-24T02:02:57.7495124Z \n2026-10-24T02:02:57.7495390Z To address issues that do not require attention, run:\n2026-10-24T02:02:57.7495807Z   npm audit fix\n2026-10-24T02:02:57.7496189Z \n2026-10-24T02:02:57.7496378Z To address all issues, run:\n2026-10-24T02:02:57.7496728Z   npm audit fix --force\n2026-10-24T02:02:57.7575954Z ##[error]Process completed with exit code 1.\n2026-10-24T02:02:57.7659613Z ##[group]Run set -euo pipefail\n2026-10-24T02:02:57.7659902Z \u001b[36;1mset -euo pipefail\u001b[0m\n2026-10-24T02:02:57.7660135Z \u001b[36;1mif [ -d security-artifacts ]; then\u001b[0m\n2026-10-24T02:02:57.7660993Z \u001b[36;1m  (cd security-artifacts && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)\u001b[0m\n2026-10-24T02:02:57.7661427Z \u001b[36;1mfi\u001b[0m\n2026-10-24T02:02:57.7716498Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}\n2026-10-24T02:02:57.7716775Z env:\n2026-10-24T02:02:57.7716954Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:57.7717179Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:57.7717378Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:57.7717656Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:57.7717990Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:57.7718268Z   DOTNET_ROOT: /usr/share/dotnet\n2026-10-24T02:02:57.7718491Z ##[endgroup]\n2026-10-24T02:02:57.7864320Z ##[group]Run actions/upload-artifact@v7\n2026-10-24T02:02:57.7864563Z with:\n2026-10-24T02:02:57.7865041Z   name: security-evidence-0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:57.7865361Z   path: security-artifacts/\n2026-10-24T02:02:57.7865577Z   if-no-files-found: ignore\n2026-10-24T02:02:57.7865776Z   retention-days: 30\n2026-10-24T02:02:57.7865962Z   compression-level: 6\n2026-10-24T02:02:57.7866148Z   overwrite: false\n2026-10-24T02:02:57.7866341Z   include-hidden-files: false\n2026-10-24T02:02:57.7866544Z   archive: true\n2026-10-24T02:02:57.7866719Z env:\n2026-10-24T02:02:57.7866930Z   STRATAAI_POST_MVP_LOAD_TESTS: 0\n2026-10-24T02:02:57.7867230Z   DOTNET_NOLOGO: true\n2026-10-24T02:02:57.7867501Z   DOTNET_CLI_TELEMETRY_OPTOUT: true\n2026-10-24T02:02:57.7867906Z   STRATAAI_IMAGE_TAG: 0d923f66e22fb510df344c3b00faf23fc86fc803\n2026-10-24T02:02:57.7868393Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40048856026-1\n2026-10-24T02:02:57.7868803Z   DOTNET_ROOT: /usr/share/dotnet\n2026-10-24T02:02:57.7869159Z ##[endgroup]\n2026-10-24T02:02:57.8948271Z With the provided path, there will be 3 files uploaded\n2026-10-24T02:02:57.8952282Z Artifact name is valid!\n2026-10-24T02:02:57.8952713Z Root directory input is valid!\n2026-10-24T02:02:58.2205024Z Uploading artifact: security-evidence-0d923f66e22fb510df344c3b00faf23fc86fc803.zip\n2026-10-24T02:02:58.2233544Z Beginning upload of artifact content to blob storage\n2026-10-24T02:02:58.4541816Z Uploaded bytes 1243\n2026-10-24T02:02:58.5082396Z Finished uploading artifact content to blob storage!\n2026-10-24T02:02:58.5083081Z SHA256 digest of uploaded artifact is 7d26ae76bf2c3a5818becb1445b82ade6b0b5e93831b2a97b0ad49aeeb130a92\n2026-10-24T02:02:58.5097644Z Finalizing artifact upload\n2026-10-24T02:02:59.0767546Z Artifact security-evidence-0d923f66e22fb510df344c3b00faf23fc86fc803 successfully finalized. Artifact ID 12543213725\n2026-10-24T02:02:59.0769140Z Artifact security-evidence-0d923f66e22fb510df344c3b00faf23fc86fc803 has been successfully uploaded! Final size is 1243 bytes. Artifact ID is 12543213725\n2026-10-24T02:02:59.0770874Z Artifact download URL: https://github.com/nickmailhot-lang/StrataAI2/actions/runs/40048856026/artifacts/12543213725\n2026-10-24T02:02:59.0925812Z Post job cleanup.\n2026-10-24T02:02:59.1625490Z [command]/usr/bin/git version\n2026-10-24T02:02:59.1685367Z git version 2.55.0\n2026-10-24T02:02:59.1688701Z Temporarily overriding HOME='/home/runner/work/_temp/12e27cf9-f4d6-4498-ac9f-8360d8fc300e' before making global git config changes\n2026-10-24T02:02:59.1689964Z Adding repository directory to the temporary git global config as a safe directory\n2026-10-24T02:02:59.1691059Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/StrataAI2/StrataAI2\n2026-10-24T02:02:59.1721389Z Removing SSH command configuration\n2026-10-24T02:02:59.1726558Z [command]/usr/bin/git config --local --name-only --get-regexp core\\.sshCommand\n2026-10-24T02:02:59.1765247Z [command]/usr/bin/git submodule foreach --recursive sh -c \"git config --local --name-only --get-regexp 'core\\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\"\n2026-10-24T02:02:59.1972475Z Removing HTTP extra header\n2026-10-24T02:02:59.1977640Z [command]/usr/bin/git config --local --name-only --get-regexp http\\.https\\:\\/\\/github\\.com\\/\\.extraheader\n2026-10-24T02:02:59.2016899Z [command]/usr/bin/git submodule foreach --recursive sh -c \"git config --local --name-only --get-regexp 'http\\.https\\:\\/\\/github\\.com\\/\\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\"\n2026-10-24T02:02:59.2232394Z Removing includeIf entries pointing to credentials config files\n2026-10-24T02:02:59.2238435Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\\.gitdir:\n2026-10-24T02:02:59.2268122Z includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git.path\n2026-10-24T02:02:59.2273457Z includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git/worktrees/*.path\n2026-10-24T02:02:59.2274472Z includeif.gitdir:/github/workspace/.git.path\n2026-10-24T02:02:59.2281585Z includeif.gitdir:/github/workspace/.git/worktrees/*.path\n2026-10-24T02:02:59.2283588Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git.path\n2026-10-24T02:02:59.2297974Z /home/runner/work/_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config\n2026-10-24T02:02:59.2306516Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git.path \\/home\\/runner\\/work\\/_temp\\/git\\-credentials\\-5ec3036e\\-db5b\\-4570\\-8719\\-2acff0c82d57\\.config\n2026-10-24T02:02:59.2342782Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git/worktrees/*.path\n2026-10-24T02:02:59.2371937Z /home/runner/work/_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config\n2026-10-24T02:02:59.2374496Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git/worktrees/*.path \\/home\\/runner\\/work\\/_temp\\/git\\-credentials\\-5ec3036e\\-db5b\\-4570\\-8719\\-2acff0c82d57\\.config\n2026-10-24T02:02:59.2407496Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path\n2026-10-24T02:02:59.2428888Z /github/runner_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config\n2026-10-24T02:02:59.2435811Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \\/github\\/runner_temp\\/git\\-credentials\\-5ec3036e\\-db5b\\-4570\\-8719\\-2acff0c82d57\\.config\n2026-10-24T02:02:59.2465186Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path\n2026-10-24T02:02:59.2486183Z /github/runner_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config\n2026-10-24T02:02:59.2491370Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \\/github\\/runner_temp\\/git\\-credentials\\-5ec3036e\\-db5b\\-4570\\-8719\\-2acff0c82d57\\.config\n2026-10-24T02:02:59.2523112Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url\n2026-10-24T02:02:59.2713532Z Removing credentials config '/home/runner/work/_temp/git-credentials-5ec3036e-db5b-4570-8719-2acff0c82d57.config'\n2026-10-24T02:02:59.2840552Z Cleaning up orphan processes\n"
+  },
+  "verifiedArtifact": {
+    "artifactId": 12543213725,
+    "sha256": "7d26ae76bf2c3a5818becb1445b82ade6b0b5e93831b2a97b0ad49aeeb130a92",
+    "size": 1243,
+    "checksumResult": "Passed",
+    "metadata": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "0d923f66e22fb510df344c3b00faf23fc86fc803",
+      "shortSha": "0d923f66e22f",
+      "workflowRunId": "40048856026",
+      "workflowRunNumber": "1979",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1979",
+      "releaseVersion": null,
+      "imageTag": "0d923f66e22fb510df344c3b00faf23fc86fc803",
+      "createdAt": "2026-10-24T01:16:13.129Z",
+      "images": {
+        "web": "strataai-web:0d923f66e22fb510df344c3b00faf23fc86fc803",
+        "api": "strataai-api:0d923f66e22fb510df344c3b00faf23fc86fc803",
+        "worker": "strataai-worker:0d923f66e22fb510df344c3b00faf23fc86fc803"
+      }
+    },
+    "files": [
+      "SHA256SUMS",
+      "build-metadata.json",
+      "image-provenance.json"
+    ],
+    "scope": "Failed security job input provenance only. Dependency audit failed; downstream scans were skipped and are not qualified."
+  },
+  "originalAudit": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {
+      "@vitest/mocker": {
+        "name": "@vitest/mocker",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1242766,
+            "name": "@vitest/mocker",
+            "dependency": "@vitest/mocker",
+            "title": "Vitest: Code injection via unauthenticated manual mock registration",
+            "url": "https://github.com/advisories/GHSA-qxg6-89mg-rqv8",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-94",
+              "CWE-116",
+              "CWE-306"
+            ],
+            "cvss": {
+              "score": 4.7,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+            },
+            "range": ">=5.0.0-beta.1 <5.0.3"
+          },
+          {
+            "source": 1242768,
+            "name": "@vitest/mocker",
+            "dependency": "@vitest/mocker",
+            "title": "Vitest: Windows backslash traversal bypasses the @vitest/mocker redirect allowlist fix",
+            "url": "https://github.com/advisories/GHSA-xp26-3454-mjgp",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 5.9,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+            },
+            "range": ">=5.0.0-rc.2 <5.0.3"
+          }
+        ],
+        "effects": [
+          "vitest"
+        ],
+        "range": "5.0.0-beta.1 - 5.0.2",
+        "nodes": [
+          "node_modules/@vitest/mocker"
+        ],
+        "fixAvailable": {
+          "name": "vitest",
+          "version": "5.0.5",
+          "isSemVerMajor": false
+        }
+      },
+      "undici": {
+        "name": "undici",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1243077,
+            "name": "undici",
+            "dependency": "undici",
+            "title": "undici vulnerable to Denial of Service via unbounded memory in the EventSource parser",
+            "url": "https://github.com/advisories/GHSA-4qv8-2p9j-2685",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-770"
+            ],
+            "cvss": {
+              "score": 5.9,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=8.0.0 <8.12.2"
+          },
+          {
+            "source": 1243080,
+            "name": "undici",
+            "dependency": "undici",
+            "title": "undici vulnerable to Subresource Integrity bypass via non-lowercase algorithm tokens",
+            "url": "https://github.com/advisories/GHSA-f72v-6w45-q472",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-178"
+            ],
+            "cvss": {
+              "score": 5.9,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N"
+            },
+            "range": ">=8.0.0 <8.12.2"
+          },
+          {
+            "source": 1243112,
+            "name": "undici",
+            "dependency": "undici",
+            "title": "undici vulnerable to Denial of Service via unhandled error on excessive content-encodings",
+            "url": "https://github.com/advisories/GHSA-xjj6-f33q-929c",
+            "severity": "high",
+            "cwe": [
+              "CWE-248",
+              "CWE-459"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=8.0.0 <8.12.2"
+          }
+        ],
+        "effects": [],
+        "range": "8.0.0 - 8.12.1",
+        "nodes": [
+          "node_modules/undici"
+        ],
+        "fixAvailable": true
+      },
+      "vitest": {
+        "name": "vitest",
+        "severity": "moderate",
+        "isDirect": true,
+        "via": [
+          "@vitest/mocker"
+        ],
+        "effects": [],
+        "range": "5.0.0-beta.1 - 5.0.2",
+        "nodes": [
+          "node_modules/vitest"
+        ],
+        "fixAvailable": {
+          "name": "vitest",
+          "version": "5.0.5",
+          "isSemVerMajor": false
+        }
+      }
+    },
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 2,
+        "high": 1,
+        "critical": 0,
+        "total": 3
+      },
+      "dependencies": {
+        "prod": 195,
+        "dev": 208,
+        "optional": 27,
+        "peer": 8,
+        "peerOptional": 0,
+        "total": 402
+      }
+    }
+  }
+}

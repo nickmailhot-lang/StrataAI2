@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProfilePage } from './ProfilePage';
+import { forgetSearchReturn, readSearchReturn, retainSearchReturn } from '../search/searchReturn';
 vi.mock('./identityLive', () => ({ watchIdentity: () => () => {} }));
 
 const profile = { id: 'user-1', email: 'council@example.test', displayName: 'Council', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'active', emailVerified: true, version: 1, createdAt: '2026-03-08T09:30:00Z', updatedAt: '2026-03-08T10:30:00Z' };
@@ -289,6 +290,9 @@ describe('PRD-02 profile management', () => {
     const storageKey = 'strataai:invitation-create:v1:actor:organization';
     const configurationKey = 'strataai:configuration-change:v1:actor:organization';
     const policyKey = 'strataai:retention-policy-change:v1:actor:organization';
+    const searchOrg = '11111111-1111-4111-8111-111111111111';
+    const searchCriteria = { q: 'private search', label: '', member: '', match: 'all' as const, scope: 'active' as const };
+    retainSearchReturn({ organization: searchOrg, actor: searchOrg, card: searchOrg, entry: 'return-entry', draft: searchCriteria, applied: searchCriteria });
     const sourceKey = 'strataai:retention-source-classification:v1:actor:organization';
     sessionStorage.setItem(sourceKey, 'original source evidence');
     sessionStorage.setItem(policyKey, 'private original policy');
@@ -302,6 +306,8 @@ describe('PRD-02 profile management', () => {
     expect(sessionStorage.getItem(policyKey)).toBe(status === 204 ? null : 'private original policy');
     expect(sessionStorage.getItem(sourceKey)).toBe(status === 204 ? null : 'original source evidence');
     expect(sessionStorage.getItem('unrelated-site-data')).toBe('keep');
+    expect(Boolean(readSearchReturn(searchOrg, 'return-entry'))).toBe(status !== 204);
+    forgetSearchReturn();
     sessionStorage.removeItem(storageKey); sessionStorage.removeItem(configurationKey); sessionStorage.removeItem(policyKey); sessionStorage.removeItem('unrelated-site-data');
     sessionStorage.removeItem(sourceKey);
   });

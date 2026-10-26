@@ -1,0 +1,12 @@
+{
+  "revision": "b47e580e72f6af5de2d5614293287b5364ad6590",
+  "at": "2026-10-24T03:26:41.518Z",
+  "result": "Blocked",
+  "reason": "Computer Use could not determine the current browser URL on Windows with enough confidence to enforce policy. No further computer input issued.",
+  "notVerified": [
+    "Native200% browser zoom",
+    "Foreground real-service focus through subsequent reconciliation"
+  ],
+  "preservedEvidence": "Four-width compiled browser/enlarged-text/keyboard/Axe and controlled actual-interval checks remain separate passing records. No claim of full UX or MVP acceptance.",
+  "owner": "Browser-control service / next foreground review session"
+}

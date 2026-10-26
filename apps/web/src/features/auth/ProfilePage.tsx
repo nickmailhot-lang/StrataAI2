@@ -2,6 +2,7 @@ import { publicCorrelationReference } from '../../api/correlationReference';
 import { WorkRequestError } from '../../api/workManagement';
 import { apiFetch } from '../../api/apiFetch';
 import { forgetInvitationIntents } from '../organizations/invitationIntent';
+import { forgetSearchReturn } from '../search/searchReturn';
 import { forgetConfigurationChanges } from '../organizations/organizationConfigurationRecovery';
 import { forgetRetentionPolicyChanges } from '../records/retentionPolicyRecovery';
 import { forgetHoldIntents } from '../records/retentionHoldClient';
@@ -304,6 +305,7 @@ export function ProfilePage() {
       if (!current()) return;
       if (response.status !== 204 && response.status !== 401) throw new WorkRequestError(response.status, response.reference);
       forgetInvitationIntents();
+      forgetSearchReturn();
       forgetConfigurationChanges();
       forgetRetentionPolicyChanges();
       forgetRetentionSourceClassifications();
@@ -333,6 +335,7 @@ export function ProfilePage() {
       if (!current()) return;
       if (response.status === 204) {
         forgetInvitationIntents();
+        forgetSearchReturn();
         forgetConfigurationChanges();
         forgetRetentionPolicyChanges();
         forgetRetentionSourceClassifications();

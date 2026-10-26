@@ -125,7 +125,10 @@ for (const width of [1280, 390]) {
       });
       const editName = `Edit policy for Governance ${rule.category}, ${rule.jurisdiction}`;
       await page.goto(`/app/${organization}/retention-policies`); await expect.poll(metadata).toBeGreaterThan(0);
-      await keyboardClick(page, page.getByRole('button', { name: editName, exact: true }));
+      // Foreground authority refresh may retire this read-only launcher during
+      // focus. Observe the editor before filling; never replay its submission.
+      await openAdmittedReview(page.getByRole('button', { name: editName, exact: true }),
+        page.getByRole('dialog', { name: 'Edit retention policy', exact: true }));
       await page.getByLabel('Reviewed source', { exact: true }).fill('Original administrator private proposal'); await approve(page);
       await expect(page.getByText(/The acknowledgment could not be confirmed/)).toBeVisible();
       expect(writes).toHaveLength(1);
@@ -146,7 +149,8 @@ for (const width of [1280, 390]) {
       const originalRevision = (await originalHistory.json()).items.find((row: { policy: { version: number } }) => row.policy.version === 2);
       expect(originalRevision).toMatchObject({ actorId: admin.user.id, actorLabel: 'Retention fixture administrator', actingCapacity: 1,
         policy: { source: 'Original administrator private proposal' } });
-      await keyboardClick(page, page.getByRole('button', { name: editName, exact: true }));
+      await openAdmittedReview(page.getByRole('button', { name: editName, exact: true }),
+        page.getByRole('dialog', { name: 'Edit retention policy', exact: true }));
       await page.getByLabel('Reviewed source', { exact: true }).fill('Pending private proposal before withdrawal'); await approve(page);
       await expect(page.getByText(/The acknowledgment could not be confirmed/)).toBeVisible(); expect(writes).toHaveLength(3);
       await keyboardClick(page, page.getByRole('button', { name: 'Close and retain work', exact: true }));

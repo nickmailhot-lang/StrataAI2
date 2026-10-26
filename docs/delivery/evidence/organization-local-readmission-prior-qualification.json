@@ -1,0 +1,9 @@
+{
+  "revision": "7119a8151c34ec8a028076a113021632fe8d75bb",
+  "at": "2026-10-24T10:57:24.594Z",
+  "result": "Passed",
+  "command": "Own7119 CI partial qualification, distinct from replacement qualification",
+  "source": "3027 frontend passed/24 existing deferrals;2526 backend passed/5 existing deferrals; source quality, metadata36contracts, PostgreSQL and security passed.",
+  "production": "Browser1/4 passed137, including original unchanged1280/390 private-star history full scenario; browser2/4, Foundation, commands and notifications passed. Six CodeQL checks passed. Browser3/4 failed separately; browser4/4 still running at checkpoint. Required aggregate and immutable release unqualified.",
+  "limits": "Partial successful gates cannot qualify replacement source or product acceptance. Failed138/1 and unexecuted tail retained separately."
+}
