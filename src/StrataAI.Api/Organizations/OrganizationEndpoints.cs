@@ -9,6 +9,7 @@ public static class OrganizationEndpoints
     {
         var group = app.MapGroup("/organizations").RequireAuthorization().AddEndpointFilter<OrganizationTelemetryResultFilter>();
         group.MapOrganizationConfigurationEndpoints();
+        group.MapStrataLotEndpoints();
         StrataAI.Api.Records.RetentionPolicyEndpoints.MapRetentionPolicyEndpoints(group);
         StrataAI.Api.Records.RetentionSourceEndpoints.MapRetentionSourceEndpoints(group);
         StrataAI.Api.Records.RetentionHoldEndpoints.MapRetentionHoldEndpoints(group);
