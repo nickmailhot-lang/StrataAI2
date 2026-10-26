@@ -3,6 +3,9 @@ DO $$
 DECLARE expected record; relation regclass; actual text[]; capability text;
 BEGIN
  FOR expected IN SELECT * FROM (VALUES
+  ('strata_lots',ARRAY['tenant_id','id']),
+  ('strata_lot_history',ARRAY['tenant_id','lot_id','version']),
+  ('strata_lot_receipts',ARRAY['tenant_id','actor_id','key_id']),
   ('organization_configurations',ARRAY['tenant_id']),
   ('organization_configuration_history',ARRAY['tenant_id','version']),
   ('organization_configuration_receipts',ARRAY['tenant_id','actor_id','key_id']),

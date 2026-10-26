@@ -59,6 +59,9 @@ GRANT UPDATE(watching,updated_at,version) ON watch_subscriptions TO strataai_api
 GRANT SELECT,INSERT ON invitation_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_metadata_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_creation_replays TO strataai_api_runtime;
+-- PRD-28 directory commands retain history/receipts; neither role can delete them.
+GRANT SELECT,INSERT,UPDATE ON strata_lots TO strataai_api_runtime;
+GRANT SELECT,INSERT ON strata_lot_history,strata_lot_receipts TO strataai_api_runtime;
 GRANT SELECT ON record_retention_policies,record_retention_policy_history,record_retention_policy_receipts TO strataai_api_runtime;
 GRANT INSERT,UPDATE ON record_retention_policies TO strataai_api_runtime;
 GRANT INSERT ON record_retention_policy_history,record_retention_policy_receipts TO strataai_api_runtime;
