@@ -1,5 +1,44 @@
 # Consolidated PRD delivery report
 
+## 2026-10-23 — PR #123 acceptance and Demo tracking verified
+
+PR #123 is merged as `f1cd09ee` after all22 exact-head gates,original strict six-profile performance,immutable release and bounded source/UX review passed. Actual main parents/tree match the tested composition. Qualified Demo **0.1.0-1975** is running at **http://127.0.0.2:8090/login** with the polished Board filters and authoritative Unassigned feedback. Actual browser sign-in,Organization context,live Board and empty-filter clear/return were verified. Both previous Demo instances retain their processes,data,history and sessions.
+
+The accepted ledger and Demo evidence pass full Git/source/hash/baseline/main-history validation and **all36 delivery contracts,zero failures/skips**,on exact commit `d9e4597e`. The final evidence bookkeeping is structurally/evolution validated;its separate draft tracking PR still requires its own hosted checks before merge.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing bounded Board-filter guidance/focus and canonical empty-assignee behavior integrated. |
+| UX completion | Six bounded Task/Test records and seven exact criteria accepted;four-width keyboard/reflow/200%/Axe/access checks pass. |
+| Test completion | PR123 all22 pass;frontend2993/backend2525;normal browser528 plus two original conditional mail skips,dedicated notifications93,Foundation50,commands80steps;strict6/release pass. Original24/five source deferrals preserved. Exact post-main ledger validation and36contracts pass separately. |
+| MVP readiness | **87Done**;broader PRDs and global MVP remain open. No combined completion percentage. |
+
+Ledger:1,627items,3,924criteria,1,055evidence records. [Qualified CI](../delivery/evidence/trello-polish-123-ci22.json),[bounded acceptance](../delivery/evidence/trello-polish-123-ux-acceptance.json),[main proof](../delivery/evidence/trello-polish-123-main-integration.json),[Demo](../delivery/evidence/trello-polish-123-demo.json),[post-main tracking](../delivery/evidence/trello-polish-123-post-main-tracking.json). Next:reconcile existing Card details/Search gaps before adding visible scope.
+
+---
+
+
+## 2026-10-23 — PR #123 merged; qualified Board polish Demo refreshed
+
+PR [#123](https://github.com/nickmailhot-lang/StrataAI2/pull/123) merged as `f1cd09ee` after **all 22 checks passed** on frozen head `35c1775a`. The actual main parents and tree match the qualified composition. Build **0.1.0-1975** uses the exact verified `23f1cf65` release images. No gate was weakened.
+
+The test counter repair distinguishes only three exact existing SignalR negotiation POSTs from business writes. The original zero-write assertion, UI/privacy/logout tail, roles, widths and 90-second deadline are unchanged. Failed build1974 (129 passes/four failures) and its Not Run logout tail remain retained separately.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing Board-filter guidance/focus and same-revision empty-assignee previews implemented and integrated; original features and contracts preserved. |
+| UX completion | Six bounded Task/Test records and seven criteria accepted after current four-width keyboard/reflow/200%/Axe/role/privacy checks and delegated source/UX review. Broader UX PRDs remain open. |
+| Test completion | All22 own gates pass:2993 frontend/2525 backend passes; original24/five source deferrals unchanged. Normal browser528 passes/two existing mail-profile skips, dedicated notifications93, Foundation50 and80 command steps pass. All six original strict performance profiles and immutable Production/Demo/HTTPS/Secure/WSS/recovery release checks pass. |
+| MVP readiness | **87 Done** work records; no parent PRD/global MVP closure or combined percentage. Final post-integration tracking validation remains separate from product qualification. |
+
+Qualified Demo: **[open build1975](http://127.0.0.2:8090/login)** — login `demo@strataai.test`, password `StrataAI-Demo-2026!`. Three healthy services, correct build, wrong-password refusal, private Board anonymous404 and seven same-revision assignee previews verified. Actual browser sign-in, Organization context, live Board, Unassigned feedback and actionable empty-filter clear/return observed.
+
+Three Lists and seven Cards were copied through normal APIs with text, order, dates and current self-assignment preserved when present. Other relationships/history and unsaved drafts remain in the original Demo at http://127.0.0.1:8089; the earlier http://localhost:8088 instance is also retained. Demo data is process-local.
+
+Ledger:1,627 items,3,924 criteria,1,054 evidence records,87Done. [CI qualification](../delivery/evidence/trello-polish-123-ci22.json), [bounded review](../delivery/evidence/trello-polish-123-review.json), [actual main proof](../delivery/evidence/trello-polish-123-main-integration.json), [Demo verification](../delivery/evidence/trello-polish-123-demo.json). Next:complete exact committed tracking validation and36 contracts; continue demonstrated existing Card details/Search polish gaps without expanding visible scope.
+
+---
+
 ## 2026-10-22 — Board polish repair ready for fresh CI
 
 PR #123 remains draft and unmerged. The failed build 1974 is retained:129 full-browser passes and four false-positive business-write failures. Repair `0d8939e2` distinguishes only the three exact existing SignalR negotiation POSTs from business commands. The zero-write assertion, all UI/privacy assertions, worker ownership, roles and 90-second deadline are unchanged.
