@@ -1,0 +1,85 @@
+{
+  "sourceRevision": "81d5e4ad7311ff821de6fe175a53d93ada3358ac",
+  "sourceTree": "baae7d92a357e2dd63249036a5e04e4175207b77",
+  "at": "2026-10-26T21:26:33.906252+00:00",
+  "scope": "First administrative unit-directory backend and pure Card metadata validation increment. Not full PRD/MVP/Production acceptance.",
+  "results": [
+    {
+      "command": "dotnet build StrataAI2.slnx --no-restore -c Release -m:1",
+      "result": "Passed",
+      "summary": "All 8 projects; zero warnings/errors"
+    },
+    {
+      "command": "StrataAI.Domain.Tests.dll -class StrataAI.Domain.Tests.StrataPropertyRulesTests",
+      "result": "Passed",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "StrataAI.Api.Tests.dll -method StrataAI.Api.Tests.ApiHostTests.PRD_28*",
+      "result": "Passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "coverage": "Actual TestServer/session/transaction consumers, including 55-unit paging, role withdrawal and rollback"
+    },
+    {
+      "command": "node --test tests/ticket-dependencies.test.mjs tests/web-architecture.test.mjs",
+      "result": "Passed",
+      "passed": 12
+    },
+    {
+      "command": "node --test tests/delivery-progress.test.mjs",
+      "result": "Passed",
+      "passed": 36
+    }
+  ],
+  "notRun": [
+    "Real PostgreSQL/restricted-role persistence and installed-schema assertions (wired into existing mandatory configuration checks)",
+    "Browser/responsive/zoom/Axe/manual UX; no frontend shipped",
+    "Full security/immutable image qualification and target integration"
+  ],
+  "preservedDevelopmentFailures": [
+    {
+      "source": "Uncommitted development attempt before corrected published source",
+      "failure": "Receipt provenance check initially returned 503 instead of expected 409 for reused key with changed input.",
+      "resolution": "Compare intent fingerprint before verifying matching original result fields; complete ten-case HTTP suite now passes."
+    },
+    {
+      "source": "Initial isolated worktree environment",
+      "failure": "Optional architecture contract could not resolve eslint.",
+      "resolution": "Reused the already installed dependencies; all twelve contracts pass."
+    }
+  ],
+  "logs": {
+    "build": [
+      "  StrataAI.Worker -> /workspace/scratch/da007d38f63f/StrataAI2-units/src/StrataAI.Worker/bin/Release/net10.0/StrataAI.Worker.dll",
+      "  StrataAI.Api.Tests -> /workspace/scratch/da007d38f63f/StrataAI2-units/tests/StrataAI.Api.Tests/bin/Release/net10.0/StrataAI.Api.Tests.dll",
+      "  StrataAI.Domain.Tests -> /workspace/scratch/da007d38f63f/StrataAI2-units/tests/StrataAI.Domain.Tests/bin/Release/net10.0/StrataAI.Domain.Tests.dll",
+      "  StrataAI.Persistence.Contracts -> /workspace/scratch/da007d38f63f/StrataAI2-units/tests/StrataAI.Persistence.Contracts/bin/Release/net10.0/StrataAI.Persistence.Contracts.dll",
+      "",
+      "Build succeeded.",
+      "    0 Warning(s)",
+      "    0 Error(s)",
+      "",
+      "Time Elapsed 00:00:52.09"
+    ],
+    "domain": [
+      "  Discovering: StrataAI.Domain.Tests",
+      "  Discovered:  StrataAI.Domain.Tests",
+      "  Starting:    StrataAI.Domain.Tests",
+      "  Finished:    StrataAI.Domain.Tests (ID = '07616f6aae14154a282de439571c9d93fdea71d74d818918e5d1822953bea05b')",
+      "=== TEST EXECUTION SUMMARY ===",
+      "   StrataAI.Domain.Tests  Total: 19, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.182s"
+    ],
+    "http": [
+      "  Discovering: StrataAI.Api.Tests",
+      "  Discovered:  StrataAI.Api.Tests",
+      "  Starting:    StrataAI.Api.Tests",
+      "  Finished:    StrataAI.Api.Tests (ID = '0c7daafff05044d69d4bfd49a23a40e888911a582126b92e7460b438157b7c4e')",
+      "=== TEST EXECUTION SUMMARY ===",
+      "   StrataAI.Api.Tests  Total: 10, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 15.919s"
+    ]
+  }
+}

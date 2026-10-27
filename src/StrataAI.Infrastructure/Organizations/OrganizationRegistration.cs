@@ -14,6 +14,7 @@ public static class OrganizationRegistration
         this IServiceCollection services,
         RuntimeDescriptor runtime)
     {
+        StrataAI.Infrastructure.Property.PropertyRegistration.AddStrataAiProperty(services, runtime);
         services.AddSingleton<IOrganizationMetadataCursorCodec, DataProtectedOrganizationMetadataCursorCodec>();
         services.AddSingleton<IOrganizationConfigurationCursorCodec, DataProtectedOrganizationConfigurationCursorCodec>();
         services.AddSingleton<IOrganizationConfigurationActivityCursorCodec, DataProtectedOrganizationConfigurationActivityCursorCodec>();

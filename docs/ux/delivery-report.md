@@ -1964,3 +1964,16 @@ The complete local frontend run finished with2951passes,12failures andtheorigina
 ### Cycle152: patched build-tool verification
 
 Exact Vite8.3.4 and required locked build-tool transitives pass supported npm11.19.1 fresh install, audit0, web/browser types, complete15 NavigationConfirmation cases and production compilation. Compiler verification uses default local metadata and is not an identified release bundle. Original security failures and the separate native7/4 aggregate remain Failed. New-head complete CI and integration remain required; no UX/product acceptance is inferred. Evidence:EVID-CYCLE-152-PATCHED-VITE-LOCAL.
+
+## PRD-28 / PRD-34 property foundation — 2026-10-26
+
+User authorized work on both existing PRDs. Reconciliation found no unit directory or strata Card metadata consumer in the inspected source. The first focused backend increment implements an Owner/Admin-only versioned unit directory with canonical reads, identifier correction/deactivation, retained history, retry receipts, forced tenant isolation and transaction rollback. PRD-34 now has tested metadata/scope validation contracts; authoritative Card metadata persistence and UI are not implemented by this increment.
+
+Local compilation and scoped rule/HTTP checks are recorded in `docs/delivery/evidence/strata-property-foundation-20261026.json`. The actual 55-unit consumer verifies both directory pages. Earlier dependency-environment and changed-intent error-ordering failures remain recorded. Production persistence/RLS execution, browser/UX, security, immutable qualification, review and target integration remain pending; a stacked draft does not supply those gates. All new criteria remain Unverified and all active records remain In Progress.
+
+Next: qualify the administrative backend, then deliver the existing-composition directory and Card affected-unit/scope workflow; persist metadata/options, add indexed filters and preserve canonical Card return. Portal temporal relationships, confidentiality and AI review remain their original separately required dependencies. See `docs/architecture/strata-property-foundation.md` for scope and remaining obligations. This adds no standalone navigation, new frontend framework or parent/MVP completion claim.
+
+
+### PR recreation from main — 2026-10-27
+
+PR #129 retains PR #127 backend/metadata validation source and historical evidence on main 6283411. Local API build (zero warnings/errors), 19 property-domain cases and 10 API consumer cases pass. Ledger validation passed before additive reconstruction bookkeeping. No UI added; server-only UXA applicability and future UI obligations remain in strata-property-foundation.md. Fresh required CI/full qualification and acceptance remain pending. No parent PRD or MVP completion claimed.

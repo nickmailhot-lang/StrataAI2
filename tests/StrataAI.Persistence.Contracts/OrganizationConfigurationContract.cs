@@ -109,6 +109,7 @@ internal static class OrganizationConfigurationContract
         var store = provider.GetRequiredService<IOrganizationConfigurationStore>();
         var unit = provider.GetRequiredService<IOrganizationUnitOfWork>();
         var organizations = provider.GetRequiredService<IOrganizationStore>();
+        await StrataLotContract.RunAsync(admin, provider, tenant, other, actor, ct);
         await VerifyIntakePaginationAsync(admin, service, tenant, actor, foreignBoard, ct);
         var empty = await service.ReadAsync(tenant, actor, ct);
         Require(empty.Succeeded && empty.Value is { Version: 0, Revision: null }, "Configuration empty state was fabricated.");
