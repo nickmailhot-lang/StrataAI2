@@ -1,0 +1,178 @@
+{
+  "at": "2026-10-20T10:13:48.644Z",
+  "startedAt": "2026-10-20T10:08:39.597Z",
+  "project": "strataai-mvp-browser-43ce47c114ef17df",
+  "exit": 0,
+  "stats": {
+    "startTime": "2026-10-20T10:09:35.705Z",
+    "duration": 248592.36500000002,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "frontendSource": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "testSource": "47745b34a4c2970d9c6168d85ffd4941313d4aeb",
+  "result": "Passed",
+  "phases": [
+    {
+      "name": "Start exclusive fixture database",
+      "exit": 0
+    },
+    {
+      "name": "Apply packaged migrations without application build",
+      "exit": 0
+    },
+    {
+      "name": "Provision canonical restricted runtime roles",
+      "exit": 0
+    },
+    {
+      "name": "Provision original disposable identity CI role",
+      "exit": 0
+    },
+    {
+      "name": "Start retained images with original browser-full account fixture",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned api container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned worker container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned web container",
+      "exit": 0
+    },
+    {
+      "name": "Original three and new two first-use cases",
+      "exit": 0
+    },
+    {
+      "name": "Clean only exclusive fixture resources",
+      "exit": 0
+    }
+  ],
+  "primaryError": null,
+  "cleanupError": null,
+  "stockUnchanged": true,
+  "ownedRemaining": {
+    "containers": "",
+    "volumes": "",
+    "networks": ""
+  },
+  "privateSettingsRemoved": true,
+  "logSha256": "2db8f38d2c4f79dcccdd7359f65496a2de9a3e80da6ef8b59e243b608678029c",
+  "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "scope": "Complete five-case first-use execution on owned retainedAPI/Worker/PG plus offline-fixed frontend/first-use tests. Originalthree cases plus two missing profiles/assertions/deadlines and zero retries preserved. Localfixture only, not currentimmutableCI; earlierfailed aggregates remainretained.",
+  "runtime": {
+    "at": "2026-10-20T10:09:32.063Z",
+    "project": "strataai-mvp-browser-43ce47c114ef17df",
+    "api": {
+      "service": "strataai-api",
+      "mode": "production",
+      "revision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "version": "0.1.0-1937"
+    },
+    "client": {
+      "revision": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+      "version": "0.1.0-local-offline-withdrawal"
+    },
+    "servedAssets": [
+      {
+        "path": "build-metadata.json",
+        "sha256": "0d08f1d9a6c364e35810072589d3053ec4484c64c957fb7f9729cdcb6842100f",
+        "size": 98
+      },
+      {
+        "path": "index.html",
+        "sha256": "e30a1a07daa85b63761734607518827901564a270a5743757b6a0c72ca7c8976",
+        "size": 561
+      },
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666",
+        "size": 561
+      },
+      {
+        "path": "assets/index-D5raH-tU.js",
+        "sha256": "e1d32a922158f92d8ff523051fa6139168929e4715996aa945c5e66b2c9a397f",
+        "size": 1636949
+      }
+    ],
+    "frontendSource": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+    "testSource": "47745b34a4c2970d9c6168d85ffd4941313d4aeb",
+    "containers": [
+      {
+        "service": "api",
+        "id": "229e099d40e24e5908e7b25b2d509a4352e8dbcf6fd6ebddb6f5c34d9f898250",
+        "image": "sha256:6843e40e15b93bc190d6a1d8ea7a0dd7859cecb8cdb2c3bba301e7f2430a2c27",
+        "startedAt": "2026-10-20T10:09:14.394706987Z"
+      },
+      {
+        "service": "worker",
+        "id": "5cbe48e5bf6decf2286e42cf29b23944f1a09c257dad9c2a3fa8d5209709a2d1",
+        "image": "sha256:ffde817b2729a1dd1d3b74c6c704b0127b9477d782d61c359fa4dde8d1d54897",
+        "startedAt": "2026-10-20T10:09:13.909732831Z"
+      },
+      {
+        "service": "web",
+        "id": "2815342797c0f586a9c75ba0c7888b5aa8462d106f05129060fa25c8db22567e",
+        "image": "sha256:6e0ecd1435c3b7e150109c74413dd992e0bd5c0ed0f062fc05f21cf365ec23c8",
+        "startedAt": "2026-10-20T10:09:22.391138546Z"
+      }
+    ],
+    "scope": "Retainedh API/Worker images with exact offline-fixed readonlyfrontend override and hashverifiedservedassets, real isolatedPG and originalauth/identityprofile. Supporting mixed-client runtime only, not immutableCI or productiondeployment."
+  },
+  "cases": [
+    {
+      "title": "board.spec.ts / PRD-01/04/07/08/09: persisted board workflow and isolation (desktop)",
+      "timeout": 30000,
+      "status": "expected",
+      "result": "passed",
+      "retry": 0,
+      "durationMs": 18833
+    },
+    {
+      "title": "board.spec.ts / PRD-01/04/07/08/09: persisted board workflow and isolation (tablet)",
+      "timeout": 30000,
+      "status": "expected",
+      "result": "passed",
+      "retry": 0,
+      "durationMs": 14725
+    },
+    {
+      "title": "board.spec.ts / PRD-01/04/07/08/09: persisted board workflow and isolation (mobile)",
+      "timeout": 30000,
+      "status": "expected",
+      "result": "passed",
+      "retry": 0,
+      "durationMs": 16448
+    },
+    {
+      "title": "board.spec.ts / PRD-01/04/07/08/09: persisted board workflow and isolation (narrow mobile)",
+      "timeout": 30000,
+      "status": "expected",
+      "result": "passed",
+      "retry": 0,
+      "durationMs": 32788
+    },
+    {
+      "title": "board.spec.ts / PRD-01/04/07/08/09: persisted board workflow and isolation (tablet 200% text)",
+      "timeout": 30000,
+      "status": "expected",
+      "result": "passed",
+      "retry": 0,
+      "durationMs": 32852
+    }
+  ],
+  "reportSha256": "6956d98fb4d72cb0638079edd748a0f9696cd4353c057198e9c7251877834e77",
+  "limits": [
+    "Original configured30s and release fixture deadlines unchanged. Reported total durations are retained exactly, including two above30s; do not claim whole fixture/cleanup wall time is below30s.",
+    "Supporting owned retained API/Worker and exact fixed-client run; not current immutable CI certification."
+  ]
+}

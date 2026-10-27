@@ -1,0 +1,495 @@
+{
+  "at": "2026-10-20T08:30:10.871Z",
+  "source": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+  "owner": "PRD-03-VS-01-T-01",
+  "rows": [
+    {
+      "criterion": "PRD-03-VS-01/WS-FR-001",
+      "text": "Authenticated users SHALL be able to create a organization.",
+      "businessAcceptanceStatus": "Unverified",
+      "paths": [
+        {
+          "path": "apps/web/src/features/organizations/OrganizationCreationDialog.tsx",
+          "sha256": "0dc9a2c39ff1e4862e2517ab1a1d14f1cdb0ce4baadb098c30de2b36d52e4534"
+        },
+        {
+          "path": "src/StrataAI.Application/Organizations/OrganizationService.cs",
+          "sha256": "30719b068309777c7cfd6d5be65737f6afa3c1cdffd88a72d3babefe69c552de"
+        },
+        {
+          "path": "tests/browser/board.spec.ts",
+          "sha256": "b17a74cbd9c36d20cf79a04284305eeb6a9602f106b42a9ab31999638812a078"
+        },
+        {
+          "path": "tests/browser/organization-creation-retries.spec.ts",
+          "sha256": "a13c9916393d003d8055726e6eae2607d48298937d3dd66813c5450c444f5a61"
+        }
+      ],
+      "assessment": "Creation and original-intent recovery already implemented. Scoped controlled UI evidence is present; current first-use native/CI evidence must still be matched.",
+      "remaining": "Current native/currentCI/review/integration and applicable complete requirement evidence still required; no parent acceptance inferred."
+    },
+    {
+      "criterion": "PRD-03-VS-01/WS-FR-002",
+      "text": "Organization fields SHALL include name, description, logo/avatar, owner, status, createdAt, updatedAt.",
+      "businessAcceptanceStatus": "Unverified",
+      "paths": [
+        {
+          "path": "src/StrataAI.Application/Organizations/OrganizationModels.cs",
+          "sha256": "dacfc74afbe70e43440e8ac6bfbcef231665a1ce3f381d092713ad4e414c3431"
+        },
+        {
+          "path": "src/StrataAI.Application/Organizations/OrganizationService.cs",
+          "sha256": "30719b068309777c7cfd6d5be65737f6afa3c1cdffd88a72d3babefe69c552de"
+        },
+        {
+          "path": "db/migrations/003_identity.sql",
+          "sha256": "301fc86671aad242c4641291ef72f1201ae91d4a80f922505d9807a80f16e545"
+        }
+      ],
+      "assessment": "Canonical OrganizationRecord includes Name,Description,LogoUrl,OwnerUserId,Status,CreatedAt,UpdatedAt. Do not infer missing fields from the smaller legacy Domain type. Verify actual created canonical values; no logo feature restart.",
+      "remaining": "Current native/currentCI/review/integration and applicable complete requirement evidence still required; no parent acceptance inferred."
+    },
+    {
+      "criterion": "PRD-03-VS-01/WS-FR-007",
+      "text": "The organization home SHALL list all boards the current user is authorized to discover.",
+      "businessAcceptanceStatus": "Unverified",
+      "paths": [
+        {
+          "path": "src/StrataAI.Application/Organizations/OrganizationService.cs",
+          "sha256": "30719b068309777c7cfd6d5be65737f6afa3c1cdffd88a72d3babefe69c552de"
+        },
+        {
+          "path": "src/StrataAI.Api/Organizations/OrganizationEndpoints.cs",
+          "sha256": "130c885e4c90675aad9e3b2ee990212cd80b45e12ee95489f5de21b2161fce3d"
+        },
+        {
+          "path": "apps/web/src/features/organizations/OrganizationHome.tsx",
+          "sha256": "75898343b46d6ca537c49b0a4a79d3de1cf0c9b008d075b4d95f8d556c175aa7"
+        },
+        {
+          "path": "tests/StrataAI.Api.Tests/OrganizationBoardDirectoryTests.cs",
+          "sha256": "6b386cc8d40a5c150f80fc7b34d98b00210b278e52ef5fcb4f657f0a0577153b"
+        },
+        {
+          "path": "tests/browser/organization-directory.spec.ts",
+          "sha256": "0fb32acda39bfa187177b9ca46eda21b828b805a3f64a19e5a43c22b7b2446e9"
+        }
+      ],
+      "assessment": "Authorized bounded directory implementation and tests exist. Private/archived/removed-membership current execution evidence remains separate from source presence.",
+      "remaining": "Current native/currentCI/review/integration and applicable complete requirement evidence still required; no parent acceptance inferred."
+    },
+    {
+      "criterion": "PRD-03-VS-01/WS-FR-008",
+      "text": "Organization roles SHALL include OWNER, ADMIN, MEMBER.",
+      "businessAcceptanceStatus": "Unverified",
+      "paths": [
+        {
+          "path": "src/StrataAI.Application/Organizations/OrganizationModels.cs",
+          "sha256": "dacfc74afbe70e43440e8ac6bfbcef231665a1ce3f381d092713ad4e414c3431"
+        },
+        {
+          "path": "tests/StrataAI.Api.Tests/OrganizationCommandTests.cs",
+          "sha256": "d4edf7679b9df66999100c1162653785f4966310cf9d8907490b2fa27a6c8eea"
+        },
+        {
+          "path": "tests/browser/organization-members.spec.ts",
+          "sha256": "466f9ed251649e2c41ba053595560b18799e2ae1c0d3e6240dd50ec04b17232e"
+        }
+      ],
+      "assessment": "Owner/Admin/Member are existing canonical roles. Owner creation and anonymous/public denial are not substitutes for all current role/permission checks.",
+      "remaining": "Current native/currentCI/review/integration and applicable complete requirement evidence still required; no parent acceptance inferred."
+    },
+    {
+      "criterion": "PRD-03-VS-01/EXIT",
+      "text": "Demonstrate the scoped authorized workflow and applicable denial, retry/lifecycle and UXA-01–08 checks; retain exact revision results and integrate with no known critical regression.",
+      "businessAcceptanceStatus": "Unverified",
+      "paths": [
+        {
+          "path": "tests/browser/board.spec.ts",
+          "sha256": "b17a74cbd9c36d20cf79a04284305eeb6a9602f106b42a9ab31999638812a078"
+        },
+        {
+          "path": "tests/browser/organization-context-name.spec.ts",
+          "sha256": "d0b39e855997bdadddd28756e3ef08247f6722b9e394788828b554bab58f88a0"
+        },
+        {
+          "path": "docs/ux/feature-acceptance.md",
+          "sha256": "97c337da77d7d9b561ed02b202f8ac0761979992d98021476435fc7174faa5aa"
+        }
+      ],
+      "assessment": "Existing continuous first-use flow already creates Organization, Board, List and Card, verifies original-ID recovery, edits/reload/Back/Forward, wrong-Organization denial and public read-only isolation. Its three profiles omit320px and200%text; add only these missing profiles and preserve all originals.",
+      "remaining": "Current native/currentCI/review/integration and applicable complete requirement evidence still required; no parent acceptance inferred."
+    }
+  ],
+  "sourcePresenceIsNotTestPass": true,
+  "controlledEvidence": {
+    "source": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+    "executedFrontendSource": "1a253fef0e736662445fbb72673aad6520257ad4",
+    "method": "Extract actually executed scoped subset from original complete frontend run; verify empty apps/web/src/db diff from executed R7 to current R10. This is reuse of exact source evidence, not a new run.",
+    "result": "Passed",
+    "scopedPassed": 78,
+    "failed": 0,
+    "suites": [
+      {
+        "file": "apps/web/src/features/organizations/OrganizationHome.actions.test.tsx",
+        "cases": [
+          {
+            "id": "PRD-03-VS-06-T-03: current role 0 discloses exactly permitted existing Organization actions",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-03-VS-06-T-03: current role 1 discloses exactly permitted existing Organization actions",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-03-VS-06-T-03: current role 2 discloses exactly permitted existing Organization actions",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-03-VS-06-T-03: Create Board precedes secondary operations in keyboard/reading order",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-03-VS-06-T-03: admission withdrawal removes old permissions and restores only expansion choice true after a fresh downgraded role",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-03-VS-06-T-03: admission withdrawal removes old permissions and restores only expansion choice false after a fresh downgraded role",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-03-VS-06-T-03: rollback retains inline role-permitted actions and the existing Board creation/cancel workflow",
+            "status": "passed"
+          }
+        ],
+        "passed": 7
+      },
+      {
+        "file": "apps/web/src/features/organizations/OrganizationHome.focus.test.tsx",
+        "cases": [
+          {
+            "id": "UXA-06: Cancel after access recovery returns focus to the current Board launcher",
+            "status": "passed"
+          },
+          {
+            "id": "UXA-06: Escape after access recovery returns focus to the current Board launcher",
+            "status": "passed"
+          }
+        ],
+        "passed": 2
+      },
+      {
+        "file": "apps/web/src/features/organizations/OrganizationHome.test.tsx",
+        "cases": [
+          {
+            "id": "PRD-01/03/04 organization discovery PRD-04-VS-05/AC-06 retires an unsubmitted empty review on established authority reset",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery PRD-04-VS-05/AC-06 retires an unsubmitted draft review on established authority reset",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery PRD-04-VS-05/AC-06 retires an unsubmitted navigation review on established authority reset",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery PRD-04-VS-05/AC-06 preserves a submitted uncertain original command through established reset",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery suspends and restores the original Board draft after boards admission reset",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery suspends and restores the original Board draft after metadata admission reset",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery suspends and restores the original Board draft after lifecycle admission reset",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery retires a suspended Board draft after definitive admission refusal (403)",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery retires a suspended Board draft after definitive admission refusal (404)",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery retains the same explicit Board submission key through uncertain save and read recovery",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery displays the canonical Organization classification STRATA",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery displays the canonical Organization classification HOA",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery displays the canonical Organization classification CONDOMINIUM",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery displays the canonical Organization classification COOPERATIVE",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery displays the canonical Organization classification PROPERTY_MANAGEMENT_COMPANY",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery displays the canonical Organization classification GENERIC",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery recovers a terminal source on a fresh deep link whose ordinary graph is already unavailable",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery does not navigate to a Board whose acknowledgment arrives after deletion starts",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws private content and creation consent while deletion is pending, then announces completion",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery preserves PENDING lifecycle authority over late ordinary stream callbacks",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery preserves COMPLETED lifecycle authority over late ordinary stream callbacks",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery keeps lifecycle admission after ordinary parent denial and rechecks a disconnected terminal fact",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws the terminal notice when lifecycle admission confirms account loss",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refreshes Organization metadata after a canonical source without requiring navigation or reload",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws Organization names and creation consent when metadata recovery loses admission",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery continues an empty nonterminal page and replaces rather than accumulates directory names",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery clears a paged directory when the account changes during the next page read",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery allows returning to the first page after a failed later page without retaining names",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery admits an Organization deep link without reading its directory page",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed or unbounded pages before exposing names",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed or unbounded pages before exposing names",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed or unbounded pages before exposing names",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws cached names and creation consent when live admission is withdrawn",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery fences an older directory response after a newer canonical invalidation",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withholds names if the current account changes during directory IO",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery displays a server-valid Board name with embedded whitespace without refusing its whole page",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery keeps focused paging available during metadata recovery and retires the superseded read",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery keeps focused paging available during boards recovery and retires the superseded read",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws retained paging when lifecycle admission changes to PENDING",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws retained paging when lifecycle admission changes to COMPLETED",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws retained paging when lifecycle admission changes to account",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws the retained continuation if fresh Organization admission is denied",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery replaces Board pages and returns to the first page without accumulating names",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery recovers the first Board page after a failed continuation and clears its old names",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws Board page names when the account changes during continuation",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery keeps first-page recovery available when later Boards disappear before continuation",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses nonadvancing Board continuation rows and clears the prior page",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed Board pages before displaying protected metadata",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed Board pages before displaying protected metadata",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed Board pages before displaying protected metadata",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed Board pages before displaying protected metadata",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed Board pages before displaying protected metadata",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed Board pages before displaying protected metadata",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed Board pages before displaying protected metadata",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery refuses malformed Board pages before displaying protected metadata",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery displays an honest empty state and creation action for a new account",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery creates an organization and opens its current authorized board list",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery defaults new boards to private and opens the persisted board ID",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery redirects expired sessions to sign in",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery withdraws the Board form when the server refuses its original account context",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery does not request or expose boards for an organization outside active membership",
+            "status": "passed"
+          },
+          {
+            "id": "PRD-01/03/04 organization discovery clears organization names immediately when switching scope",
+            "status": "passed"
+          },
+          {
+            "id": "returns keyboard focus to creation only after cancellation refreshes the current directory",
+            "status": "passed"
+          },
+          {
+            "id": "offers the deletion operation link only to a current Owner, role 0",
+            "status": "passed"
+          },
+          {
+            "id": "offers the deletion operation link only to a current Owner, role 1",
+            "status": "passed"
+          },
+          {
+            "id": "offers the deletion operation link only to a current Owner, role 2",
+            "status": "passed"
+          },
+          {
+            "id": "uses neutral Organization denial on an independently admitted home (403)",
+            "status": "passed"
+          },
+          {
+            "id": "uses neutral Organization denial on an independently admitted home (404)",
+            "status": "passed"
+          },
+          {
+            "id": "UX-002: withdraws admin discovery synchronously while a live role downgrade is confirmed",
+            "status": "passed"
+          }
+        ],
+        "passed": 69
+      }
+    ],
+    "fullReportSha256": "92e18c4c129f6350dc348984a8ce28d8783b8cea7b4cc425fab3592e517e5d5d",
+    "scope": "Existing controlled OrganizationHome/action/focus subset only. Native first-use creation, all role/API-field and entire slice acceptance remain separately unverified."
+  },
+  "firstUseCoverage": {
+    "path": "tests/browser/board.spec.ts",
+    "originalProfiles": [
+      {
+        "name": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "timeoutMs": 30000,
+    "retries": 0,
+    "missingProfiles": [
+      "320px continuous first-use",
+      "768px continuous first-use at200%text"
+    ],
+    "existingCodePreserved": true
+  },
+  "scope": "Five original business requirements mapped to existing source, actual scoped78 controlled passes or explicit unverified evidence. This is audit/coverage evidence, not parent or product-completion certification."
+}
