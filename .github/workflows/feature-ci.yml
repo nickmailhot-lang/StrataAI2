@@ -1,0 +1,118 @@
+name: StrataAI2 feature CI
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      full:
+        description: Run full qualification
+        type: boolean
+        default: false
+concurrency:
+  group: feature-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  select:
+    runs-on: ubuntu-24.04
+    outputs:
+      full: ${{ steps.plan.outputs.full }}
+      web: ${{ steps.plan.outputs.web }}
+      runtime: ${{ steps.plan.outputs.runtime }}
+      browser: ${{ steps.plan.outputs.browser }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Validate CI contracts and immutable full-suite coverage
+        run: |
+          node --test tests/feature-ci.test.mjs tests/integration-suites.test.mjs tests/build-metadata.test.mjs tests/delivery-progress.test.mjs tests/ticket-dependencies.test.mjs
+          node scripts/ci/verify-integration-suites.mjs
+          node scripts/ci/generate-feature-runtime.mjs --check
+          python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
+          node scripts/delivery-progress.mjs validate
+      - name: Preserve delivery history
+        if: github.event_name == 'pull_request'
+        env:
+          DELIVERY_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/delivery-progress.mjs validate --base-ref "$DELIVERY_BASE_SHA"
+      - name: Secret scan
+        run: docker run --rm -v "${PWD}:/workspace" aquasec/trivy:0.74.0 fs --scanners secret --exit-code 1 /workspace
+      - name: Select affected tests
+        id: plan
+        env:
+          FORCE_FULL: ${{ inputs.full || false }}
+        run: node scripts/ci/select-feature-tests.mjs
+      - name: Retain selection evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: feature-selection-${{ github.sha }}
+          path: feature-plan.json
+          if-no-files-found: error
+          retention-days: 14
+  web:
+    needs: select
+    if: needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck && npm run typecheck:browser && npm run lint
+      - name: Critical unit baseline
+        run: npm test -- src/features/auth/AuthPage.return.test.tsx src/features/kanban/cardDates.test.ts src/features/kanban/cardKeyboardCoordinates.test.ts
+      - name: Affected unit and component tests
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ -z "$PR_BASE" ]; then
+            npm test
+          else
+            npm test -- --changed "$PR_BASE"
+          fi
+      - run: npm run build
+  runtime:
+    needs: select
+    if: needs.select.outputs.runtime == 'true'
+    uses: ./.github/workflows/feature-runtime.yml
+    with:
+      browser: ${{ needs.select.outputs.browser }}
+  full:
+    needs: select
+    if: needs.select.outputs.full == 'true'
+    uses: ./.github/workflows/full-sanity.yml
+  required-ci:
+    name: required-ci
+    if: always()
+    needs: [select, web, runtime, full]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Require exactly the selected checks
+        env:
+          SELECTION_RESULT: ${{ needs.select.result }}
+          WEB_SELECTED: ${{ needs.select.outputs.web }}
+          RUNTIME_SELECTED: ${{ needs.select.outputs.runtime }}
+          FULL_SELECTED: ${{ needs.select.outputs.full }}
+          WEB_RESULT: ${{ needs.web.result }}
+          RUNTIME_RESULT: ${{ needs.runtime.result }}
+          FULL_RESULT: ${{ needs.full.result }}
+        run: node scripts/ci/require-feature-checks.mjs

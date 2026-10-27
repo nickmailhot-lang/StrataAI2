@@ -531,7 +531,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
       }
     }
   }
-  assert.equal(jobs['required-ci'].name, 'required-ci');
+  assert.equal(jobs['required-ci'].name, 'full-sanity-gate');
   assert.equal(jobs['required-ci'].if, 'always()');
   assert.deepEqual(jobs['required-ci'].needs, ['metadata', 'source-quality-gate', 'build-images-once', 'container-integration', 'security']);
   const gate = jobs['required-ci'].steps.find(step => step.name === 'Require every mandatory CI stage');
@@ -546,7 +546,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const result = verifyIntegrationSuites(
-    readWorkflow(readFileSync('.github/workflows/ci.yml', 'utf8')),
+    readWorkflow(readFileSync('.github/workflows/full-sanity.yml', 'utf8')),
     JSON.parse(readFileSync('scripts/ci/integration-suites.json', 'utf8')),
   );
   console.log(`Mandatory integration coverage: ${result.groups} groups/${result.executions} isolated executions, ${result.registeredSteps} registered steps`);

@@ -1,0 +1,1724 @@
+name: StrataAI2 full sanity
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    # 02:23 Pacific standard time / 03:23 daylight time; off the hour.
+    - cron: '23 10 * * *'
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  # Keep every distinct main/tag commit: ref-wide groups retain only one pending
+  # run by default, even when cancel-in-progress is false. Hosted CI topologies
+  # and exact-SHA artifacts are isolated per run; this is not a deployment gate.
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  STRATAAI_POST_MVP_LOAD_TESTS: ${{ vars.STRATAAI_POST_MVP_LOAD_TESTS || '0' }}
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  STRATAAI_IMAGE_TAG: ${{ github.sha }}
+  STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: ${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  metadata:
+    name: metadata
+    runs-on: ubuntu-24.04
+    outputs:
+      revision: ${{ steps.identity.outputs.revision }}
+      short_sha: ${{ steps.identity.outputs.short_sha }}
+      version: ${{ steps.identity.outputs.version }}
+      image_tag: ${{ steps.identity.outputs.image_tag }}
+      workflow_run_id: ${{ steps.identity.outputs.workflow_run_id }}
+      repository: ${{ steps.identity.outputs.repository }}
+      created_at: ${{ steps.identity.outputs.created_at }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Verify metadata refusal and version contracts
+        run: node --test tests/build-metadata.test.mjs
+      - name: Verify complete PRD and architecture dependency analysis
+        run: node --test tests/ticket-dependencies.test.mjs
+      - name: Verify delivery ledger and completion refusal contracts
+        run: |
+          node scripts/delivery-progress.mjs validate
+          node --test tests/delivery-progress.test.mjs
+      - name: Preserve delivery history against the target branch
+        if: github.event_name == 'pull_request'
+        env:
+          DELIVERY_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --no-tags origin "$DELIVERY_BASE_SHA"
+          node scripts/delivery-progress.mjs validate --base-ref "$DELIVERY_BASE_SHA"
+      - name: Calculate verified exact-commit metadata
+        id: identity
+        run: node scripts/ci/build-metadata.mjs
+      - name: Retain canonical build metadata
+        uses: actions/upload-artifact@v7
+        with:
+          name: strataai-build-metadata-${{ github.sha }}
+          path: build-metadata.json
+          if-no-files-found: error
+          retention-days: ${{ github.event_name == 'pull_request' && 14 || 90 }}
+
+  web-quality:
+    name: web-quality
+    runs-on: ubuntu-24.04
+    needs: [metadata]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download source evidence identity
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-build-metadata-${{ github.sha }}
+          path: source-inputs
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify mandatory immutable integration coverage
+        run: |
+          node scripts/ci/verify-integration-suites.mjs
+          node --test tests/feature-ci.test.mjs
+          node scripts/ci/generate-feature-runtime.mjs --check
+          node --test tests/integration-suites.test.mjs
+          node --test tests/release-bundle-startup.test.mjs
+          node --test tests/release-demo-bundle-startup.test.mjs
+          node --test tests/https-live-board.test.mjs
+          node --test tests/https-recovery-cursor.test.mjs
+          node --test tests/health-check.test.mjs
+          node --test tests/release-runtime.test.mjs
+          node --test tests/work-events-admission.test.mjs
+          node --test tests/release-database-outage.test.mjs
+          node --test tests/https-certificate.test.mjs
+
+      - name: Verify complete browser shard coverage
+        run: |
+          node --test tests/browser-shards.test.mjs
+          node --test tests/mail-outage-browser.test.mjs
+          node --test tests/recipient-clock-browser.test.mjs
+          node scripts/ci/verify-browser-shards.mjs
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Typecheck browser acceptance fixtures
+        run: npm run typecheck:browser
+
+      - name: Verify browser readiness excludes previous-screen responses
+        run: |
+          node --experimental-strip-types --test tests/browser/boardReadTracker.test.mjs
+          node --experimental-strip-types --test tests/browser/invitationAdmissionTracker.test.mjs
+          node --experimental-strip-types --test tests/browser/scopedBoardWorker.test.mjs
+          node --experimental-strip-types --test tests/browser/capacityScrollDiagnostics.test.mjs
+          node --experimental-strip-types --test tests/browser/canonicalWorkMutation.test.mjs
+          node --experimental-strip-types --test tests/browser/keyboardAdmission.test.mjs
+          node --experimental-strip-types --test tests/browser/invitationReviewAdmission.test.mjs
+          node --experimental-strip-types --test tests/browser/cachedDetailPaint.test.mjs
+
+      - name: Verify security assertion failure paths
+        run: scripts/ci/test-security-assertions.sh
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Verify feature HTTP requests retain the shared Problem boundary
+        run: node --test tests/web-architecture.test.mjs
+
+      - name: Verify retained performance evidence excludes private fields
+        run: node --test tests/browser-performance.test.mjs
+
+      - name: Verify operator evidence rejects missing and private metric fields
+        run: |
+          python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
+          python3 -m unittest discover -s tests -p 'operator_metrics_fixture_test.py'
+          python3 -m unittest discover -s tests -p 'operator_alert_delivery_test.py'
+          python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'
+
+      - name: Verify Organization latency evidence and sample boundaries
+        run: python3 -m unittest discover -s tests -p 'organization_latency_test.py'
+
+      - name: Verify operator alert rules with pinned Prometheus
+        run: bash scripts/ci/test-operator-alerts.sh
+
+      - name: Verify source test report completeness and privacy
+        run: |
+          python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
+          python3 -m unittest discover -s tests -p 'evidence_artifacts_test.py'
+          python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
+          python3 -m unittest discover -s tests -p 'recovery_dump_test.py'
+          python3 -m unittest discover -s tests -p 'postgres_backup_test.py'
+          python3 -m unittest discover -s tests -p 'backup_record_test.py'
+          python3 -m unittest discover -s tests -p 'release_state_test.py'
+          python3 -m unittest discover -s tests -p 'release_acceptance_driver_test.py'
+          python3 -m unittest discover -s tests -p 'fake_identity_provider_test.py'
+          python3 -m unittest discover -s tests -p 'core_mail_outage_admission_test.py'
+          python3 -m unittest discover -s tests -p 'postgres_restore_test.py'
+          python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'
+          python3 -m unittest discover -s tests -p 'release_auth_policy_test.py'
+          python3 -m unittest discover -s tests -p 'image_labels_test.py'
+
+      - name: Unit and component tests
+        run: |
+          mkdir -p "$RUNNER_TEMP/source-tests-raw"
+          npm --workspace @strataai/web run test -- --reporter=default --reporter=junit --outputFile.junit="$RUNNER_TEMP/source-tests-raw/web.xml"
+
+      - name: Summarize web source test results
+        if: always()
+        run: python3 scripts/ci/summarize-source-tests.py --format junit --metadata source-inputs/build-metadata.json --output artifacts/source-tests/web.json "$RUNNER_TEMP/source-tests-raw/web.xml"
+
+      - name: Retain web source test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: source-test-results-web-${{ github.sha }}
+          path: artifacts/source-tests/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Production web build
+        env:
+          VITE_STRATAAI_BUILD_REVISION: ${{ needs.metadata.outputs.revision }}
+          VITE_STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
+        run: npm run build
+
+      - name: Verify generated web build identity
+        env:
+          STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
+        run: jq -e --arg revision "$GITHUB_SHA" --arg version "$STRATAAI_BUILD_VERSION" '.revision == $revision and .version == $version' apps/web/dist/build-metadata.json
+
+  dotnet-quality:
+    name: dotnet-quality
+    runs-on: ubuntu-24.04
+    needs: [metadata]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download source evidence identity
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-build-metadata-${{ github.sha }}
+          path: source-inputs
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          # Pin the verified release; floating 10.0.x resolved to an unavailable SDK.
+          dotnet-version: '10.0.402'
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Restore
+        run: dotnet restore StrataAI2.slnx --locked-mode
+
+      - name: Validate release and event fixture configuration before image builds
+        run: |
+          docker compose --env-file .env.release.example -f compose.release.yml config --quiet
+          STRATAAI_HTTPS_CERTIFICATE_DIRECTORY=/tmp/strataai-https docker compose --env-file .env.release.example -f compose.release.yml -f compose.https.yml config --quiet
+          STRATAAI_ATTACHMENT_S3_BUCKET=strata-private-ci-fixture STRATAAI_ATTACHMENT_S3_OWNER=123456789012 STRATAAI_ATTACHMENT_S3_REGION=us-east-1 STRATAAI_WORKER_ORGANIZATION_IDS=11111111-1111-1111-1111-111111111111 STRATAAI_ATTACHMENT_SCANNER_DIRECTORY=/tmp/strata-scanner docker compose --env-file .env.release.example -f compose.release.yml -f compose.attachments.yml config --quiet
+          STRATAAI_TEST_EVENT_ORGANIZATION_ID=11111111-1111-1111-1111-111111111111 docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.work-event-test.yml config --quiet
+          docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.atomic-test.yml -f scripts/ci/compose.owner-continuity-test.yml config --quiet
+          STRATAAI_TEST_TOKEN_KEYS='{}' STRATAAI_TEST_INVITATION_ORGANIZATION_ID=11111111-1111-1111-1111-111111111111 docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml -f scripts/ci/compose.invitation-signup-test.yml -f scripts/ci/compose.invitation-mail-test.yml config --quiet
+
+      - name: Verify every declared realtime hub retains its edge upgrade route
+        run: python3 scripts/ci/verify-realtime-proxy.py
+
+      - name: Reject dependency lock drift
+        run: scripts/ci/test-dependency-locks.sh
+
+      - name: Verify attachment refusal fixtures replace environment defaults
+        run: bash scripts/ci/test-attachment-runtime-fixture-arguments.sh
+
+      - name: Verify runtime isolation and startup refusal runners
+        run: |
+          bash scripts/ci/test-demo-network-isolation-fixture.sh
+          bash scripts/ci/test-demo-worker-network-isolation-fixture.sh
+          bash scripts/ci/test-runtime-startup-refusals-fixture.sh
+
+      - name: Verify declared attachment scanner protocol fixture
+        run: python3 tests/attachment-scanner-fixture.py
+
+      - name: Build with warnings as errors
+        run: dotnet build StrataAI2.slnx --configuration Release --no-restore
+
+      - name: Domain tests
+        run: dotnet test --project tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj --configuration Release --no-build --report-trx --report-trx-filename domain.trx --results-directory "$RUNNER_TEMP/source-tests-raw"
+
+      - name: API host tests
+        run: dotnet test --project tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj --configuration Release --no-build --report-trx --report-trx-filename api.trx --results-directory "$RUNNER_TEMP/source-tests-raw"
+
+      - name: Summarize .NET source test results
+        if: always()
+        run: python3 scripts/ci/summarize-source-tests.py --format trx --metadata source-inputs/build-metadata.json --output artifacts/source-tests/dotnet.json "$RUNNER_TEMP/source-tests-raw/domain.trx" "$RUNNER_TEMP/source-tests-raw/api.trx"
+
+      - name: Retain .NET source test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: source-test-results-dotnet-${{ github.sha }}
+          path: artifacts/source-tests/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  postgres-integration:
+    name: postgres-integration
+    runs-on: ubuntu-24.04
+    needs: [metadata]
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: strataai_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d strataai_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: strataai_ci
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Ensure PostgreSQL client is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
+          fi
+
+      - name: Apply ordered migrations
+        run: scripts/ci/apply-migrations.sh
+
+      - name: Verify optional production mail role provisioning and password refusals
+        run: python3 -m unittest discover -s tests -p 'identity_role_provision_test.py'
+
+      - name: Verify List movement parent commits and tenant isolation
+        run: python3 -m unittest discover -s tests -p 'list_move_parent_integrity_test.py'
+
+      - name: Verify every migrated tenant table retains its isolation boundary
+        run: scripts/ci/test-tenant-schema.sh
+
+      - name: Verify migration repeat, upgrade, failure rollback and serialization
+        run: scripts/ci/test-migration-runner.sh
+
+      - name: Verify pgvector and forced tenant RLS
+        run: scripts/ci/test-rls.sh
+
+      - name: Verify Board label and Card association isolation
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-board-label-storage.sql
+
+      - name: Verify Card member and assigning actor tenant integrity
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-member-storage.sql
+
+      - name: Verify Checklist tenant isolation, ranks, completion and progress integrity
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-checklist-storage.sql
+
+      - name: Verify Attachment metadata isolation, parent identity and quarantine constraints
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-attachment-storage.sql
+
+      - name: Verify Comment tenant isolation, immutable author and revisioned redaction
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-comment-storage.sql
+      - name: Verify ordered Organization Board journal and restricted source projection
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-organization-board-journal.sql
+
+      - name: Verify actor-specific directory permission epochs and rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-organization-board-directory-epochs.sql
+
+      - name: Verify reader directory epochs, visibility withdrawal and archive separation
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-organization-board-reader-epochs.sql
+
+      - name: Verify actor-private search source capability, deduplication and rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-search-interaction-sources.sql
+
+      - name: Verify actor-private navigation source admission and rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-navigation-interaction-sources.sql
+
+      - name: Verify immutable activity attribution and historical account interpretation
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-activity-attribution.sql
+      - name: Verify immutable body-free comment mention snapshots and tenant isolation
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-comment-mention-snapshots.sql
+
+      - name: Verify canonical mention handles, immutable reservations and account boundaries
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-mention-handle-storage.sql
+
+      - name: Verify account handle receipts, immutable metadata and expired-only cleanup
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-handle-claim-replay-storage.sql
+
+      - name: Verify durable upload identity, tenant isolation and publication transitions
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-upload-intent-storage.sql
+
+      - name: Verify private Reminder delivery, eligibility, leases and atomic effects
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-reminder-delivery.sql
+
+      - name: Verify append-only audit storage
+        run: scripts/ci/test-audit-append-only.sh
+
+      - name: Verify tenant-scoped durable jobs and retry/crash behavior
+        run: scripts/ci/test-background-jobs.sh
+
+      - name: Verify global identity delivery capability and token integrity
+        run: scripts/ci/test-identity-delivery-scope.sh
+
+      - name: Verify real restricted runtime logins and elevation rejection
+        run: scripts/ci/test-runtime-roles.sh
+
+      - name: Verify recipient authority revision clocks and idempotent effects
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-authority-revision-clocks.sql
+
+      - name: Verify invitation mail clocks without widening delivery authority
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-mail-update-clocks.sql
+
+      - name: Verify Work event delivery clocks and immutable history
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-work-event-update-clocks.sql
+
+      - name: Verify attachment sweep creation, advancement and reset clocks
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-attachment-sweep-clocks.sql
+
+      - name: Verify Work receipt creation, completion and replay clocks
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-work-replay-update-clocks.sql
+
+      - name: Verify private invitation recipient source, atomic rollback and restricted capabilities
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-events.sql
+
+      - name: Verify bounded recipient authority source, lease and rollback capabilities
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-authority.sql
+
+      - name: Verify authority discovery limits and restricted claim capabilities
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-authority-discovery.sql
+
+      - name: Verify canonical Board recipient authority paging and restricted capabilities
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-board-authority.sql
+      - name: Current Board membership producer authority routing and idempotent delivery
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/invitation-membership-authority-fixture.sql
+
+      - name: Verify concurrent Board journal commit order with restricted runtime role
+        run: bash scripts/ci/test-organization-board-journal-order.sh
+
+      - name: Verify lease-bound invitation mail capabilities
+        run: scripts/ci/test-invitation-mail-scope.sh
+
+      - name: Verify canonical Organization membership and routing integrity
+        run: scripts/ci/test-organization-access-integrity.sh
+
+      - name: Verify restricted routing discovery cannot widen across Organizations
+        run: scripts/ci/test-routing-isolation.sh
+
+      - name: Verify Card route batching hooks retain RLS and invoker security
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-route-batching.sql
+
+      - name: Verify Card route statement writes and transactional rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-route-statement-semantics.sql
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          # Pin the verified release; floating 10.0.x resolved to an unavailable SDK.
+          dotnet-version: '10.0.402'
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Execute real C# upload persistence under the restricted API login
+        env:
+          STRATAAI_CONTRACT_IDENTITY_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_identity_mail_ci;Password=identity-ci-password;SSL Mode=Disable
+          STRATAAI_CONTRACT_ADMIN_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=postgres;Password=postgres;SSL Mode=Disable
+          STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password;SSL Mode=Disable
+          STRATAAI_CONTRACT_WORKER_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password;SSL Mode=Disable
+        run: |
+          dotnet restore tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --locked-mode
+          dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --configuration Release --no-restore
+
+      - name: Verify Board member event audit, journal, receipts and rollback under restricted API login
+        env:
+          STRATAAI_CONTRACT_ADMIN_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=postgres;Password=postgres;SSL Mode=Disable
+          STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password;SSL Mode=Disable
+          STRATAAI_CONTRACT_WORKER_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password;SSL Mode=Disable
+        run: dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --configuration Release --no-build -- --board-member-events-only
+
+      - name: Retention hold owning PostgreSQL adapter and rollback contract
+        env:
+          STRATAAI_CONTRACT_IDENTITY_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_identity_mail_ci;Password=identity-ci-password;SSL Mode=Disable
+          STRATAAI_CONTRACT_ADMIN_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=postgres;Password=postgres;SSL Mode=Disable
+          STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password;SSL Mode=Disable
+          STRATAAI_CONTRACT_WORKER_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password;SSL Mode=Disable
+        run: dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --configuration Release --no-build -- --retention-holds-only
+
+      - name: Verify encrypted PostgreSQL backup and isolated restore protections
+        run: bash scripts/ci/test-database-backup-restore.sh '${{ job.services.postgres.id }}'
+
+      - name: Verify trusted PostgreSQL TLS and certificate refusals through the runtime factory
+        env:
+          STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password;SSL Mode=Disable
+        run: bash scripts/ci/test-postgres-tls.sh '${{ job.services.postgres.id }}'
+
+  source-quality-gate:
+    name: source-quality-gate
+    if: always()
+    runs-on: ubuntu-24.04
+    needs:
+      - metadata
+      - web-quality
+      - dotnet-quality
+      - postgres-integration
+    steps:
+      - name: Require all source quality jobs
+        env:
+          METADATA_RESULT: ${{ needs.metadata.result }}
+          WEB_RESULT: ${{ needs.web-quality.result }}
+          DOTNET_RESULT: ${{ needs.dotnet-quality.result }}
+          POSTGRES_RESULT: ${{ needs.postgres-integration.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for result in "$METADATA_RESULT" "$WEB_RESULT" "$DOTNET_RESULT" "$POSTGRES_RESULT"; do
+            if [ "$result" != "success" ]; then
+              echo "Mandatory source quality job did not succeed: $result" >&2
+              exit 1
+            fi
+          done
+
+  build-images-once:
+    name: build-images-once
+    runs-on: ubuntu-24.04
+    needs:
+      - metadata
+      - source-quality-gate
+    env:
+      STRATAAI_BUILD_REVISION: ${{ needs.metadata.outputs.revision }}
+      STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
+      STRATAAI_BUILD_SOURCE: https://github.com/${{ needs.metadata.outputs.repository }}
+      STRATAAI_BUILD_CREATED: ${{ needs.metadata.outputs.created_at }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download canonical build metadata
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-build-metadata-${{ github.sha }}
+          path: build-inputs
+
+      - name: Verify canonical build identity before building
+        run: |
+          jq -e --arg revision "$STRATAAI_BUILD_REVISION" --arg version "$STRATAAI_BUILD_VERSION" --arg run "$GITHUB_RUN_ID" '.commitSha == $revision and .imageTag == $revision and .version == $version and .workflowRunId == $run' build-inputs/build-metadata.json >/dev/null
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Restore Docker layer cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/strataai-buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile.*', '**/packages.lock.json', 'package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile.*', '**/packages.lock.json', 'package-lock.json') }}-
+            ${{ runner.os }}-buildx-
+      - name: Build web image
+        run: |
+          docker buildx build --load --file Dockerfile.web \
+            --cache-from type=local,src=/tmp/strataai-buildx-cache/web \
+            --cache-to type=local,dest=/tmp/strataai-buildx-new/web,mode=max \
+            --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION" \
+            --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION" \
+            --build-arg STRATAAI_BUILD_SOURCE="$STRATAAI_BUILD_SOURCE" \
+            --build-arg STRATAAI_BUILD_CREATED="$STRATAAI_BUILD_CREATED" \
+            --tag "strataai-web:${GITHUB_SHA}" .
+
+      - name: Build API image
+        run: |
+          docker buildx build --load --file Dockerfile.api \
+            --cache-from type=local,src=/tmp/strataai-buildx-cache/api \
+            --cache-to type=local,dest=/tmp/strataai-buildx-new/api,mode=max \
+            --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION" \
+            --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION" \
+            --build-arg STRATAAI_BUILD_SOURCE="$STRATAAI_BUILD_SOURCE" \
+            --build-arg STRATAAI_BUILD_CREATED="$STRATAAI_BUILD_CREATED" \
+            --tag "strataai-api:${GITHUB_SHA}" .
+
+      - name: Build Worker image
+        run: |
+          docker buildx build --load --file Dockerfile.worker \
+            --cache-from type=local,src=/tmp/strataai-buildx-cache/worker \
+            --cache-to type=local,dest=/tmp/strataai-buildx-new/worker,mode=max \
+            --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION" \
+            --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION" \
+            --build-arg STRATAAI_BUILD_SOURCE="$STRATAAI_BUILD_SOURCE" \
+            --build-arg STRATAAI_BUILD_CREATED="$STRATAAI_BUILD_CREATED" \
+            --tag "strataai-worker:${GITHUB_SHA}" .
+
+      - name: Rotate Docker layer cache
+        run: |
+          rm -rf /tmp/strataai-buildx-cache
+          mv /tmp/strataai-buildx-new /tmp/strataai-buildx-cache
+
+      - name: Verify exact image provenance before export
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > build-inputs/image-inspection.json
+          python3 scripts/ci/verify-image-labels.py --metadata build-inputs/build-metadata.json --images build-inputs/image-inspection.json --output build-inputs/image-provenance.json
+
+      - name: Validate exact web image edge configuration
+        run: docker run --rm --network none --entrypoint nginx "strataai-web:${GITHUB_SHA}" -t
+
+      - name: Verify native preview codec in the exact Worker image
+        timeout-minutes: 2
+        run: |
+          timeout --signal=TERM --kill-after=5s 30s docker run --rm \
+            --network none --read-only --user 1654:1654 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --memory 512m --memory-swap 512m --cpus 1 --pids-limit 64 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --env DOTNET_EnableDiagnostics=0 \
+            "strataai-worker:${GITHUB_SHA}" --verify-attachment-preview-runtime
+
+      - name: Verify isolated preview child privilege drop from the normal root Worker
+        timeout-minutes: 2
+        run: |
+          timeout --signal=TERM --kill-after=5s 30s docker run --rm \
+            --network none --read-only --user 0:0 \
+            --cap-drop ALL --cap-add CHOWN --cap-add KILL --cap-add SETUID --cap-add SETGID --cap-add SETPCAP \
+            --security-opt no-new-privileges \
+            --memory 512m --memory-swap 512m --cpus 1 --pids-limit 96 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --env DOTNET_EnableDiagnostics=0 \
+            "strataai-worker:${GITHUB_SHA}" --verify-attachment-preview-runtime
+
+      - name: Refuse root preview setup without scratch ownership capability
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=$(mktemp)
+          trap 'rm -f "$report"' EXIT
+          set +e
+          timeout --signal=TERM --kill-after=5s 30s docker run --rm \
+            --network none --read-only --user 0:0 \
+            --cap-drop ALL --cap-add SETUID --cap-add SETGID --cap-add SETPCAP \
+            --security-opt no-new-privileges \
+            --memory 512m --memory-swap 512m --cpus 1 --pids-limit 96 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --env DOTNET_EnableDiagnostics=0 \
+            "strataai-worker:${GITHUB_SHA}" --verify-attachment-preview-runtime >"$report" 2>&1
+          code=$?
+          set -e
+          test "$code" -eq 1
+          grep -Fxq 'Worker preview runtime verification failed at fixed stage Scratch (preview_decoder_unavailable).' "$report"
+          echo 'Root preview setup refuses missing scratch ownership capability.'
+
+      - name: Verify real scanner transport in the exact Worker image
+        timeout-minutes: 3
+        env:
+          STRATAAI_WORKER_IMAGE: strataai-worker:${{ github.sha }}
+        run: bash scripts/ci/test-real-attachment-scanner.sh
+
+      - name: Export exact built images
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p image-artifacts
+          cp build-inputs/build-metadata.json image-artifacts/build-metadata.json
+          cp build-inputs/image-provenance.json image-artifacts/image-provenance.json
+          docker save "strataai-web:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-web.tar.gz
+          docker save "strataai-api:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-api.tar.gz
+          docker save "strataai-worker:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-worker.tar.gz
+          (
+            cd image-artifacts
+            sha256sum strataai-web.tar.gz strataai-api.tar.gz strataai-worker.tar.gz build-metadata.json image-provenance.json > SHA256SUMS
+          )
+
+      - name: Upload immutable image artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: strataai-images-${{ github.sha }}
+          path: image-artifacts/
+          retention-days: 14
+          compression-level: 0
+
+  container-integration:
+    name: container-integration (${{ matrix.suite }}, ${{ matrix.shard }}/${{ matrix.totalShards }})
+    runs-on: ubuntu-24.04
+    needs:
+      - metadata
+      - build-images-once
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - { suite: commands, shard: 1, totalShards: 1 }
+          - { suite: browser-foundation, shard: 1, totalShards: 1 }
+          - { suite: browser-notifications, shard: 1, totalShards: 1 }
+          - { suite: browser-full, shard: 1, totalShards: 4 }
+          - { suite: browser-full, shard: 2, totalShards: 4 }
+          - { suite: browser-full, shard: 3, totalShards: 4 }
+          - { suite: browser-full, shard: 4, totalShards: 4 }
+    env:
+      POSTGRES_DB: strataai
+      POSTGRES_USER: strataai
+      POSTGRES_PASSWORD: strataai-ci-password
+      STRATAAI_API_DB_PASSWORD: ci-api-runtime-password
+      STRATAAI_WORKER_DB_PASSWORD: ci-worker-runtime-password
+      STRATAAI_BUILD_REVISION: ${{ needs.metadata.outputs.revision }}
+      STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
+      STRATAAI_WEB_IMAGE: strataai-web:${{ github.sha }}
+      STRATAAI_API_IMAGE: strataai-api:${{ github.sha }}
+      STRATAAI_WORKER_IMAGE: strataai-worker:${{ github.sha }}
+      STRATAAI_METRICS_OTLP_ENDPOINT: http://metrics-collector:4318/v1/metrics
+      # Transaction snapshots include complete job rows. Keep all discovery
+      # loops quiescent until their explicit real-Worker delivery phases;
+      # recipient authority delivery otherwise races removal receipt replay.
+      STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED: 'false'
+      STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED: 'false'
+      STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED: 'false'
+      STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download exact built images
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-images-${{ github.sha }}
+          path: image-artifacts
+
+      - name: Verify image archive checksums
+        run: cd image-artifacts && sha256sum --check SHA256SUMS
+
+      - name: Load exact built images
+        shell: bash
+        run: |
+          set -euo pipefail
+          gunzip -c image-artifacts/strataai-web.tar.gz | docker load
+          gunzip -c image-artifacts/strataai-api.tar.gz | docker load
+          gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
+          docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json
+          python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json --archives image-artifacts
+          rm -- image-artifacts/loaded-image-inspection.json
+
+      - name: Start release topology
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth_retry_key="$(openssl rand -base64 32)"
+          echo "::add-mask::$auth_retry_key"
+          echo 'STRATAAI_AUTH_RETRY_CURRENT_KEY=ci-auth-v1' >> "$GITHUB_ENV"
+          echo "STRATAAI_AUTH_RETRY_KEYS=$(jq -nc --arg key "$auth_retry_key" '{"ci-auth-v1":$key}')" >> "$GITHUB_ENV"
+          STRATAAI_AUTH_RETRY_CURRENT_KEY=ci-auth-v1 STRATAAI_AUTH_RETRY_KEYS="$(jq -nc --arg key "$auth_retry_key" '{"ci-auth-v1":$key}')" docker compose -f compose.release.yml -f compose.metrics.yml up -d --wait --wait-timeout 180
+
+      - name: Apply release-database migrations
+        run: scripts/apply-compose-migrations.sh
+
+      - name: Verify structured API and Worker console records
+        if: (matrix.suite == 'commands')
+        run: |
+          set -euo pipefail
+          scratch=$(mktemp -d)
+          trap 'rm -rf "$scratch"' EXIT
+          for host in api worker; do
+            container=$(docker compose -f compose.release.yml -f compose.metrics.yml ps -q "$host")
+            [[ "$container" =~ ^[0-9a-f]{12,64}$ ]]
+            docker logs "$container" > "$scratch/$host.log" 2>&1
+          done
+          mkdir -p artifacts/console
+          python3 scripts/ci/verify-console-logs.py "$scratch/api.log" "$scratch/worker.log" "$GITHUB_SHA" "$STRATAAI_BUILD_VERSION" artifacts/console/records.json
+
+      - name: Prepare Retain fixed console verification evidence
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/console --entry "artifacts/console/records.json" "records.json"
+
+      - name: Retain fixed console verification evidence
+        if: always() && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: console-records-${{ github.sha }}
+          path: artifacts/retained/console
+          retention-days: 90
+          if-no-files-found: ignore
+
+      - name: Provision least-privilege runtime database roles
+        run: scripts/provision-compose-runtime-roles.sh
+
+      - name: Reject unsafe runtime database roles in exact images
+        run: scripts/ci/test-runtime-database-security.sh
+
+      - name: Verify installed configuration identities, relationships and restricted capabilities
+        run: bash scripts/ci/test-organization-configuration-schema.sh
+      - name: Retention policy schema and restricted capabilities
+        run: bash scripts/ci/test-record-retention-policy-schema.sh
+
+      - name: Health, readiness and SPA deep-link smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/health-check.sh
+          curl --fail --silent --show-error http://127.0.0.1:8080/readyz >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8081/readyz >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8088/app/demo/boards/demo-board >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8088/app/demo/boards/demo-board/cards/demo-card >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8088/portal/demo >/dev/null
+
+      - name: Verify embedded build identity and override resistance
+        run: scripts/ci/test-build-identity.sh
+
+      - name: Production does not expose demo reset
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}'             -H 'X-StrataAI-Request: 1' -X POST http://127.0.0.1:8080/api/demo/reset)"
+          test "$status" = "404"
+
+      - name: Verify production account defaults and prepare isolated auth fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent http://localhost:8080/api/auth/policy | jq -e '.allowSelfRegistration == false and .requireVerifiedEmail == true' >/dev/null
+          docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api
+
+      - name: Demo documented workflows without PostgreSQL or external network
+        if: (matrix.suite == 'commands')
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/ci/test-demo-network-isolation.sh "strataai-api:${GITHUB_SHA}"
+          bash scripts/ci/test-demo-worker-network-isolation.sh "strataai-worker:${GITHUB_SHA}"
+
+      - name: API and Worker startup fail closed against exact retained images
+        if: (matrix.suite == 'commands')
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/ci/test-runtime-startup-refusals.sh "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}"
+
+      - name: Verify explicit Worker job scope and handler configuration
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-worker-job-configuration.sh "strataai-worker:${GITHUB_SHA}"
+      - name: Verify enabled attachment configuration refusal in exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-attachment-runtime-configuration.sh "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}"
+
+      - name: Test PostgreSQL profile concurrency
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-postgres-profile.sh http://localhost:8080
+
+      - name: Identity audit rollback, logout waits and one-connection commands
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-identity-command-transactions.sh
+
+      - name: Session-bound logout and deactivation receipts against exact release API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-identity-revocation-retries.sh
+
+      - name: Current and legacy credential-checked sign-in retries against exact release API
+        if: (matrix.suite == 'commands')
+        run: |
+          bash scripts/ci/test-identity-login-retries.sh http://localhost:8080 current
+          bash scripts/ci/test-identity-login-retries.sh http://localhost:8080 legacy
+
+      - name: Authentication lifecycle privacy against exact release API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-identity-login-privacy.sh
+
+      - name: Atomic registration retries against exact release API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-identity-registration-retries.sh
+
+      - name: Invitation-backed closed registration and atomic expiry against exact release API
+        if: (matrix.suite == 'commands' || matrix.suite == 'browser-full')
+        run: bash scripts/ci/test-invitation-registration.sh
+
+      - name: Verified-email invitation discovery and retry-safe acceptance
+        if: (matrix.suite == 'commands' || matrix.suite == 'browser-full')
+        run: bash scripts/ci/test-invitation-discovery.sh
+
+      - name: Atomic invitation creation retries against exact release API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-invitation-creation-retries.sh
+
+      - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-board-discovery.sh
+
+      - name: Board member canonical events, receipts, Worker delivery and revoked recovery against exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-board-member-events.sh
+
+      - name: Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-board-permission-matrix.sh
+
+      - name: Board grants, lifecycle freezes and original receipt recovery against exact API and restricted PostgreSQL
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-board-permission-recovery.sh
+
+      - name: Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-board-star-preferences.sh
+      - name: Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime
+        if: vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: bash scripts/ci/test-board-copy.sh
+
+      - name: Board administrator demotion continuity and atomic recovery
+        if: (matrix.suite == 'commands' || matrix.suite == 'browser-full')
+        run: scripts/ci/test-board-admin-continuity.sh
+
+      - name: Work command and audit rollback against exact release API
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-work-command-transactions.sh
+
+      - name: Organization audit rollback, revoked actor waits and concurrent owner departures
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-organization-commands.sh
+      - name: Automatic Organization metadata delivery with typed queue isolation
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-metadata-delivery.sh
+      - name: Automatic recipient authority pages and restart against exact Worker image
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh
+
+      - name: Automatic Board recipient authority pages and restart against exact Worker image
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 board
+
+      - name: Organization request and terminal recipient authority against exact Worker image
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 lifecycle
+
+      - name: Canonical issuer deactivation and bounded authority routing against exact Worker image
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 issuer
+
+      - name: Account deactivation and Organization active-owner continuity
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-account-owner-continuity.sh
+
+      - name: Authorized bounded Organization member directory and post-wait revocation
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-organization-member-directory.sh
+
+      - name: Authorized global search, literal matching, cursor binding and archived scope through exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-global-search.sh
+
+      - name: Deleted and moved Card content admission across search inbox and notification history through exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-deleted-content-surfaces.sh
+
+      - name: Organization terminal search and notification withdrawal after issuing-session logout or account deactivation through exact API and Worker images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-deletion-surfaces.sh
+
+      - name: Account-bound navigation observations through exact release proxy and API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-navigation-observations.sh
+
+      - name: Durable work retry keys against exact release API
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-work-idempotency.sh
+
+      - name: Bounded archives, confirmed deletion and atomic List copies
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-archived-lists.sh
+
+      - name: Transactional labels, atomic association removal and post-wait receipt authorization
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-label-commands.sh
+
+      - name: Bounded Board members, atomic Card assignments and post-wait revocation through exact release images
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-assignable-board-members.sh
+
+      - name: Personal watch revisions, atomic publication and post-wait revocation through exact release images
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-watch-subscriptions.sh
+
+      - name: Atomic username mentions, source notifications and redaction history through exact release images
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-comment-mention-commands.sh
+
+      - name: Protected activity history, post-wait access/session admission and persisted cursor restart through exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-activity-feeds.sh
+
+      - name: Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-cross-board-card-moves.sh
+
+      - name: Independent Card copy, destination Watch notification and atomic late-publication rollback through exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-card-copy.sh
+
+      - name: UTC Card dates, atomic notification rollback and private retry recovery through exact release images
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-card-dates.sh
+
+      - name: Authorized URL attachments, receipts, metadata paging and atomic rollback against exact release images
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-attachments.sh
+
+      - name: Authorized checklist creation, ordered progress and atomic rollback against exact release images
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-checklists.sh
+
+      - name: Checklist, comment, activity, movement and lifecycle at supported capacity
+        if: vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: scripts/ci/test-checklist-capacity.sh
+
+      - name: Authorized configuration and lifecycle HTTP p95 through exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-configuration-latency.sh
+
+      - name: Prepare Retain fixed Organization latency evidence
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/organization-latency --entry "artifacts/capacity/organization-latency.json" "organization-latency.json"
+
+      - name: Retain fixed Organization latency evidence
+        if: always() && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: organization-latency-${{ github.sha }}
+          path: artifacts/retained/organization-latency
+          retention-days: 90
+          if-no-files-found: ignore
+
+      - name: Validate pinned operator Collector configuration
+        if: (matrix.suite == 'commands')
+        run: docker compose -f compose.release.yml -f compose.metrics.yml run --rm --no-deps metrics-collector validate --config=/etc/strataai/metrics.yml
+
+      - name: Verify exact-image operator metric ingestion and private-field exclusion
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-operator-metrics.sh
+
+      - name: Verify operator warning firing and resolved delivery
+        if: (matrix.suite == 'commands')
+        timeout-minutes: 12
+        run: python3 scripts/ci/test-operator-alert-delivery.py --revision "${GITHUB_SHA}" --output artifacts/metrics/alert-delivery.json
+
+      - name: Prepare Retain fixed operator collection evidence
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/operator-metrics --entry "artifacts/metrics/operator.json" "operator.json" --entry "artifacts/metrics/backlog-unavailable.json" "backlog-unavailable.json" --entry "artifacts/metrics/backlog-recovered.json" "backlog-recovered.json" --entry "artifacts/metrics/alert-delivery.json" "alert-delivery.json"
+
+      - name: Retain fixed operator collection evidence
+        if: always() && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: operator-metrics-${{ github.sha }}
+          path: artifacts/retained/operator-metrics
+          retention-days: 90
+          if-no-files-found: ignore
+
+      - name: Prepare Retain fixed-scope Checklist capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/checklist-capacity --entry "artifacts/capacity/checklists.json" "checklists.json"
+
+      - name: Retain fixed-scope Checklist capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: checklist-capacity-${{ github.sha }}
+          path: artifacts/retained/checklist-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope activity capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/activity-capacity --entry "artifacts/capacity/activity.json" "activity.json"
+
+      - name: Retain fixed-scope activity capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: activity-capacity-${{ github.sha }}
+          path: artifacts/retained/activity-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope notification inbox capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/notification-capacity --entry "artifacts/capacity/notifications.json" "notifications.json"
+
+      - name: Retain fixed-scope notification inbox capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: notification-capacity-${{ github.sha }}
+          path: artifacts/retained/notification-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope watch producer fan-out measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/watch-fanout-capacity --entry "artifacts/capacity/watch-fanout.json" "watch-fanout.json"
+
+      - name: Retain fixed-scope watch producer fan-out measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: watch-fanout-capacity-${{ github.sha }}
+          path: artifacts/retained/watch-fanout-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope global search capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/search-capacity --entry "artifacts/capacity/search.json" "search.json"
+
+      - name: Retain fixed-scope global search capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: search-capacity-${{ github.sha }}
+          path: artifacts/retained/search-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope comment capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/comment-capacity --entry "artifacts/capacity/comments.json" "comments.json"
+
+      - name: Retain fixed-scope comment capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: comment-capacity-${{ github.sha }}
+          path: artifacts/retained/comment-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope cross-Board movement capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/card-move-capacity --entry "artifacts/capacity/card-moves.json" "card-moves.json"
+
+      - name: Retain fixed-scope cross-Board movement capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: card-move-capacity-${{ github.sha }}
+          path: artifacts/retained/card-move-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope work lifecycle capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/work-lifecycle-capacity --entry "artifacts/capacity/work-lifecycle.json" "work-lifecycle.json"
+
+      - name: Retain fixed-scope work lifecycle capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: work-lifecycle-capacity-${{ github.sha }}
+          path: artifacts/retained/work-lifecycle-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope permanent-deletion capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/work-deletion-capacity --entry "artifacts/capacity/work-deletion.json" "work-deletion.json"
+
+      - name: Retain fixed-scope permanent-deletion capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: work-deletion-capacity-${{ github.sha }}
+          path: artifacts/retained/work-deletion-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Prepare Retain fixed-scope Card copy capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/card-copy-capacity --entry "artifacts/capacity/card-copies.json" "card-copies.json"
+
+      - name: Retain fixed-scope Card copy capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: card-copy-capacity-${{ github.sha }}
+          path: artifacts/retained/card-copy-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Atomic Work events and leased Worker readiness against exact release images
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-work-events.sh
+
+      - name: Hosted operational lifecycle discovery and restart recovery against exact release Worker
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-operational-lifecycle-delivery.sh
+
+      - name: Independent Portal grants across operational lifecycle changes against exact release API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-operational-lifecycle-portal.sh
+
+      - name: Lifecycle session expiry during receipt publication against exact release API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-operational-lifecycle-session.sh
+
+      - name: Archived records and configuration history across operational lifecycle changes
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-operational-lifecycle-history.sh
+      - name: Organization configuration tenant-scoped usage
+        run: bash scripts/ci/test-organization-configuration-usage.sh
+      - name: Retention policy authorized commands and private history against exact release API
+        run: bash scripts/ci/test-retention-policy-http.sh
+
+      - uses: actions/setup-node@v7
+        if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install browser test dependencies
+        if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Demo metadata, terminal and recipient lifecycle against exact API and web images
+        if: (matrix.suite == 'browser-foundation')
+        env:
+          STRATAAI_E2E_BASE_URL: http://localhost:18088
+          STRATAAI_E2E_RUNTIME_MODE: demo
+          STRATAAI_E2E_RELEASE_HEADERS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          compose=(docker compose -p strataai-demo-metadata-ci -f scripts/ci/compose.demo-metadata-test.yml)
+            cleanup() { "${compose[@]}" logs --no-color > demo-metadata-compose.log 2>&1 || true; "${compose[@]}" down --volumes --remove-orphans; }
+          trap cleanup EXIT
+          "${compose[@]}" up -d --wait --wait-timeout 180
+          npx playwright test tests/browser/organization-metadata-live.spec.ts tests/browser/organization-settings-live.spec.ts tests/browser/organization-member-lifecycle.spec.ts tests/browser/organization-deletion-completion.spec.ts tests/browser/recipient-invitation-lifecycle-authority.spec.ts tests/browser/organization-operational-lifecycle-live.spec.ts tests/browser/organization-configuration-distinct-accounts.spec.ts tests/browser/organization-configuration-telemetry.spec.ts tests/browser/organization-operational-lifecycle-telemetry.spec.ts tests/browser/organization-configuration-degraded-authority.spec.ts tests/browser/retention-policy-review.spec.ts
+          PLAYWRIGHT_JSON_OUTPUT_FILE=test-results/demo-reminders-report.json npx playwright test tests/browser/card-reminders.spec.ts --grep 'Demo seeded account' --reporter=list,json
+
+      - name: Attachment upload and isolated Worker image publication through explicit private test providers
+        if: (matrix.suite == 'browser-foundation')
+        run: bash scripts/ci/test-attachment-image-pipeline.sh
+
+      - name: Prepare Retain fixed-scope attachment capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/attachment-capacity --entry "artifacts/capacity/attachments.json" "attachments.json"
+
+      - name: Retain fixed-scope attachment capacity measurements
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
+        uses: actions/upload-artifact@v7
+        with:
+          name: attachment-capacity-${{ github.sha }}
+          path: artifacts/retained/attachment-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Authorized contiguous event replay and mid-read revocation against exact release API
+        if: (matrix.suite == 'browser-foundation')
+        run: scripts/ci/test-work-sync.sh
+      - name: Check concurrent and large-board rank allocation
+        if: vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
+        run: scripts/ci/test-work-ranks.sh
+
+      - name: Prepare Retain actual large-Board native capacity diagnostics
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/board-capacity-browser --entry "test-results/board-capacity" "."
+
+      - name: Retain actual large-Board native capacity diagnostics
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
+        uses: actions/upload-artifact@v7
+        with:
+          name: board-capacity-browser-${{ github.sha }}
+          path: artifacts/retained/board-capacity-browser
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Check write authorization and lifecycle during live database lock waits
+        if: (matrix.suite == 'browser-foundation')
+        run: scripts/ci/test-work-command-scopes.sh
+
+      - name: Prepare isolated identity mail transport and ephemeral signing keys
+        if: (matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
+        run: |
+          set -euo pipefail
+          key1="$(openssl rand -base64 32)"
+          key2="$(openssl rand -base64 32)"
+          printf '::add-mask::%s\n' "$key1" "$key2"
+          keys="$(jq -nc --arg k1 "$key1" --arg k2 "$key2" '{k1:$k1,k2:$k2}')"
+          printf 'STRATAAI_TEST_TOKEN_KEYS=%s\n' "$keys" >> "$GITHUB_ENV"
+          python3 scripts/ci/fake-identity-provider.py > /tmp/identity-provider.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://localhost:19090/health >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://localhost:19090/health >/dev/null
+
+      - name: Identity mail against exact API/Worker images and restricted database role
+        if: (matrix.suite == 'browser-notifications')
+        run: scripts/ci/test-identity-email.sh
+
+      - name: Recipient calendar admission through actual invitation mail proof
+        if: (matrix.suite == 'browser-notifications')
+        timeout-minutes: 8
+        env:
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: bash scripts/ci/test-recipient-clock-browser.sh
+
+      - name: Desktop and mobile accessible keyboard verification/recovery through Worker delivery
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_IDENTITY_MAIL: '1'
+        run: npx playwright test tests/browser/identity-mail.spec.ts
+
+      - name: Desktop and phone task work through provider outage
+        if: (matrix.suite == 'browser-notifications')
+        timeout-minutes: 18
+        env:
+          STRATAAI_E2E_IDENTITY_MAIL: '1'
+        run: bash scripts/ci/test-core-mail-browser.sh
+
+      - name: Strict verified-account Organization departure and account continuity
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          npx playwright test tests/browser/organization-departure.spec.ts tests/browser/organization-departure-account.spec.ts
+
+      - name: Strict verified-account Board management and personal preferences
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          npx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts tests/browser/organization-board-live.spec.ts tests/browser/board-visibility.spec.ts tests/browser/board-members.spec.ts tests/browser/board-admin-live.spec.ts tests/browser/card-labels.spec.ts tests/browser/label-filter-live.spec.ts tests/browser/card-description.spec.ts
+
+      - name: Strict verified-account source classification and original recovery
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          npx playwright test tests/browser/retention-source-classification.spec.ts
+
+      - name: Strict verified-account watch producers through native private inboxes
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_VERIFY_WATCH_ACCOUNTS: '1'
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          npx playwright test tests/browser/watch-cross-board-notifications.spec.ts tests/browser/watch-activity-matrix.spec.ts tests/browser/watch-subscriptions.spec.ts
+
+      - name: Strict verified-account assignment mention and reminder native delivery
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          npx playwright test tests/browser/card-assignment-notifications.spec.ts tests/browser/comment-mentions.spec.ts tests/browser/comment-mass-mentions.spec.ts tests/browser/card-reminders.spec.ts tests/browser/notification-center.spec.ts --grep 'native assignment|native selected teammate|native confirmed groups|actual Worker due reminder|recipient inbox recovers'
+
+      - name: Strict verified-account watch and permission ordering through observed database waits
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+          STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED: 'true'
+        run: |
+          set -euo pipefail
+          # This matrix waits for original recipient-authority queue delivery.
+          # The job-wide default isolates other fixtures by disabling discovery.
+          # Enable this real dispatcher only here and restore that default even
+          # when a browser assertion fails; keep the immutable Worker image.
+          restore_authority_discovery() {
+            # Recreating the Worker retires this container's logs. Capture the
+            # active dispatcher before restoring the fixture-wide setting.
+            docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml logs --no-color worker > watch-order-worker.log 2>&1 || true
+            STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=false docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker
+          }
+          trap restore_authority_discovery EXIT
+          docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED)" = true
+          test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          npx playwright test tests/browser/watch-trigger-order.spec.ts tests/browser/watch-permission-order.spec.ts
+
+      - name: Restore isolated unverified-email account fixture for profile browser tests
+        if: (matrix.suite == 'browser-full')
+        # Earlier fixtures share the same socket peer and Nginx rate-limit zone.
+        # Start fresh processes from the same loaded release images; keep all
+        # production abuse limits enabled and preserve the PostgreSQL data.
+        run: STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL=false docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 api web
+
+      - name: Enable automatic Organization metadata and invitation authority routing for native browser acceptance
+        if: (matrix.suite == 'browser-full')
+        env:
+          STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED: 'true'
+          STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED: 'true'
+          STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED: 'true'
+        run: |
+          set -euo pipefail
+          # Organization settings/membership and nonmember/Portal scenarios
+          # require actual metadata and recipient/issuer loops. Persist this
+          # phase's flags so scoped browser Workers restore the same routing
+          # after each isolated scenario.
+          printf '%s\n' 'STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true' 'STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=true' 'STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED=true' >> "$GITHUB_ENV"
+          docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED)" = true
+
+      - name: Authenticated browser E2E against exact release images
+        if: (matrix.suite == 'browser-full')
+        env:
+          STRATAAI_E2E_RELEASE_HEADERS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ matrix.totalShards }}
+
+      - name: Authentication and invitation abuse limits on API and edge
+        if: (matrix.suite == 'browser-full')
+        run: |
+          scripts/ci/test-rate-limits.sh http://localhost:8080
+          scripts/ci/test-rate-limits.sh http://localhost:8088 security-headers
+
+      - name: Prepare Retain browser failure evidence
+        if: failure() && (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/browser-diagnostics --entry "test-results/" "test-results" --entry "playwright-report/" "playwright-report"
+
+      - name: Retain browser failure evidence
+        if: failure() && (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-diagnostics-${{ github.sha }}-${{ matrix.suite }}-${{ matrix.shard }}
+          path: artifacts/retained/browser-diagnostics
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Prepare Retain scoped browser performance measurements
+        if: always() && (matrix.suite == 'browser-full')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/browser-performance --entry "artifacts/browser-performance/kanban.json" "kanban.json"
+
+      - name: Retain scoped browser performance measurements
+        if: always() && (matrix.suite == 'browser-full')
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-performance-${{ github.sha }}-${{ matrix.shard }}
+          path: artifacts/retained/browser-performance
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Capture container state and logs
+        if: failure()
+        shell: bash
+        run: |
+          docker compose -f compose.release.yml ps > compose-ps.txt || true
+          docker compose -f compose.release.yml logs --no-color > compose.log || true
+
+      - name: Prepare Upload integration diagnostics
+        if: failure()
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/container-integration-diagnostics --entry "compose-ps.txt" "compose-ps.txt" --entry "compose.log" "compose.log" --entry "watch-order-worker.log" "watch-order-worker.log" --entry "demo-metadata-compose.log" "demo-metadata-compose.log" --entry "$RUNNER_TEMP/identity-mail-failure.json" "identity-mail-failure.json"
+
+      - name: Upload integration diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: container-integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}-${{ matrix.shard }}
+          path: artifacts/retained/container-integration-diagnostics
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Stop release topology
+        if: always()
+        run: docker compose -f compose.release.yml down -v --remove-orphans
+
+  security:
+    name: security
+    runs-on: ubuntu-24.04
+    needs:
+      - metadata
+      - build-images-once
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download exact built images
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-images-${{ github.sha }}
+          path: image-artifacts
+
+      - name: Verify security input integrity and retain build identity
+        env:
+          STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd image-artifacts && sha256sum --check SHA256SUMS)
+          jq -e --arg repository "$GITHUB_REPOSITORY" --arg revision "$GITHUB_SHA" --arg run "$GITHUB_RUN_ID" --arg version "$STRATAAI_BUILD_VERSION" '.repository == $repository and .commitSha == $revision and .imageTag == $revision and .workflowRunId == $run and .version == $version' image-artifacts/build-metadata.json >/dev/null
+          mkdir -p security-artifacts
+          cp image-artifacts/build-metadata.json security-artifacts/build-metadata.json
+          cp image-artifacts/image-provenance.json security-artifacts/image-provenance.json
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          # Pin the verified release; floating 10.0.x resolved to an unavailable SDK.
+          dotnet-version: '10.0.402'
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Install locked web dependencies
+        run: npm ci
+
+      - name: Node dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Restore .NET packages
+        run: dotnet restore StrataAI2.slnx --locked-mode
+
+      - name: .NET vulnerable dependency audit
+        run: dotnet list StrataAI2.slnx package --vulnerable --include-transitive
+
+      - name: Load exact built images
+        shell: bash
+        run: |
+          set -euo pipefail
+          gunzip -c image-artifacts/strataai-web.tar.gz | docker load
+          gunzip -c image-artifacts/strataai-api.tar.gz | docker load
+          gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
+          docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json
+          python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json --archives image-artifacts
+          rm -- image-artifacts/loaded-image-inspection.json
+
+      - name: Generate SBOMs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p security-artifacts
+          for image in web api worker; do
+            docker run --rm               -v /var/run/docker.sock:/var/run/docker.sock               -v "${PWD}/security-artifacts:/output"               aquasec/trivy:0.74.0               image --format cyclonedx               --output "/output/strataai-${image}.cdx.json"               "strataai-${image}:${GITHUB_SHA}"
+          done
+
+      - name: Secret scan
+        run: |
+          docker run --rm             -v "${PWD}:/workspace"             aquasec/trivy:0.74.0             fs --scanners secret --exit-code 1 /workspace
+
+      - name: Block fixed Critical container vulnerabilities
+        shell: bash
+        run: |
+          set -euo pipefail
+          for image in web api worker; do
+            docker run --rm               -v /var/run/docker.sock:/var/run/docker.sock               aquasec/trivy:0.74.0               image --exit-code 1 --ignore-unfixed --severity CRITICAL               "strataai-${image}:${GITHUB_SHA}"
+          done
+
+      - name: Scan and inventory pinned operator receiver
+        run: |
+          set -euo pipefail
+          collector='otel/opentelemetry-collector-contrib:0.161.0@sha256:fd328de2552466ad78385e1b1289c3f2402b1c45f265b252aab1955b42845ac1'
+          docker run --rm -v "${PWD}/security-artifacts:/output" aquasec/trivy:0.74.0 image --format cyclonedx --output /output/metrics-collector.cdx.json "$collector"
+          docker run --rm aquasec/trivy:0.74.0 image --exit-code 1 --ignore-unfixed --severity CRITICAL "$collector"
+
+      - name: Verify SBOM image and build identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd security-artifacts && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
+          python3 scripts/ci/verify-release-artifacts.py inputs --images image-artifacts --security security-artifacts
+
+      - name: Bind retained security evidence checksums
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -d security-artifacts ]; then
+            (cd security-artifacts && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
+          fi
+
+      - name: Upload SBOMs and security evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: security-evidence-${{ github.sha }}
+          path: security-artifacts/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  required-ci:
+    name: full-sanity-gate
+    if: always()
+    runs-on: ubuntu-24.04
+    needs:
+      - metadata
+      - source-quality-gate
+      - build-images-once
+      - container-integration
+      - security
+    steps:
+      - name: Require every mandatory CI stage
+        env:
+          METADATA_RESULT: ${{ needs.metadata.result }}
+          SOURCE_RESULT: ${{ needs.source-quality-gate.result }}
+          BUILD_RESULT: ${{ needs.build-images-once.result }}
+          CONTAINER_RESULT: ${{ needs.container-integration.result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for result in "$METADATA_RESULT" "$SOURCE_RESULT" "$BUILD_RESULT" "$CONTAINER_RESULT" "$SECURITY_RESULT"; do
+            if [ "$result" != "success" ]; then
+              echo "Mandatory CI stage did not succeed: $result" >&2
+              exit 1
+            fi
+          done
+
+  release-bundle:
+    name: release-bundle
+    runs-on: ubuntu-24.04
+    needs:
+      - metadata
+      - required-ci
+    env:
+      STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download exact tested images
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-images-${{ github.sha }}
+          path: image-artifacts
+
+      - name: Download exact tested security evidence
+        uses: actions/download-artifact@v8
+        with:
+          name: security-evidence-${{ github.sha }}
+          path: security-artifacts
+
+      - name: Verify tested release inputs
+        run: python3 scripts/ci/verify-release-artifacts.py inputs --images image-artifacts --security security-artifacts
+
+      - name: Assemble release bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "bundle/images" "bundle/sbom"
+
+          cp image-artifacts/strataai-web.tar.gz bundle/images/
+          cp image-artifacts/strataai-api.tar.gz bundle/images/
+          cp image-artifacts/strataai-worker.tar.gz bundle/images/
+          cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json image-artifacts/image-provenance.json bundle/images/
+          cp compose.release.yml compose.demo.release.yml compose.metrics.yml compose.attachments.yml compose.https.yml bundle/
+          cp .env.demo.example bundle/
+          mkdir -p bundle/deploy/metrics
+          cp deploy/metrics/collector.yml deploy/metrics/alerts.yml deploy/metrics/prometheus.example.yml bundle/deploy/metrics/
+          mkdir -p bundle/deploy/https
+          cp deploy/https/nginx-tls.inc bundle/deploy/https/
+          cp .env.release.example bundle/
+          cp scripts/health-check.sh bundle/health-check.sh
+          cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh
+          cp scripts/record-release.py bundle/record-release.py
+          cp scripts/ci/verify-image-labels.py bundle/verify-image-labels.py
+          cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh
+          cp scripts/backup-postgres.sh bundle/backup-postgres.sh
+          cp scripts/verify-backup-record.py bundle/verify-backup-record.py
+          cp scripts/restore-postgres.sh bundle/restore-postgres.sh
+          cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh
+          cp scripts/migration-stream.sh bundle/migration-stream.sh
+          cp scripts/provision-compose-runtime-roles.sh bundle/provision-runtime-roles.sh
+          cp scripts/provision-compose-identity-mail-role.sh bundle/provision-identity-mail-role.sh
+          cp -R db bundle/db
+          cp docs/release/README.md bundle/README.md
+          cp docs/release/promotion-and-rollback.md bundle/promotion-and-rollback.md
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          build = json.loads(Path('image-artifacts/build-metadata.json').read_text())
+          prefix = f"https://github.com/{build['repository']}/blob/{build['commitSha']}/docs/architecture/"
+          for name in ('README.md', 'promotion-and-rollback.md'):
+              document = Path('bundle') / name
+              document.write_text(document.read_text().replace('](../architecture/', '](' + prefix))
+          PY
+
+          cp image-artifacts/build-metadata.json bundle/build-metadata.json
+          cp -R security-artifacts bundle/security
+          for component in strataai-web strataai-api strataai-worker metrics-collector; do
+            cp "security-artifacts/${component}.cdx.json" "bundle/sbom/${component}.cdx.json"
+          done
+
+          (
+            cd bundle
+            find . -type f ! -path ./SHA256SUMS -print0               | sort -z               | xargs -0 sha256sum > SHA256SUMS
+          )
+
+      - name: Verify release bundle completeness and checksums
+        run: python3 scripts/ci/verify-release-artifacts.py bundle --path bundle --images image-artifacts --security security-artifacts
+
+      - name: Verify assembled bundle startup without source or SDKs
+        timeout-minutes: 12
+        run: bash scripts/ci/test-release-bundle-startup.sh bundle
+
+      - name: Verify assembled Demo bundle and seeded account without source or SDKs
+        timeout-minutes: 6
+        run: bash scripts/ci/test-release-demo-bundle-startup.sh bundle
+
+      - name: Prepare Node 24 for HTTPS transport contract
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Verify assembled HTTPS bundle and secure task workflow
+        timeout-minutes: 10
+        run: bash scripts/ci/test-release-https-startup.sh bundle
+
+      - name: Verify bundle unchanged after startup smoke
+        run: python3 scripts/ci/verify-release-artifacts.py bundle --path bundle --images image-artifacts --security security-artifacts
+
+      - name: Upload runnable release bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: strataai2-docker-bundle-${{ github.sha }}
+          path: bundle/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: ${{ github.event_name == 'pull_request' && 14 || 90 }}
+
+      - name: Record exact revision and immutable images qualified by full sanity
+        run: node scripts/ci/qualification-record.mjs
+
+      - name: Retain full qualification record
+        uses: actions/upload-artifact@v7
+        with:
+          name: full-qualification-${{ github.sha }}
+          path: full-qualification.json
+          if-no-files-found: error
+          retention-days: 90

@@ -17,7 +17,7 @@ For a server-only change, document the affected consumer and why a specific UI g
 
 ## Gates before integration
 
-Every PRD implementation must pass TypeScript (web and browser fixtures when affected), lint, unit, relevant integration, affected Playwright workflows, role-based access checks, responsive layout checks, accessibility validation and existing regression tests. Shared shell/theme changes require the wider affected frontend suite and current real-service browser matrix. Preserve mandatory build-once immutable release checks under ARCH-11; do not start redundant image builds just for a UI iteration.
+Every PRD implementation must pass TypeScript (web and browser fixtures when affected), lint, unit, relevant integration, affected Playwright workflows, role-based access checks, responsive layout checks, accessibility validation and impact-selected regression tests under [feature CI](../architecture/feature-ci.md). Shared shell/theme, security and unmapped changes expand to full qualification; release/MVP acceptance still requires the complete exact-revision real-service matrix. Preserve mandatory build-once immutable release checks under ARCH-11; do not start redundant image builds just for a UI iteration.
 
 Retain initial failed evidence. Record case/command, revision, cause, product impact, responsible owner, resolution and rerun evidence before merge. Do not narrow a suite, increase retries, skip assertions, bless visual drift or bypass required checks to claim completion. Keep the PR in draft while required evidence is incomplete.
 

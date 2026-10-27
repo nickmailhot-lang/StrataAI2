@@ -55,7 +55,10 @@ for (const width of [1280, 390]) {
     await page.goto(`/app/${organization}/retention-policies`);
     await expect.poll(metadata).toBeGreaterThan(0);
     await expect(page.getByText(/No retention policies are recorded in this page/)).toBeVisible();
-    await keyboardClick(page, page.getByRole('button', { name: 'Create policy', exact: true }));
+    // Metadata admission can replace this read-only launcher after focus.
+    // Re-admit only opening the dialog; policy submissions below still activate once.
+    await openAdmittedReview(page.getByRole('button', { name: 'Create policy', exact: true }),
+      page.getByRole('dialog', { name: 'Create retention policy', exact: true }));
     await expect(page.getByRole('dialog', { name: 'Create retention policy', exact: true })).toBeVisible();
     await choose(page, 'Record class', 'Governance'); await choose(page, 'Period starts at', 'approval'); await choose(page, 'Disposition action', 'Preserve');
     await page.getByLabel('Category', { exact: true }).fill(rule.category);

@@ -169,7 +169,7 @@ test('PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits n
   assert.equal(invalid.status,1); assert.match(invalid.stderr,/Illegal/);
 });
 test('PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests', () => {
-  const workflow=readFileSync('.github/workflows/ci.yml','utf8');
+  const workflow=readFileSync('.github/workflows/full-sanity.yml','utf8');
   const metadata=workflow.split(/\n  web-quality:/)[0];
   assert.match(metadata,/node scripts\/delivery-progress\.mjs validate/);
   assert.match(metadata,/node --test tests\/delivery-progress\.test\.mjs/);

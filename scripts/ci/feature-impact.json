@@ -1,0 +1,91 @@
+{
+  "baselineBrowser": [
+    "tests/browser/board.spec.ts"
+  ],
+  "baselineCommands": [
+    "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+    "Private board discovery and revoked membership against restricted PostgreSQL runtime"
+  ],
+  "fullPatterns": [
+    "^src/",
+    "^apps/web/src/features/.*(Permission|Access|Http|Client|Sync|Live|Contract|Requests|Mutation|Store|Model|Telemetry|Provider|Link|Context|Boundary)",
+    "^db/",
+    "^deploy/",
+    "^Dockerfile",
+    "^compose",
+    "^\\.github/",
+    "^scripts/",
+    "^tests/(?!browser/)",
+    "(^|/)(package(-lock)?\\.json|packages\\.lock\\.json|.*\\.csproj|.*\\.slnx|global\\.json|Directory\\..*)$",
+    "^apps/web/(?!src/features/)",
+    "^apps/web/src/features/(auth|organizations)/",
+    "^tests/browser/(?!.*\\.spec\\.ts$)"
+  ],
+  "features": [
+    {
+      "name": "description",
+      "source": "description",
+      "browser": "card-description"
+    },
+    {
+      "name": "checklists",
+      "source": "checklist",
+      "browser": "checklist"
+    },
+    {
+      "name": "comments",
+      "source": "comment|mention",
+      "browser": "comment|mention"
+    },
+    {
+      "name": "attachments",
+      "source": "attachment|preview|background",
+      "browser": "attachment|preview|background",
+      "full": true
+    },
+    {
+      "name": "notifications",
+      "source": "notification|reminder|watch",
+      "browser": "notification|reminder|watch",
+      "full": true
+    },
+    {
+      "name": "search",
+      "source": "search",
+      "browser": "search|deleted-content"
+    },
+    {
+      "name": "records",
+      "source": "retention|record|hold",
+      "browser": "retention|record|hold",
+      "full": true
+    },
+    {
+      "name": "labels",
+      "source": "label",
+      "browser": "label|filter"
+    },
+    {
+      "name": "dates",
+      "source": "date|calendar",
+      "browser": "date|calendar"
+    },
+    {
+      "name": "assignments",
+      "source": "assignee|assignment|member",
+      "browser": "assignee|assignment|member",
+      "full": true
+    },
+    {
+      "name": "cards",
+      "source": "card",
+      "browser": "card|board\\.spec"
+    },
+    {
+      "name": "boards",
+      "source": "board|list|archive|activity|kanban|rank",
+      "browser": "board|list|archive|activity|kanban|rank"
+    }
+  ],
+  "maxFeatureBrowserFiles": 12
+}
