@@ -4,8 +4,9 @@ on:
   workflow_call:
   workflow_dispatch:
   schedule:
-    # 02:23 Pacific standard time / 03:23 daylight time; off the hour.
-    - cron: '23 10 * * *'
+    # Daily at 1:00 a.m. Vancouver time, including daylight-saving changes.
+    - cron: '0 1 * * *'
+      timezone: 'America/Vancouver'
   push:
     tags:
       - 'v*'
