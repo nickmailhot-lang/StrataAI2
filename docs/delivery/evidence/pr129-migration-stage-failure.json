@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-27T19:35:23.384564+00:00",
+  "revision": "de2742165b752afaf25430d8049173a084b0f91f",
+  "result": "Failed",
+  "run": 40568967276,
+  "job": 122418745730,
+  "step": "Verify migration repeat, upgrade, failure rollback and serialization",
+  "failure": "Staged upgrades do not cover the complete production migration manifest.",
+  "cause": "New migration 151 was absent from staged upgrade coverage.",
+  "resolution": "Add migration 151 stage, repeat execution and schema/tenant/history guard assertions. Fresh candidate CI required."
+}
