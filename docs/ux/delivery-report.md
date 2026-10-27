@@ -1972,3 +1972,8 @@ User authorized work on both existing PRDs. Reconciliation found no unit directo
 Local compilation and scoped rule/HTTP checks are recorded in `docs/delivery/evidence/strata-property-foundation-20261026.json`. The actual 55-unit consumer verifies both directory pages. Earlier dependency-environment and changed-intent error-ordering failures remain recorded. Production persistence/RLS execution, browser/UX, security, immutable qualification, review and target integration remain pending; a stacked draft does not supply those gates. All new criteria remain Unverified and all active records remain In Progress.
 
 Next: qualify the administrative backend, then deliver the existing-composition directory and Card affected-unit/scope workflow; persist metadata/options, add indexed filters and preserve canonical Card return. Portal temporal relationships, confidentiality and AI review remain their original separately required dependencies. See `docs/architecture/strata-property-foundation.md` for scope and remaining obligations. This adds no standalone navigation, new frontend framework or parent/MVP completion claim.
+
+
+### PR recreation from main — 2026-10-27
+
+PR #129 retains PR #127 backend/metadata validation source and historical evidence on main 6283411. Local API build (zero warnings/errors), 19 property-domain cases and 10 API consumer cases pass. Ledger validation passed before additive reconstruction bookkeeping. No UI added; server-only UXA applicability and future UI obligations remain in strata-property-foundation.md. Fresh required CI/full qualification and acceptance remain pending. No parent PRD or MVP completion claimed.

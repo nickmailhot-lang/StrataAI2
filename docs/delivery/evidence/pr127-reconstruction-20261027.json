@@ -7,11 +7,13 @@
     "delivery validate passed",
     "19 property domain tests passed",
     "initial dotnet test filter selected zero tests; retry using xUnit runner",
-    "API class filter selected zero tests because tests are methods in ApiHostTests; method-filter retry pending"
+    "API class filter selected zero tests because tests are methods in ApiHostTests; method-filter retry pending",
+    "xUnit runner -method *PRD_28*: 10 API/session/transaction tests passed; API build zero warnings/errors"
   ],
   "pending": [
     "Fresh own required-ci",
     "Full qualification and applicable acceptance"
   ],
-  "acceptance": "No Done, parent PRD closure or MVP acceptance claimed"
+  "acceptance": "No Done, parent PRD closure or MVP acceptance claimed",
+  "at": "2026-10-27T19:24:56.472085+00:00"
 }
