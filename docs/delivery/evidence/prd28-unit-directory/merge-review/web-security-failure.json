@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-28T23:43:09.357Z",
+  "revision": "6a168690c5a1f8e3fd40dacf683ff3bfe8988202",
+  "result": "Failed",
+  "workflowRun": 40780917075,
+  "job": 123165846325,
+  "step": "Block fixed Critical container vulnerabilities",
+  "finding": {
+    "package": "brotli-libs",
+    "installedVersion": "1.2.0-r0",
+    "fixedVersion": "1.2.1-r0",
+    "vulnerability": "CVE-2026-111497",
+    "severity": "CRITICAL",
+    "image": "web",
+    "threshold": "trivy image --exit-code 1 --ignore-unfixed --severity CRITICAL"
+  },
+  "artifact": {
+    "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/security-failure.log",
+    "sha256": "bb591035301acd7769461fb699dc4c5145c23477995800c0820fae6227b3f654"
+  },
+  "assessment": "Actual fixed Critical runtime dependency, not a test/transport failure. Node and .NET package audits passed; the image scan stopped on web before the later images. Prior passing run remains historical; no waiver/ignore rule is allowed.",
+  "correction": "Require the fixed Brotli package from the existing signed Alpine repositories in Dockerfile.web; preserve the Nginx base, app, headers, routes and security gate."
+}
