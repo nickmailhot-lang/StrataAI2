@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-28T22:33:31.551Z",
+  "revision": "b35f96e89562af693c04ff84f1f2972143ebe268",
+  "result": "Failed",
+  "method": "Added regression overlay against unchanged b35f96e8 application source. The regression test itself is committed in the repair source below; this is not a rerun of the old hosted suite.",
+  "testRevision": "0bb68c23dd1ee99db93efe42f0fab1dbfad6bf8d",
+  "testPath": "apps/web/src/features/organizations/StrataLotDirectoryPage.test.tsx",
+  "canonicalTestSha256": "869a5ded560c991398dcacbd14d1454818c68e1cef5f9d9fbae649f86c7b3fde",
+  "resultCounts": {
+    "passed": 13,
+    "failed": 1,
+    "skipped": 0
+  },
+  "finding": "[P2] Closing an unconfirmed original left directory unit actions active. Opening unit 202 could race with recovering unit 101 and leave unit 202 fields under the original unit 101 retry action.",
+  "observed": "Expected Unit identifier 101; received 202. No second mutation was sent by the reproducer.",
+  "artifact": {
+    "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/unit-red.json",
+    "sha256": "315fcbdc25cdc101e94e6a3becbceb73dfd6de7fbe91ff6bb3a5f5f6d335a9de"
+  },
+  "disposition": "Block opening other units while an original exists, at both the operation guard and native directory controls. Preserve the original key/body and existing retry action."
+}
