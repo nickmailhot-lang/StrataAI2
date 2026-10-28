@@ -1977,3 +1977,13 @@ Next: qualify the administrative backend, then deliver the existing-composition 
 ### PR recreation from main — 2026-10-27
 
 PR #129 retains PR #127 backend/metadata validation source and historical evidence on main 6283411. Local API build (zero warnings/errors), 19 property-domain cases and 10 API consumer cases pass. Ledger validation passed before additive reconstruction bookkeeping. No UI added; server-only UXA applicability and future UI obligations remain in strata-property-foundation.md. Fresh required CI/full qualification and acceptance remain pending. No parent PRD or MVP completion claimed.
+
+
+### PR recreation from main — 2026-10-27
+
+PR #130 carries PR #118 unique first-use sign-in → Organization → Board → persisted Card coverage at 320px and 200% tablet text onto main 6283411. Existing main Card alert-focus observation is retained. Original evidence bytes and full source ledger are preserved; original failures remain historical failures. No fresh browser, Axe or manual visual pass is claimed. Own required CI, full qualification, review and acceptance remain pending. No parent PRD or MVP completion claimed.
+
+
+### Reviewed integration of PR129 and PR130 - 2026-10-27
+
+Source review found no merge-blocking issues. PR129 passed exact-candidate full CI and integrated normally as c31b37d7. PR130 preserves original browser assertions, responsive/text-zoom coverage, public isolation and finally-owned Worker cleanup. Ledger/report conflicts retain both histories; fresh combined-candidate required-ci remains required before merging PR130. Product/UX acceptance and parent PRD completion remain separate and unverified. Evidence: pr130-review-integration-20261027.json.

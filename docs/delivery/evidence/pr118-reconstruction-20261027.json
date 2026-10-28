@@ -1,0 +1,18 @@
+{
+  "sourcePR": 118,
+  "base": "6283411caad74a05964d23d41c5beeba29ee7a42",
+  "historicalEvidence": "Retained unchanged; historical passes do not qualify replacement.",
+  "localAttempts": [
+    "git diff --check passed",
+    "initial ledger import misplaced records and Python write failed due default encoding; corrected UTF-8 and top-level insertion",
+    "initial delivery contracts failed Unknown evidence EVID-CYCLE-162-CARD-ACTOR10; corrected import, rerun pending",
+    "CardCreationActor focus observation already on main; preserved current main file",
+    "Original source ledger archived in pr118-original-ledger.json"
+  ],
+  "pending": [
+    "Fresh own required-ci",
+    "Full qualification and applicable acceptance"
+  ],
+  "acceptance": "No Done, parent PRD closure or MVP acceptance claimed",
+  "at": "2026-10-27T19:24:56.472085+00:00"
+}
