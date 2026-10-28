@@ -19,3 +19,6 @@ docs/delivery/evidence/ux-polish-* -text
 docs/delivery/evidence/cycle140-*-delivery-check.txt -text -whitespace
 # Preserve this UX cycle's hashed diagnostic wrappers on every checkout OS.
 docs/delivery/evidence/trello-polish-* -text
+# Preserve this slice's hashed Windows/Linux transcripts and rendered evidence.
+# Terminal whitespace is diagnostic data; source/report checks stay unchanged.
+docs/delivery/evidence/prd28-unit-directory/** -text -whitespace

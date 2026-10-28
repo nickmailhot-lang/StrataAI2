@@ -1,0 +1,58 @@
+npm notice run strataai2@0.1.0 npx
+npm notice run playwright test tests/browser/strata-lot-directory.spec.ts --output=work/prd28-browser-live
+
+Running 5 tests using 1 worker
+
+(node:2024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px (23.6s)
+  ok 2 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px (25.9s)
+  ok 3 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px (22.0s)
+  x  4 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px (10.6s)
+(node:8256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 tests\browser\strata-lot-directory.spec.ts:80:5 › PRD-28-TC-01 LOT-FR-006: directory and history continue past 50 without losing references (8.8s)
+
+
+  1) tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('heading', { name: 'Add unit', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('heading', { name: 'Add unit', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Add unit', exact: true })
+        12 × locator resolved to <h2 tabindex="-1" class="MuiTypography-root MuiTypography-h5 css-1v9m1oz-MuiTypography-root">Add unit</h2>
+           - unexpected value "inactive"
+
+
+      17 |     await expect(page.getByText(/No units have been recorded/)).toBeVisible();
+      18 |     await page.getByRole('button', { name: 'Add unit', exact: true }).click();
+    > 19 |     await expect(page.getByRole('heading', { name: 'Add unit', exact: true })).toBeFocused();
+         |                                                                                ^
+      20 |     await page.getByLabel('Unit identifier', { exact: false }).fill('101');
+      21 |     await page.getByLabel('Lot identifier', { exact: false }).fill('SL1');
+      22 |     await page.getByLabel('Building', { exact: true }).fill('North');
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:19:80
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-live\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-live\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-live\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-live\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px 
+  4 passed (1.6m)

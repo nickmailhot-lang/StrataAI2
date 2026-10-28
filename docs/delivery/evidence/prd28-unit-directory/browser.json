@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-28T17:59:34.662Z",
+  "revision": "605aabdab64b543656b65128d10d239d0d151e5c",
+  "result": "Passed",
+  "method": "Real Demo API compiled from unchanged current-main backend plus production-built web at source b4d23383; browser source 605aabda changes only screenshot scroll positioning.",
+  "checks": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "retries": 0,
+    "testDeadlineMilliseconds": 30000,
+    "widths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "textZoom": "200%",
+    "axe": "WCAG 2.2 AA tags; zero automated violations",
+    "paging": "55 directory records and 52 revisions; preserved stable unit ID",
+    "recovery": "Lost committed response; exact two requests, same key/body, explicit reload recovery"
+  },
+  "visuals": [
+    {
+      "width": 320,
+      "path": "docs/delivery/evidence/prd28-unit-directory/directory-320.png",
+      "sha256": "151598df37a45410637937da2c030af7b1a7885d548a79434d9d0b7792a33e42"
+    },
+    {
+      "width": 390,
+      "path": "docs/delivery/evidence/prd28-unit-directory/directory-390.png",
+      "sha256": "6bf48a55d2ad0685508d6e29a424aac96e79cf4f2b362d9c1323fe9635044a7c"
+    },
+    {
+      "width": 768,
+      "path": "docs/delivery/evidence/prd28-unit-directory/directory-768.png",
+      "sha256": "6d3a6cfd710635d372f4aab48734f7c4fabdb823d1e9bcaf3aba200c968cd36d"
+    },
+    {
+      "width": 1280,
+      "path": "docs/delivery/evidence/prd28-unit-directory/directory-1280.png",
+      "sha256": "3545c986c3a935a8d44a7e848520a0c42f340825932fd1e2e588fcc3f56c8ad1"
+    }
+  ],
+  "manualReview": "Agent inspected current 320px/1280px captures for hierarchy, legibility, shell context and overflow; no human product acceptance inferred.",
+  "results": {
+    "browser": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/browser.log",
+      "sha256": "3abda286840585fabb50d7b835c91a8ba0c1ebd175d262590a05532637270026"
+    }
+  },
+  "remaining": [
+    "Hosted required-ci including real PostgreSQL/RLS/security/immutable images",
+    "Independent product/UX acceptance",
+    "Target-branch integration",
+    "PRD-28 Card relations/filtering and Portal temporal context"
+  ]
+}

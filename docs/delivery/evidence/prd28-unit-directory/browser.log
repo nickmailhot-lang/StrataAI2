@@ -1,0 +1,19 @@
+npm notice run strataai2@0.1.0 npx
+npm notice run playwright test tests/browser/strata-lot-directory.spec.ts --output=work/prd28-final-browser
+
+Running 5 tests using 1 worker
+
+(node:27676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px (9.6s)
+  ok 2 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px (9.1s)
+  ok 3 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px (9.0s)
+  ok 4 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px (9.0s)
+  ok 5 tests\browser\strata-lot-directory.spec.ts:83:5 › PRD-28-TC-01 LOT-FR-006: directory and history continue past 50 without losing references (4.1s)
+
+  5 passed (43.0s)
+npm notice
+npm notice New minor version of npm available! 12.0.2 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

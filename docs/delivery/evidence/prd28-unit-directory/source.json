@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-28T17:59:34.662Z",
+  "revision": "b4d233836fc429d8a05e61633d2a381ae0945b3c",
+  "result": "Passed",
+  "checks": {
+    "unit": {
+      "passed": 123,
+      "failed": 0,
+      "skipped": 0
+    },
+    "api": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Existing PRD-28 TestServer/session/transaction consumers; backend unchanged from main 02ed9b9d."
+    },
+    "build": "Passed; includes web TypeScript; existing >500kB bundle advisory retained",
+    "lint": "Passed",
+    "browserTypes": "Passed"
+  },
+  "results": {
+    "unit": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/unit.json",
+      "sha256": "9cc39fbd3edb513db87eebc90bf68d39bc661a03cd387c16ccaf6db5547516d8"
+    },
+    "browser": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/browser.log",
+      "sha256": "3abda286840585fabb50d7b835c91a8ba0c1ebd175d262590a05532637270026"
+    },
+    "build": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/build.log",
+      "sha256": "60bd4eb3ba18affb75ccb776ea70bdc9c660994ffcb4627e934d2518335bb092"
+    },
+    "lint": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    "browserTypes": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/browserTypes.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    "api": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/api.log",
+      "sha256": "41b5a417d3414b36195d92d02e65447b11de7e871e225c09a8fbae7f5bb6b285"
+    },
+    "delivery": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/delivery.log",
+      "sha256": "8a8da1ffa60d26f60306fbc1416946bcef798b3ab6b08c918cb9d6ff4b4c8275"
+    }
+  },
+  "developmentReview": {
+    "path": "docs/delivery/evidence/prd28-unit-directory/development-review.json",
+    "sha256": "12c581d962739d4622b214c51aa781753b8e57b264d7dfa3e01886b84e25af35"
+  },
+  "qualification": "Scoped local evidence; not restricted Production PostgreSQL, full security/immutable-image qualification or product acceptance."
+}

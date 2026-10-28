@@ -1,0 +1,183 @@
+npm notice run strataai2@0.1.0 npx
+npm notice run playwright test tests/browser/strata-lot-directory.spec.ts --output=work/prd28-browser-attempt3
+
+Running 5 tests using 1 worker
+
+(node:6640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px (30.9s)
+(node:28288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px (12.8s)
+(node:5272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px (13.1s)
+(node:22032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px (30.9s)
+(node:36984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 tests\browser\strata-lot-directory.spec.ts:66:5 › PRD-28-TC-01 LOT-FR-006: directory and history continue past 50 without losing references (9.1s)
+
+
+  1) tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('option', { name: 'Inactive', exact: true })
+        - locator resolved to <li tabindex="-1" role="option" aria-selected="false" data-value="INACTIVE" class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters css-17b4tor-MuiButtonBase-root-MuiMenuItem-root">Inactive</li>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is not visible
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+      - element was detached from the DOM, retrying
+
+
+      40 |     expect(directory.status()).toBe(200); const rows = (await directory.json()).items; expect(rows).toHaveLength(1); const lot = rows[0];
+      41 |     await page.getByLabel('Unit identifier', { exact: false }).fill('101A');
+    > 42 |     await page.getByLabel('Unit status', { exact: true }).click(); await page.getByRole('option', { name: 'Inactive', exact: true }).click();
+         |                                                                                                                                      ^
+      43 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();
+      44 |     await page.getByRole('button', { name: 'Confirm unit change', exact: true }).click();
+      45 |     await expect(page.getByText('Change acknowledged. Current unit revision 2.', { exact: true })).toBeVisible();
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:42:134
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt3\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt3\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt3\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt3\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Confirm unit change' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Confirm unit change' }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Confirm unit change' })
+        13 × locator resolved to <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">…</button>
+           - unexpected value "inactive"
+
+
+      30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });
+      31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();
+    > 32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();
+         |                                                                                                                 ^
+      33 |     await page.keyboard.press('Enter');
+      34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();
+      35 |     await page.reload(); await page.getByRole('button', { name: 'Retry original unit change' }).click();
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:32:113
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt3\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt3\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt3\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt3\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Confirm unit change' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Confirm unit change' }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Confirm unit change' })
+        2 × locator resolved to <button disabled tabindex="-1" type="button" class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">Confirm unit change</button>
+          - unexpected value "inactive"
+        12 × locator resolved to <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">…</button>
+           - unexpected value "inactive"
+
+
+      30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });
+      31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();
+    > 32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();
+         |                                                                                                                 ^
+      33 |     await page.keyboard.press('Enter');
+      34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();
+      35 |     await page.reload(); await page.getByRole('button', { name: 'Retry original unit change' }).click();
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:32:113
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt3\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt3\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt3\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt3\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('option', { name: 'Inactive', exact: true })
+
+
+      40 |     expect(directory.status()).toBe(200); const rows = (await directory.json()).items; expect(rows).toHaveLength(1); const lot = rows[0];
+      41 |     await page.getByLabel('Unit identifier', { exact: false }).fill('101A');
+    > 42 |     await page.getByLabel('Unit status', { exact: true }).click(); await page.getByRole('option', { name: 'Inactive', exact: true }).click();
+         |                                                                                                                                      ^
+      43 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();
+      44 |     await page.getByRole('button', { name: 'Confirm unit change', exact: true }).click();
+      45 |     await expect(page.getByText('Change acknowledged. Current unit revision 2.', { exact: true })).toBeVisible();
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:42:134
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt3\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt3\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt3\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt3\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px 
+    tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px 
+    tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px 
+    tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px 
+  1 passed (1.8m)

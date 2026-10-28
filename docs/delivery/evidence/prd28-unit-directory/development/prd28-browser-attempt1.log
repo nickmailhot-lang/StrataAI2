@@ -1,0 +1,675 @@
+npm notice run strataai2@0.1.0 npx
+npm notice run playwright test tests/browser/strata-lot-directory.spec.ts --reporter=list,json --output=work/prd28-browser-attempt1
+
+Running 5 tests using 1 worker
+
+(node:36860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px (16.1s)
+(node:39064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px (12.0s)
+(node:12164) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px (12.9s)
+(node:14068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px (12.0s)
+(node:34728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 tests\browser\strata-lot-directory.spec.ts:66:5 › PRD-28-TC-01 LOT-FR-006: directory and history continue past 50 without losing references (15.3s)
+
+
+  1) tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })
+        4 × locator resolved to <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">…</button>
+          - unexpected value "inactive"
+
+
+      29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();
+      30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });
+    > 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();
+         |                                                                           ^
+      32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();
+      33 |     await page.keyboard.press('Enter');
+      34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:31:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt1\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt1\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })
+        5 × locator resolved to <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">…</button>
+          - unexpected value "inactive"
+
+
+      29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();
+      30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });
+    > 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();
+         |                                                                           ^
+      32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();
+      33 |     await page.keyboard.press('Enter');
+      34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:31:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt1\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt1\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })
+        6 × locator resolved to <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">…</button>
+          - unexpected value "inactive"
+
+
+      29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();
+      30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });
+    > 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();
+         |                                                                           ^
+      32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();
+      33 |     await page.keyboard.press('Enter');
+      34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:31:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt1\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt1\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })
+        4 × locator resolved to <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">…</button>
+          - unexpected value "inactive"
+
+
+      29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();
+      30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });
+    > 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();
+         |                                                                           ^
+      32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();
+      33 |     await page.keyboard.press('Enter');
+      34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:31:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt1\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt1\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) tests\browser\strata-lot-directory.spec.ts:66:5 › PRD-28-TC-01 LOT-FR-006: directory and history continue past 50 without losing references 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Revision 1', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Revision 1', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Revision 1', exact: true })
+
+
+      90 |   await expect(page.getByRole('heading', { name: 'Revision 52', exact: true })).toBeVisible();
+      91 |   await page.getByRole('button', { name: 'Earlier unit history' }).click();
+    > 92 |   await expect(page.getByRole('heading', { name: 'Revision 1', exact: true })).toBeVisible();
+         |                                                                                ^
+      93 |   await expect(page.getByRole('button', { name: 'Earlier unit history' })).toBeDisabled();
+      94 | });
+      95 |
+        at C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\browser\strata-lot-directory.spec.ts:92:80
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-ab1bc-0-without-losing-references\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work\prd28-browser-attempt1\strata-lot-directory-PRD-2-ab1bc-0-without-losing-references\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work\prd28-browser-attempt1\strata-lot-directory-PRD-2-ab1bc-0-without-losing-references\trace.zip
+    Usage:
+
+        npx playwright show-trace work\prd28-browser-attempt1\strata-lot-directory-PRD-2-ab1bc-0-without-losing-references\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px 
+    tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px 
+    tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px 
+    tests\browser\strata-lot-directory.spec.ts:8:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px 
+    tests\browser\strata-lot-directory.spec.ts:66:5 › PRD-28-TC-01 LOT-FR-006: directory and history continue past 50 without losing references 
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/browser/strata-lot-directory.spec.ts",
+      "--reporter=list,json",
+      "--output=work/prd28-browser-attempt1"
+    ],
+    "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\playwright.config.ts",
+    "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-27/take/work/StrataAI2/tests/browser",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-27/take/work/StrataAI2/work/prd28-browser-attempt1",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/nickm/Documents/Codex/2026-10-27/take/work/StrataAI2/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "strata-lot-directory.spec.ts",
+      "file": "strata-lot-directory.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16090,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    4 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    4 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:31:75",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                      "column": 75,
+                      "line": 31
+                    },
+                    "snippet": "  29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();\n  30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });\n> 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();\n     |                                                                           ^\n  32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();\n  33 |     await page.keyboard.press('Enter');\n  34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                        "column": 75,
+                        "line": 31
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    4 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n\n  29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();\n  30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });\n> 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();\n     |                                                                           ^\n  32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();\n  33 |     await page.keyboard.press('Enter');\n  34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:31:75"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T17:25:55.568Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-34f08-history-and-return-at-320px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                    "column": 75,
+                    "line": 31
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "5af8ae9d6f58abc6165d-4759b7e1b4576a62a7ba",
+          "file": "strata-lot-directory.spec.ts",
+          "line": 8,
+          "column": 7
+        },
+        {
+          "title": "PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 12012,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    5 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    5 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:31:75",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                      "column": 75,
+                      "line": 31
+                    },
+                    "snippet": "  29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();\n  30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });\n> 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();\n     |                                                                           ^\n  32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();\n  33 |     await page.keyboard.press('Enter');\n  34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                        "column": 75,
+                        "line": 31
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    5 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n\n  29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();\n  30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });\n> 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();\n     |                                                                           ^\n  32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();\n  33 |     await page.keyboard.press('Enter');\n  34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:31:75"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T17:26:13.856Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-52033-history-and-return-at-390px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                    "column": 75,
+                    "line": 31
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "5af8ae9d6f58abc6165d-291effb62157fea8d2c3",
+          "file": "strata-lot-directory.spec.ts",
+          "line": 8,
+          "column": 7
+        },
+        {
+          "title": "PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 12884,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    6 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    6 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:31:75",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                      "column": 75,
+                      "line": 31
+                    },
+                    "snippet": "  29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();\n  30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });\n> 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();\n     |                                                                           ^\n  32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();\n  33 |     await page.keyboard.press('Enter');\n  34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                        "column": 75,
+                        "line": 31
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    6 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n\n  29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();\n  30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });\n> 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();\n     |                                                                           ^\n  32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();\n  33 |     await page.keyboard.press('Enter');\n  34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:31:75"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T17:26:27.583Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-20eb6-history-and-return-at-768px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                    "column": 75,
+                    "line": 31
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "5af8ae9d6f58abc6165d-3dc35d4cb57589e8ed68",
+          "file": "strata-lot-directory.spec.ts",
+          "line": 8,
+          "column": 7
+        },
+        {
+          "title": "PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 11991,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    4 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    4 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:31:75",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                      "column": 75,
+                      "line": 31
+                    },
+                    "snippet": "  29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();\n  30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });\n> 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();\n     |                                                                           ^\n  32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();\n  33 |     await page.keyboard.press('Enter');\n  34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                        "column": 75,
+                        "line": 31
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Review unit change', exact: true }).getByRole('button', { name: 'Return to draft' })\u001b[22m\n\u001b[2m    4 × locator resolved to <button tabindex=\"0\" type=\"button\" class=\"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root\">…</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n\n  29 |     await page.getByRole('button', { name: 'Review unit change', exact: true }).click();\n  30 |     const review = page.getByRole('dialog', { name: 'Review unit change', exact: true });\n> 31 |     await expect(review.getByRole('button', { name: 'Return to draft' })).toBeFocused();\n     |                                                                           ^\n  32 |     await page.keyboard.press('Tab'); await expect(review.getByRole('button', { name: 'Confirm unit change' })).toBeFocused();\n  33 |     await page.keyboard.press('Enter');\n  34 |     await expect(page.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:31:75"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T17:26:41.886Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-406d7-istory-and-return-at-1280px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                    "column": 75,
+                    "line": 31
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "5af8ae9d6f58abc6165d-adf3d161fd17cf68bbdb",
+          "file": "strata-lot-directory.spec.ts",
+          "line": 8,
+          "column": 7
+        },
+        {
+          "title": "PRD-28-TC-01 LOT-FR-006: directory and history continue past 50 without losing references",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15296,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Revision 1', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Revision 1', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Revision 1', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Revision 1', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Revision 1', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Revision 1', exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:92:80",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                      "column": 80,
+                      "line": 92
+                    },
+                    "snippet": "  90 |   await expect(page.getByRole('heading', { name: 'Revision 52', exact: true })).toBeVisible();\n  91 |   await page.getByRole('button', { name: 'Earlier unit history' }).click();\n> 92 |   await expect(page.getByRole('heading', { name: 'Revision 1', exact: true })).toBeVisible();\n     |                                                                                ^\n  93 |   await expect(page.getByRole('button', { name: 'Earlier unit history' })).toBeDisabled();\n  94 | });\n  95 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                        "column": 80,
+                        "line": 92
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Revision 1', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Revision 1', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Revision 1', exact: true })\u001b[22m\n\n\n  90 |   await expect(page.getByRole('heading', { name: 'Revision 52', exact: true })).toBeVisible();\n  91 |   await page.getByRole('button', { name: 'Earlier unit history' }).click();\n> 92 |   await expect(page.getByRole('heading', { name: 'Revision 1', exact: true })).toBeVisible();\n     |                                                                                ^\n  93 |   await expect(page.getByRole('button', { name: 'Earlier unit history' })).toBeDisabled();\n  94 | });\n  95 |\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts:92:80"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T17:26:55.473Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-ab1bc-0-without-losing-references\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-ab1bc-0-without-losing-references\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\work\\prd28-browser-attempt1\\strata-lot-directory-PRD-2-ab1bc-0-without-losing-references\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-27\\take\\work\\StrataAI2\\tests\\browser\\strata-lot-directory.spec.ts",
+                    "column": 80,
+                    "line": 92
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "5af8ae9d6f58abc6165d-14737d6507ca56985493",
+          "file": "strata-lot-directory.spec.ts",
+          "line": 66,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-28T17:25:52.483Z",
+    "duration": 78996.685,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}
