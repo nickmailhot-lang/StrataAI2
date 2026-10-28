@@ -1056,6 +1056,11 @@ run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 150
 query "$(cat scripts/ci/interaction-parent-order-after-upgrade.sql)" >/dev/null
+cp db/migrations/151_strata_lot_directory.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 151
+query "$(cat scripts/ci/strata-lot-after-upgrade.sql)" >/dev/null
 # New production migrations must receive an upgrade stage before synthetic
 # runner-failure fixtures. A numeric total alone could hide a substituted name.
 expected_versions=$(for migration in db/migrations/*.sql; do basename "$migration" .sql; done | LC_ALL=C sort)

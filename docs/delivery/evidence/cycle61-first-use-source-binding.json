@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-20T10:22:08.226Z",
+  "old": "d6d4fde3acb46d38630126acc03e059f930c3818",
+  "metadataHead": "a578b35289cadec27f4e6590133877dfc88f5063",
+  "fix": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "head": "47745b34a4c2970d9c6168d85ffd4941313d4aeb",
+  "sourceChanges": [
+    "apps/web/src/app/OrganizationContextLabel.offline.test.tsx",
+    "apps/web/src/app/OrganizationContextLabel.tsx"
+  ],
+  "ledgerEvidence": 862,
+  "done": 69,
+  "frontendBuildSource": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "frontendSourceIdenticalToFix": true,
+  "firstUseTestsUnchangedFrom": "73c846da2f313251689783ce4f2fea37c1ab1850",
+  "result": "Passed",
+  "scope": "Normal two-file source fix adoption; frontend/source inputs exactly match fixed client build and first-use browser source remains unchanged. No new build needed. Own new-head CI remains independent.",
+  "browserSourceUnchanged": true,
+  "staticReuse": "Original browser types,485-case/170-file coverage and collection source unchanged from N; no new static run inferred."
+}

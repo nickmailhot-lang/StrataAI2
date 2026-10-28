@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-27T23:46:51.487075+00:00",
+  "sourceRevision": "0a0643c6e42eab2932915302af28092363692251",
+  "review": "No merge-blocking findings in scoped first-use browser changes. Original assertions/deadlines/rate pacing and scoped worker cleanup preserved.",
+  "mainIntegration": "Merged reviewed PR129 main c31b37d7; resolved ledger/report conflicts additively. Both ledgers retain all records and history prefixes; main states remain current.",
+  "priorValidation": "PR130 candidate 10a586b6 passed required-ci in runs 40568962751 and 40573474405. PR129 candidate 43d985ae full qualification passed in run40570675314.",
+  "pending": "Fresh PR130 combined-candidate required-ci. No product acceptance, Done transition or parent closure."
+}

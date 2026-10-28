@@ -1,0 +1,53 @@
+{
+  "at": "2026-10-20T10:22:08.226Z",
+  "pullRequest": 117,
+  "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/117",
+  "oldHead": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+  "source": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "head": "3024b2af7d5c594c4327e4148211d15a81f7b5cf",
+  "base": "main",
+  "actualMainAtPublication": "db5762265b3dfd19aa28b03ed24ceec2fe2ec265",
+  "connectorBaseSnapshot": "0c9fea7d66d238262223a12bc86a4f3861eb7b10",
+  "baseSnapshotReconciliation": "Connector PR base.sha remained at its old snapshot after PR116 merged. Fresh actual main ref and current tested-merge parents confirm M5/R10; original branch head is unchanged. No publication occurred during the initial refused preflight.",
+  "items": 1603,
+  "done": 69,
+  "evidence": 858,
+  "ledgerSha256": "29deb60a85eba32bdd8249d64d74136ad0e97252c88604322b8df16986f71264",
+  "sourceFrozen": true,
+  "normalFastForward": true,
+  "previousFailure": {
+    "head": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+    "job": 118538978022,
+    "passed": 26,
+    "failed": 2
+  },
+  "local": {
+    "unitPassed": 27,
+    "nativePassed": 8,
+    "nativeFailed": 0,
+    "nativeSkipped": 0,
+    "nativeRetries": 0,
+    "build": "Passed",
+    "types": "Passed",
+    "lint": "Passed",
+    "fullFrontend": "Running in session3933"
+  },
+  "currentCi": "Not yet observed at new head; no previous-head result inherited",
+  "integration": "Not merged",
+  "scope": "Actual normal PR117 source publication, preserved failure and current own workflow discovery; no completed new-head CI, review or main integration claim.",
+  "ciDiscovery": {
+    "ciRun": 39406334370,
+    "codeqlRun": 39406329497,
+    "codeqlOverall": 118573266513,
+    "state": "Pending new-head qualification"
+  },
+  "testedMerge": {
+    "sha": "0e6c027b5398b6d864dd8d6fe102981797427d2b",
+    "parents": [
+      "db5762265b3dfd19aa28b03ed24ceec2fe2ec265",
+      "3024b2af7d5c594c4327e4148211d15a81f7b5cf"
+    ],
+    "tree": "17b1f182cc32344ecb557573fc7fcfd5cc236102",
+    "sourceTreeEqual": true
+  }
+}

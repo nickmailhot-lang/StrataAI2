@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-20T10:22:08.226Z",
+  "result": "Passed",
+  "source": "47745b34a4c2970d9c6168d85ffd4941313d4aeb",
+  "clientSource": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "reviewer": "Principal product architect / engineering delivery lead (agent)",
+  "images": [
+    {
+      "file": "board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+      "sha256": "7b2f4fea9d86c039777b12f4fbefb91109f31315a773a87fe20d11298aa65236"
+    },
+    {
+      "file": "board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+      "sha256": "555eebf19599daa3227d024c8e46bbaae91cd6c6028683aa28ba5854324276ec"
+    },
+    {
+      "file": "board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+      "sha256": "3b66653b9a2b46c3d4c6d2b3a6ef4740dcbc151243dd2e3efac4ef5bfa07b57a"
+    },
+    {
+      "file": "board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+      "sha256": "dd0de8ea3d875a23dabce96e4594cfbcf759c0e9d955bfda69d4fd360005c21d"
+    },
+    {
+      "file": "board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+      "sha256": "9fe5a6ed399988152b828c411bbd9ac0d3c428ced02f1f7cde02e6dfb93d7a69"
+    },
+    {
+      "file": "board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+      "sha256": "b2ac75127fef6db5f58c77c41f78c0d36be8a1707ad70e573692dacba47ec5a3"
+    }
+  ],
+  "scope": "All six current first-use captures at320px and768px with200% text manually inspected. Organization creation, saved Card and anonymous/public read-only dialog remain usable and reflow without page overflow. Original navigation, persisted outcome and permission assertions passed in native5; rendered review is separate.",
+  "limits": [
+    "No independent new Axe or physical-device certification claimed; the separate original context/lifecycle8 run includes its own unchanged Axe assertions.",
+    "A screenshot does not prove an entire workflow; native5 records the actual sign-in, canonical creation, recovery/edit/reload/return and isolation checks."
+  ]
+}

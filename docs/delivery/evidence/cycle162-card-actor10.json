@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-21T00:32:24.212Z",
+  "source": "50fd6ab62693daac8b5c3c72057176c66752ae42",
+  "session": 37305,
+  "exit": 0,
+  "passed": 10,
+  "files": 2,
+  "binding": [
+    {
+      "path": "apps/web/src/features/kanban/CardCreationActor.test.tsx",
+      "sha256": "c0c58ac292e106ccdb8e481bc8a14a1afd07c2c7aec0e55d00f2739262890611"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardCreationRefusalFocus.test.tsx",
+      "sha256": "42b1717a67aab0413e379862c5c1582df6399f1d7e2485dbeafe6176ff6676b1"
+    }
+  ],
+  "rawTranscriptUtf8": "\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle160-card-actor-verification/apps/web\r\n\r\n\r\n Test Files  2 passed (2)\r\n      Tests  10 passed (10)\r\n   Start at  17:22:28\r\n   Duration  331.18s (import 82%, environment 13%, setup 2%, transform 2%, tests 1%)\r\n\r\n",
+  "rawTranscriptSha256": "6edce4f9856bd77774a79a9fec7f9928be87dea86c26b9460643136afc8c5a65",
+  "statics": {
+    "webTypes": {
+      "session": 61819,
+      "exit": 0
+    },
+    "scopedLint": {
+      "session": 94041,
+      "exit": 0
+    }
+  },
+  "dependencies": {
+    "vite": "8.3.4",
+    "lock": "Exact same patched lock as verified supported npm11.19.1 isolated tree; own new verification junction created without replacing existing links."
+  },
+  "scope": "Complete seven Card actor and three401/403/404 refusal-focus cases passed10 at exact50fd test source, with web types and scoped lint. Exact one-line bounded wait preserves all other bytes/assertions and original test timeouts, retry/write counts, actor identity/privacy and accessible actual focus. No hidden:true or test-side focus change. Runtime unchanged, so no new product UI/bundle is claimed. Existing f28 full1/2962/24 remains Failed; targeted10 does not replace full new-head CI/release/review/main qualification."
+}

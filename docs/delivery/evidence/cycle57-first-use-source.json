@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-20T08:41:54.721Z",
+  "head": "73c846da2f313251689783ce4f2fea37c1ab1850",
+  "parent": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+  "paths": [
+    "tests/browser/board.spec.ts"
+  ],
+  "sourceSha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d",
+  "static": {
+    "startedAt": "2026-10-20T08:39:37.343Z",
+    "finishedAt": "2026-10-20T08:40:02.114Z",
+    "base": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+    "sourcePath": "tests/browser/board.spec.ts",
+    "sourceSha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d",
+    "result": "Passed",
+    "originalAssertionChainsPreserved": 72,
+    "originalProfilesPreserved": 3,
+    "newProfiles": 2,
+    "maintainedTimeoutMs": 30000,
+    "retries": 0,
+    "globalConfigUnchanged": true,
+    "results": [
+      {
+        "name": "browser-types",
+        "exit": 0,
+        "signal": null,
+        "artifact": "work/cycle56-scoped-browser-types-native.txt",
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "name": "coverage",
+        "exit": 0,
+        "signal": null,
+        "artifact": "work/cycle56-scoped-coverage-native.txt",
+        "sha256": "f5ac87bf3a02521d72d4f2002f271c1b73d446436d8ad3c6c6981e853e5936f4"
+      },
+      {
+        "name": "collection",
+        "exit": 0,
+        "signal": null,
+        "artifact": "work/cycle56-scoped-collection-native.txt",
+        "sha256": "d2830c57e7c3e4d3b14fc77497facbe03653aabf6d0605e9c82dc29b20132980"
+      }
+    ],
+    "scope": "Exact working native-source static/collection checks only; all original assertion chains and three profiles preserved. New320/200%sign-in/canonical-field/reflow checks added; actualfive-case run and renderedreview still required. No product/API/Worker/schema/dependency/CI source change."
+  },
+  "originalCases": 3,
+  "newCases": 2,
+  "expectedNativeCases": 5,
+  "clientSource": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "clientDist": "work/cycle49-organization-context/apps/web/dist-cycle53",
+  "sourceBinding": "R7frontend and API/Worker/schema/deps/CI unchanged through this test-only commit; reuse verifiedfourasset client build. Newverified cases own original scopedWorker/finallycleanup.",
+  "native": "Not Run",
+  "published": false,
+  "scope": "Native source/statics/collection implemented and exact-source committed; actual five-case execution still running, result unknown. Reuse byte-identical R7client build and retainedAPI/Worker. Original3profiles/72assertionchains/30s/0retries preserved, newverified2own original scopedWorker/finally restoration. No product/API/schema/role/CI/dependency change or nativepass/main acceptance inferred.",
+  "currentRun": {
+    "session": 68291,
+    "status": "Running",
+    "expectedCases": 5,
+    "timeoutMs": 30000,
+    "retries": 0,
+    "project": "strataai-mvp-browser-a6603ff0172b5bc3"
+  }
+}
