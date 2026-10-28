@@ -6,11 +6,11 @@ The 2026-10-24 user-approved CI change separates development feedback from relea
 | --- | --- | --- |
 | `feature-ci.yml` | PR updates to main, label changes, merge queue, manual | Stable `required-ci`: selector/contracts, affected web checks, critical security/persisted browser baseline and selected feature cases; conservative full expansion |
 | `main-smoke.yml` | Each main push, manual | `demo-ready`: real PostgreSQL/API/Worker/web startup, restricted runtime roles, permission/tenant checks and complete persisted Board workflow on desktop/tablet/phone |
-| `full-sanity.yml` | Nightly 10:23 UTC, manual, `v*` tag, risk-selected PR | All previous source/PostgreSQL/recovery/integration/browser/security/bundle checks, plus exact-revision qualification record |
+| `full-sanity.yml` | Nightly 01:00 America/Vancouver, manual, `v*` tag, risk-selected PR | All previous source/PostgreSQL/recovery/integration/browser/security/bundle checks, plus exact-revision qualification record |
 | `feature-runtime.yml` | Reusable by feature CI and main smoke | Generated bounded runtime; the same immutable images and production fixtures as full sanity |
 | `ci.yml` | Manual compatibility entrypoint | Calls full sanity; preserves historical delivery implementation paths and bookmarks |
 
-10:23 UTC is 02:23 Pacific standard time or 03:23 daylight time. Scheduled runs qualify the checked-out default-branch revision. They do not qualify commits merged afterward. GitHub scheduling can be delayed; use a manual run for an urgent release candidate.
+The nightly schedule uses `0 1 * * *` with `timezone: America/Vancouver`, so it follows Vancouver local time across daylight-saving changes. Scheduled runs qualify the checked-out default-branch revision. They do not qualify commits merged afterward. GitHub scheduling can be delayed; use a manual run for an urgent release candidate.
 
 ## Test selection and dependencies
 

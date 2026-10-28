@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-28T01:59:10.315261+00:00",
+  "revision": "b6b34307a2a8be37abf49c3858c25322f3fe2703",
+  "review": "GitHub official workflow syntax supports IANA timezone under schedule. Daily cron 0 1 * * * with America/Vancouver expresses the requested local schedule. Manual, reusable and version-tag triggers preserved.",
+  "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule",
+  "fixes": [
+    "Updated stale 10:23 UTC architecture documentation.",
+    "Strengthened existing workflow contract to require the exact local cron/timezone pair."
+  ],
+  "originalCI": {
+    "run": 40563987938,
+    "job": 122421423429,
+    "head": "28cf4fead7f4dc2fa7685ff5700c62f6a7648721",
+    "result": "Failed",
+    "case": "board-lifecycle.spec.ts:107, 1280px Board restore acknowledgment",
+    "observation": "Board restore acknowledged. text did not become visible within original 5000ms assertion; 1 failed and136 passed. Cause remains unproven. No assertion, retry or deadline was changed. Current-main full CI previously passed this retained test; fresh candidate full CI remains required."
+  },
+  "localAttempts": [
+    {
+      "environment": "Windows",
+      "passed": 326,
+      "failed": 2,
+      "causes": [
+        "Generated workflow LF versus Windows checkout CRLF mismatch; normalized working copy without tracked content change.",
+        "spawnSync npm does not execute the Windows npm command shim."
+      ]
+    },
+    {
+      "environment": "Linux container reusing Windows dependencies",
+      "passed": 327,
+      "failed": 1,
+      "cause": "Windows Vitest shim attempted node.exe; native Linux locked installation required."
+    }
+  ],
+  "pending": [
+    "Native Linux contract rerun",
+    "Fresh current-main full required-ci and release qualification"
+  ],
+  "acceptance": "No Done, parent closure or release promotion claimed."
+}
