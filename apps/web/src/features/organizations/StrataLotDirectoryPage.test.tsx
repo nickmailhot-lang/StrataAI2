@@ -149,3 +149,16 @@ it('UXA-07: storage failure prevents dispatch and keeps the unsent draft editabl
     expect(await screen.findByLabelText(/^Unit identifier/)).toBeEnabled();
   } finally { storage.mockRestore(); }
 });
+it('PRD-28-TC-03/07: a failed existing-unit opening cannot attach its source to a later new-unit draft', async () => {
+  lots = [{ id: lotId, organizationId: org, version: 1, data: originalData, createdAt: '2026-10-28T00:00:00Z', updatedAt: '2026-10-28T00:00:00Z' }];
+  const request = fetch;
+  vi.stubGlobal('fetch', async (path: string, options: RequestInit = {}) => path.endsWith(`/${lotId}`) ? reply({}, 503) : request(path, options));
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Unit 101 · Lot SL1' }));
+  await screen.findByRole('alert');
+  fireEvent.click(await screen.findByRole('button', { name: 'Add unit' }));
+  fireEvent.change(screen.getByLabelText(/^Unit identifier/), { target: { value: 'New draft' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh current records' }));
+  await screen.findByRole('heading', { name: 'Add unit' });
+  expect(screen.getByLabelText(/^Unit identifier/)).toHaveValue('New draft');
+  expect(screen.getByRole('button', { name: 'View unit history' })).toBeDisabled();
+});

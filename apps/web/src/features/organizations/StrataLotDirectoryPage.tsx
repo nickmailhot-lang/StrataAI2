@@ -76,7 +76,7 @@ function Directory({ organization }: { organization: string }) {
     try {
       const result = await readLots(organization, controller.signal, actorRef.current, after);
       const selected = latest.current.editor;
-      const selectedId = selected?.source?.id ?? opening.current;
+      const selectedId = selected?.source?.id ?? (!selected ? opening.current : undefined);
       const current = selectedId ? await readLot(organization, result.actorId, selectedId, controller.signal) : undefined;
       if (!mounted.current || controller.signal.aborted || operation.current !== controller) return;
       forgetLotChanges(undefined, result.actorId);
@@ -93,7 +93,7 @@ function Directory({ organization }: { organization: string }) {
       if (!selected && current && opening.current === current.id && !restored) {
         opening.current = undefined; setEditor({ id: current.id, source: current, draft: { ...current.data } });
       }
-      if (selected && current && !latest.current.original && current.version !== selected.source?.version) {
+      if (selected?.source && current && current.id === selected.id && !latest.current.original && current.version !== selected.source.version) {
         setEditor({ ...selected, source: current }); setConflict(true); setHistory(undefined);
         setReview(false);
         setNotice('This unit changed elsewhere. Compare the current values with your preserved draft.');
@@ -141,17 +141,18 @@ function Directory({ organization }: { organization: string }) {
   async function open(lot?: Lot) {
     if (!ready || busy || editor) return;
     owner.current = document.activeElement as HTMLElement; setFailure(undefined); setNotice(undefined); setHistory(undefined); setConflict(false); setErrors({});
-    if (!lot) { setEditor({ id: crypto.randomUUID(), draft: { ...emptyLot } }); return; }
+    if (!lot) { opening.current = undefined; setEditor({ id: crypto.randomUUID(), draft: { ...emptyLot } }); return; }
     opening.current = lot.id;
     const controller = new AbortController(); operation.current = controller; setBusy(true);
     try {
       const source = await readLot(organization, actorRef.current!, lot.id, controller.signal);
       if (mounted.current && !controller.signal.aborted) { opening.current = undefined; setEditor({ id: source.id, source, draft: { ...source.data } }); }
-    } catch (reason) { if (!controller.signal.aborted && mounted.current) fail(reason); }
+    } catch (reason) { if (!controller.signal.aborted && mounted.current) { opening.current = undefined; fail(reason); } }
     finally { if (operation.current === controller) { operation.current = undefined; if (mounted.current) setBusy(false); } }
   }
   useEffect(() => { if (editor) editorHeading.current?.focus(); }, [editor?.id]);
   function close() {
+    opening.current = undefined;
     setEditor(undefined); setHistory(undefined); setFailure(undefined); setConflict(false); setDiscard(false);
     const target = owner.current; requestAnimationFrame(() => { if (target?.isConnected) target.focus(); else heading.current?.focus(); });
   }
