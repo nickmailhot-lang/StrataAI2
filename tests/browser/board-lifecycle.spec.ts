@@ -5,7 +5,7 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
 import { trackArchivedBoardChanges, trackBoardHistoryChanges } from './invitationAdmissionTracker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-04/18: Board lifecycle reviews recover original receipts and preserve child states at ${width}px`, async ({ page, context }) => {
@@ -103,7 +103,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Retry this change', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel change', exact: true })).toHaveCount(0);
       await expect(other.getByRole('button', { name: 'Add list', exact: true })).toBeEnabled();
-      await pressAdmittedAction(page.getByRole('button', { name: 'Retry this change', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Retry this change', exact: true }), () => restores.length, 2);
       await expect(page.getByText('Board restore acknowledged.', { exact: true })).toBeVisible();
       await expect(page.getByText('No administrable archived Boards on this page.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current archived boards', exact: true })).toBeFocused();
