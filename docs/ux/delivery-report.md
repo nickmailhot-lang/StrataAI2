@@ -1987,3 +1987,13 @@ PR #130 carries PR #118 unique first-use sign-in → Organization → Board → 
 ### Reviewed integration of PR129 and PR130 - 2026-10-27
 
 Source review found no merge-blocking issues. PR129 passed exact-candidate full CI and integrated normally as c31b37d7. PR130 preserves original browser assertions, responsive/text-zoom coverage, public isolation and finally-owned Worker cleanup. Ledger/report conflicts retain both histories; fresh combined-candidate required-ci remains required before merging PR130. Product/UX acceptance and parent PRD completion remain separate and unverified. Evidence: pr130-review-integration-20261027.json.
+
+
+### PR128 nightly schedule review - 2026-10-27
+
+Implemented: daily 01:00 America/Vancouver schedule, matching guide and exact cron/timezone contract. This system-only change adds no product UI; existing browser/accessibility assertions and runtime gates remain required. Prior hosted Board restore assertion failure and local platform failures are retained in pr128-review-20261027.json. Current candidate full CI remains pending; no product/UX acceptance or Done promotion.
+
+
+### PR128 restore retry admission repair - 2026-10-27
+
+Original hosted trace proves the second restore HTTP request was never admitted after Enter; the page retained its unconfirmed original. Reuse the existing request-observing keyboard helper for this retry only. Exact acknowledgment, key/body, two-request count, timeout, role and recovery assertions remain. All 38 helper contracts and browser typecheck pass; fresh native Board lifecycle and full candidate CI remain pending. The full original artifact hash and failed observation are retained in pr128-restore-admission-20261027.json. No product/UX acceptance or Done promotion.

@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-28T02:10:54.444673+00:00",
+  "revision": "646bd98e06ae7e8a5d767a6f4033a8465e7dc391",
+  "originalFailure": {
+    "run": 40563987938,
+    "job": 122421423429,
+    "head": "28cf4fead7f4dc2fa7685ff5700c62f6a7648721",
+    "artifact": 12771990260,
+    "artifactSha256": "9a7ea3606dc04d215c3cfdc6d170be12927d6f4cc55eedfc8ca0314b22f12508",
+    "result": "Failed",
+    "observation": "Trace records the initial restore POST whose 200 acknowledgment is deliberately aborted by the test. Enter is later pressed on Retry this change, but no second restore POST is recorded. The failure snapshot remains unconfirmed with the Retry control present. The acknowledgment assertion times out.",
+    "inference": "Missing HTTP admission is established; the exact focus/DOM-retirement cause is not established by this trace."
+  },
+  "repair": {
+    "path": "tests/browser/board-lifecycle.spec.ts",
+    "description": "Replace only the restore retry activation with existing pressObservedRequest, guarded by restores.length and expected count2. Stop activation as soon as the request starts.",
+    "preserved": [
+      "Original acknowledgment visibility and five-second assertion",
+      "Exact two-request count and same key/body assertions",
+      "Original global test deadline, zero retries, production rate pacing and worker scope cleanup",
+      "All unrelated source assertions and runtime behavior"
+    ]
+  },
+  "validation": [
+    {
+      "result": "Passed",
+      "scope": "38 keyboard-admission protocol contracts including ignored-key admission and duplicate-request refusal",
+      "skipped": 0
+    },
+    {
+      "result": "Passed",
+      "scope": "Browser TypeScript compilation after source repair"
+    },
+    {
+      "result": "Passed",
+      "scope": "328 native Linux CI/integration contracts on earlier schedule/docs candidate15303d6c; not a browser acceptance substitute",
+      "skipped": 0
+    }
+  ],
+  "pending": [
+    "Fresh final candidate full required-ci and native Board lifecycle acceptance"
+  ],
+  "localEnvironmentEvidence": [
+    "Original Windows and Linux setup/export failures remain in workspace transcripts; Linux checkout-normalized native source contracts passed."
+  ],
+  "acceptance": "No acceptance, Done, parent closure or release promotion."
+}

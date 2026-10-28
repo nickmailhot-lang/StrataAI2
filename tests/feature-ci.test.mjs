@@ -68,7 +68,7 @@ test('aggregate rejects missing selectors, unexpected executed jobs and duplicat
 });
 test('full suite remains separate; feature and main workflows expose stable gates', () => {
   const full = workflow('full-sanity'), feature = workflow('feature-ci'), smoke = workflow('main-smoke');
-  assert.ok(full.on.schedule.length); assert.ok(full.on.push.tags.includes('v*'));
+  assert.deepEqual(full.on.schedule, [{ cron: '0 1 * * *', timezone: 'America/Vancouver' }]); assert.ok(full.on.push.tags.includes('v*'));
   assert.ok('workflow_call' in full.on && 'workflow_dispatch' in full.on);
   assert.equal(full.on.pull_request, undefined); assert.equal(full.on.push.branches, undefined);
   assert.equal(full.jobs['required-ci'].name, 'full-sanity-gate');
