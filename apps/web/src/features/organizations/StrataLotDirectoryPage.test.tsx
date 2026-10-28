@@ -162,3 +162,21 @@ it('PRD-28-TC-03/07: a failed existing-unit opening cannot attach its source to 
   expect(screen.getByLabelText(/^Unit identifier/)).toHaveValue('New draft');
   expect(screen.getByRole('button', { name: 'View unit history' })).toBeDisabled();
 });
+it('PRD-28-TC-07: a pending original cannot be presented under another unit after closing its editor', async () => {
+  lost = true; mount(); await create();
+  await screen.findByRole('button', { name: 'Retry original unit change' });
+  const original = lots[0];
+  lots.push({ ...original, id: '44444444-4444-4444-8444-444444444444', data: { ...originalData, unitIdentifier: '202', lotIdentifier: 'SL2' } });
+  lots.sort((left, right) => left.id.localeCompare(right.id));
+  fireEvent.click(await screen.findByRole('button', { name: 'Leave editor; retain original for recovery' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Refresh current records' }));
+  const other = await screen.findByRole('button', { name: 'Unit 202 · Lot SL2' });
+  fireEvent.click(other);
+  expect(screen.queryByRole('region', { name: 'Unit editor' })).not.toBeInTheDocument();
+  expect(other).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Recover original unit change' }));
+  expect(await screen.findByLabelText(/^Unit identifier/)).toHaveValue('101');
+  expect(screen.getByLabelText(/^Lot identifier/)).toHaveValue('SL1');
+  expect(screen.getByRole('button', { name: 'Retry original unit change' })).toBeEnabled();
+  expect(writes).toHaveLength(1);
+});

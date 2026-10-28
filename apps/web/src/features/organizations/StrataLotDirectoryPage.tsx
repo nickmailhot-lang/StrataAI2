@@ -139,7 +139,7 @@ function Directory({ organization }: { organization: string }) {
     window.addEventListener('beforeunload', leaving); return () => window.removeEventListener('beforeunload', leaving);
   }, [dirty]);
   async function open(lot?: Lot) {
-    if (!ready || busy || editor) return;
+    if (!ready || busy || editor || original) return;
     owner.current = document.activeElement as HTMLElement; setFailure(undefined); setNotice(undefined); setHistory(undefined); setConflict(false); setErrors({});
     if (!lot) { opening.current = undefined; setEditor({ id: crypto.randomUUID(), draft: { ...emptyLot } }); return; }
     opening.current = lot.id;
@@ -212,7 +212,7 @@ function Directory({ organization }: { organization: string }) {
             : <Button variant="contained" disabled={busy} onClick={() => void open()}>Add unit</Button>}
           {!page?.items.length && <Alert severity="info">{cursor ? 'No units remain on this page. Return to the first page or refresh.' : 'No units have been recorded. Add the first unit if you are authorized to administer this Organization.'}</Alert>}
           <Box component="ul" sx={{ p: 0, listStyle: 'none' }}>{page?.items.map(lot => <Box component="li" key={lot.id} sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}>
-            <Button disabled={busy} onClick={() => void open(lot)} sx={{ textAlign: 'left', overflowWrap: 'anywhere', maxWidth: '100%' }}>Unit {lot.data.unitIdentifier} · Lot {lot.data.lotIdentifier}</Button>
+            <Button disabled={busy || !!original} onClick={() => void open(lot)} sx={{ textAlign: 'left', overflowWrap: 'anywhere', maxWidth: '100%' }}>Unit {lot.data.unitIdentifier} · Lot {lot.data.lotIdentifier}</Button>
             <Typography>{lot.data.status === 'ACTIVE' ? 'Active' : 'Inactive'} · Revision {lot.version}</Typography>
           </Box>)}</Box>
           <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
