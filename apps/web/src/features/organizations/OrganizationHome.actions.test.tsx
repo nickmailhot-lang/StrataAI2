@@ -13,7 +13,7 @@ const profile = { id: '22222222-2222-4222-8222-222222222222', version: 1, status
 const organization = { id: org, name: 'Current work Organization', description: null, status: 0 };
 const response = (value: unknown) => new Response(JSON.stringify(value));
 const memberActions = ['Archived boards', 'Leave Organization'];
-const adminActions = ['Organization lifecycle', 'Organization settings', 'Organization configuration', 'Retention policies', 'Retention holds', 'Organization members'];
+const adminActions = ['Unit directory', 'Organization lifecycle', 'Organization settings', 'Organization configuration', 'Retention policies', 'Retention holds', 'Organization members'];
 const expected = (role: number) => [...memberActions, ...(role <= 1 ? adminActions : []), ...(role === 0 ? ['Request Organization deletion'] : [])].sort();
 function mount(read: () => Promise<Response> | Response) {
   const fetcher = vi.fn(async (path: string, _options?: RequestInit) => path === '/me' ? response(profile)

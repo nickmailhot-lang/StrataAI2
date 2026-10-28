@@ -11,6 +11,7 @@ import { forgetOrganizationRetentionSourceClassifications } from '../features/re
 import { forgetHoldIntents } from '../features/records/retentionHoldClient';
 import { signInReturnPath } from '../features/auth/signInReturnPath';
 import { forgetSearchReturn } from '../features/search/searchReturn';
+import { forgetLotChanges } from '../features/organizations/strataLotClient';
 
 type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previouslyAdmitted?: boolean };
 
@@ -50,6 +51,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       forgetOrganizationRetentionSourceClassifications(organizationId);
       forgetHoldIntents(undefined, organizationId);
       forgetSearchReturn(organizationId);
+      forgetLotChanges(organizationId);
     }
   }, [surface, organizationId, scope, result]);
   const theme = useTheme();
