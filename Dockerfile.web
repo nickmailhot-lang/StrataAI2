@@ -18,6 +18,10 @@ RUN npm run build
 
 FROM nginx:1.29-alpine AS runtime
 
+# The base image may retain the vulnerable Brotli decoder (CVE-2026-111497).
+# Require the fixed Alpine package even when the upstream image is cached.
+RUN apk add --no-cache --upgrade 'brotli-libs>=1.2.1-r0'
+
 ARG STRATAAI_BUILD_REVISION=development
 ARG STRATAAI_BUILD_VERSION=0.0.0-dev
 ARG STRATAAI_BUILD_SOURCE
