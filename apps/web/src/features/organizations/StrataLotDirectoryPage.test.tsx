@@ -129,9 +129,14 @@ it('UXA-06: history focus waits for its section to commit even if a frame runs e
   mount(); fireEvent.click(await screen.findByRole('button', { name: 'Unit 101 · Lot SL1' }));
   const launcher = await screen.findByRole('button', { name: 'View unit history' });
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { callback(performance.now()); return 1; });
-  launcher.focus(); fireEvent.click(launcher);
-  const historyTitle = await screen.findByRole('heading', { name: /^Unit history$/ });
-  await waitFor(() => expect(historyTitle).toHaveFocus());
+  const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+  try {
+    launcher.focus(); fireEvent.click(launcher);
+    const historyTitle = await screen.findByRole('heading', { name: /^Unit history$/ });
+    await waitFor(() => expect(historyTitle).toHaveFocus());
+    const historyCalls = focus.mock.contexts.flatMap((owner, index) => owner === historyTitle ? [focus.mock.calls[index]] : []);
+    expect(historyCalls).toContainEqual([{ preventScroll: false }]);
+  } finally { focus.mockRestore(); }
 });
 it.each([false, true])('UXA-06: a history focus request survives authority retirement without stealing a later choice (%s)', async chooseElsewhere => {
   lots = [{ id: lotId, organizationId: org, version: 1, data: originalData, createdAt: '2026-10-28T00:00:00Z', updatedAt: '2026-10-28T00:00:00Z' }];

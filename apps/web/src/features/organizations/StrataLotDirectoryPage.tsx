@@ -41,7 +41,7 @@ function Directory({ organization }: { organization: string }) {
   const [discard, setDiscard] = useState(false);
   const operation = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const refreshQueued = useRef(false);
-  const focusAfterCheck = useRef<{ id: string; owner: Element } | undefined>(undefined);
+  const focusAfterCheck = useRef<{ id: string; owner: Element; preventScroll?: boolean } | undefined>(undefined);
   function rememberFocus() {
     const active = document.activeElement;
     if (!focusAfterCheck.current && active?.id.startsWith('unit-')) focusAfterCheck.current = { id: active.id, owner: active };
@@ -131,7 +131,7 @@ function Directory({ organization }: { organization: string }) {
     if (!ready || busy || !focusAfterCheck.current) return;
     const pending = focusAfterCheck.current; focusAfterCheck.current = undefined;
     const target = document.getElementById(pending.id);
-    if (target && !target.matches(':disabled') && (document.activeElement === document.body || document.activeElement === pending.owner)) target.focus({ preventScroll: true });
+    if (target && !target.matches(':disabled') && (document.activeElement === document.body || document.activeElement === pending.owner)) target.focus({ preventScroll: pending.preventScroll ?? true });
   }, [ready, busy, history]);
   useEffect(() => {
     if (!dirty) return;
@@ -198,7 +198,7 @@ function Directory({ organization }: { organization: string }) {
       if (mounted.current && !controller.signal.aborted) {
         // Authority may retire the section before the next paint. Keep this
         // owned request until readmission; a later navigation choice wins.
-        if (focusOwner) focusAfterCheck.current = { id: 'unit-history-title', owner: focusOwner };
+        if (focusOwner) focusAfterCheck.current = { id: 'unit-history-title', owner: focusOwner, preventScroll: false };
         setHistory(result);
       }
     } catch (reason) { if (!controller.signal.aborted && mounted.current) { setHistory(undefined); fail(reason); } }

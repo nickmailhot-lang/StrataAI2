@@ -64,6 +64,7 @@ for (const width of [320, 390, 768, 1280]) {
     await expect(history.getByRole('heading', { name: 'Revision 2', exact: true })).toBeVisible();
     await expect(history.getByRole('heading', { name: 'Revision 1', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Unit history', exact: true })).toBeFocused();
+    await expect(page.getByRole('heading', { name: 'Unit history', exact: true })).toBeInViewport();
     const current = await context.request.get(`/organizations/${organization}/strata-lots/${lot.id}`);
     expect(current.status()).toBe(200); expect(await current.json()).toMatchObject({ id: lot.id, version: 2, data: { unitIdentifier: '101A', status: 'INACTIVE' } });
     const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
