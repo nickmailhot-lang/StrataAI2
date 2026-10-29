@@ -124,6 +124,38 @@ it('LOT-FR-006/UXA-04: successful authority rechecks retain an admitted history 
   await act(async () => live.watch.mock.calls[0][0].reset());
   await screen.findByRole('heading', { name: 'Revision 1' });
 });
+it('UXA-06: history focus waits for its section to commit even if a frame runs earlier', async () => {
+  lots = [{ id: lotId, organizationId: org, version: 1, data: originalData, createdAt: '2026-10-28T00:00:00Z', updatedAt: '2026-10-28T00:00:00Z' }];
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Unit 101 · Lot SL1' }));
+  const launcher = await screen.findByRole('button', { name: 'View unit history' });
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { callback(performance.now()); return 1; });
+  launcher.focus(); fireEvent.click(launcher);
+  const historyTitle = await screen.findByRole('heading', { name: /^Unit history$/ });
+  await waitFor(() => expect(historyTitle).toHaveFocus());
+});
+it.each([false, true])('UXA-06: a history focus request survives authority retirement without stealing a later choice (%s)', async chooseElsewhere => {
+  lots = [{ id: lotId, organizationId: org, version: 1, data: originalData, createdAt: '2026-10-28T00:00:00Z', updatedAt: '2026-10-28T00:00:00Z' }];
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Unit 101 · Lot SL1' }));
+  const launcher = await screen.findByRole('button', { name: 'View unit history' });
+  const returnLink = screen.getByRole('link', { name: 'Return to Organization' });
+  const frames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { frames.push(callback); return frames.length; });
+  launcher.focus(); fireEvent.click(launcher);
+  await screen.findByRole('heading', { name: 'Revision 1' });
+  const request = fetch; let finish!: () => void;
+  vi.stubGlobal('fetch', async (path: string, options: RequestInit = {}) => {
+    if (path.endsWith('/strata-lots')) await new Promise<void>(resolve => { finish = resolve; });
+    return request(path, options);
+  });
+  await act(async () => live.watch.mock.calls[0][0].reset());
+  await waitFor(() => expect(finish).toBeDefined());
+  expect(screen.queryByRole('heading', { name: /^Unit history$/ })).not.toBeInTheDocument();
+  await act(async () => frames.splice(0).forEach(callback => callback(performance.now())));
+  if (chooseElsewhere) returnLink.focus();
+  await act(async () => finish());
+  const historyTitle = await screen.findByRole('heading', { name: /^Unit history$/ });
+  await waitFor(() => expect(chooseElsewhere ? returnLink : historyTitle).toHaveFocus());
+});
 it.each([false, true])('UXA-06: restores the retired field owner without stealing a later navigation choice (%s)', async chooseElsewhere => {
   mount(); await create(); await screen.findByText('Change acknowledged. Current unit revision 1.');
   const returnLink = await screen.findByRole('link', { name: 'Return to Organization' });

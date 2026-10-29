@@ -48,7 +48,7 @@ function Directory({ organization }: { organization: string }) {
   }
   const opening = useRef<string | undefined>(undefined);
   const owner = useRef<HTMLElement | null>(null); const heading = useRef<HTMLHeadingElement>(null);
-  const editorHeading = useRef<HTMLHeadingElement>(null); const historyHeading = useRef<HTMLHeadingElement>(null);
+  const editorHeading = useRef<HTMLHeadingElement>(null);
   const reviewCancel = useRef<HTMLButtonElement>(null); const leaveCancel = useRef<HTMLButtonElement>(null);
   const focusSafeDefault = (button: HTMLButtonElement | null) => {
     // MUI's dialog paper may take focus after native button autofocus. Move it
@@ -132,7 +132,7 @@ function Directory({ organization }: { organization: string }) {
     const pending = focusAfterCheck.current; focusAfterCheck.current = undefined;
     const target = document.getElementById(pending.id);
     if (target && !target.matches(':disabled') && (document.activeElement === document.body || document.activeElement === pending.owner)) target.focus({ preventScroll: true });
-  }, [ready, busy]);
+  }, [ready, busy, history]);
   useEffect(() => {
     if (!dirty) return;
     const leaving = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
@@ -191,10 +191,16 @@ function Directory({ organization }: { organization: string }) {
   }
   async function showHistory(before?: number) {
     if (!ready || busy || !editor?.source || original) return;
+    const focusOwner = document.activeElement;
     const controller = new AbortController(); operation.current = controller; setBusy(true); setFailure(undefined);
     try {
       const result = await readLotHistory(organization, actorRef.current!, editor.id, controller.signal, before);
-      if (mounted.current && !controller.signal.aborted) { setHistory(result); requestAnimationFrame(() => historyHeading.current?.focus()); }
+      if (mounted.current && !controller.signal.aborted) {
+        // Authority may retire the section before the next paint. Keep this
+        // owned request until readmission; a later navigation choice wins.
+        if (focusOwner) focusAfterCheck.current = { id: 'unit-history-title', owner: focusOwner };
+        setHistory(result);
+      }
     } catch (reason) { if (!controller.signal.aborted && mounted.current) { setHistory(undefined); fail(reason); } }
     finally { if (operation.current === controller) { operation.current = undefined; if (mounted.current) setBusy(false); } }
   }
@@ -244,7 +250,7 @@ function Directory({ organization }: { organization: string }) {
             </Stack>
           </Box>
           {history && <Box component="section" aria-label="Unit history" sx={{ mt: 3 }}>
-            <Typography variant="h5" component="h2" id="unit-history-title" tabIndex={-1} ref={historyHeading}>Unit history</Typography>
+            <Typography variant="h5" component="h2" id="unit-history-title" tabIndex={-1}>Unit history</Typography>
             {!history.items.length && <Typography>No earlier revisions on this page.</Typography>}
             {history.items.map(revision => <Box key={revision.lot.version} sx={{ my: 2 }}><Typography variant="h6" component="h3">Revision {revision.lot.version}</Typography>
               <Typography component="time" dateTime={revision.lot.updatedAt}>{page && formatUserDateTime(revision.lot.updatedAt, page.preferences) || 'Date unavailable'}</Typography><Values data={revision.lot.data} /></Box>)}
