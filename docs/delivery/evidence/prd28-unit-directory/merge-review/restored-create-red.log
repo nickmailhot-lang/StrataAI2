@@ -1,0 +1,12 @@
+npm notice run strataai2@0.1.0 test
+npm notice run npm --workspace @strataai/web run test -- src/features/organizations/StrataLotDirectoryPage.test.tsx --maxWorkers=1 --reporter=json --outputFile=C:/Users/nickm/Documents/Codex/2026-10-27/take/work/prd131-review/restored-create-red.json
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run src/features/organizations/StrataLotDirectoryPage.test.tsx --maxWorkers=1 --reporter=json --outputFile=C:/Users/nickm/Documents/Codex/2026-10-27/take/work/prd131-review/restored-create-red.json
+JSON report written to C:/Users/nickm/Documents/Codex/2026-10-27/take/work/prd131-review/restored-create-red.json
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run src/features/organizations/StrataLotDirectoryPage.test.tsx --maxWorkers=1 --reporter=json --outputFile=C:/Users/nickm/Documents/Codex/2026-10-27/take/work/prd131-review/restored-create-red.json
