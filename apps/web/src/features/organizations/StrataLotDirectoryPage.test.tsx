@@ -88,13 +88,22 @@ it('PRD-28-TC-08/16: stale-version refusal requires a fresh read before explicit
   await screen.findByText('Change acknowledged. Current unit revision 3.');
   expect(JSON.parse(String(writes[1].body)).version).toBe(2);
 });
-it('PRD-28-TC-07/08/16: a refused restored existing edit loads its canonical source before explicit draft review', async () => {
+it.each([0, 1])('PRD-28-TC-07/08/16: a refused restored version %i loads its canonical source beyond the current page before explicit draft review', async restoredVersion => {
   lots = [{ id: lotId, organizationId: org, version: 2, data: { ...originalData, unitIdentifier: '101B' }, createdAt: '2026-10-28T00:00:00Z', updatedAt: '2026-10-28T00:00:00Z' }];
-  const original = new LotIntent(org, actor, lotId, 1, { ...originalData, unitIdentifier: '101A' });
+  const original = new LotIntent(org, actor, lotId, restoredVersion, { ...originalData, unitIdentifier: '101A' });
   retainLotIntent(original);
-  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Retry original unit change' }));
-  await screen.findByText(/This unit changed elsewhere/);
-  expect(writes).toHaveLength(1); expect(JSON.parse(String(writes[0].body)).version).toBe(1);
+  const request = fetch;
+  const firstPage = Array.from({ length: 50 }, (_, index) => ({ ...lots[0], id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}` }));
+  vi.stubGlobal('fetch', async (path: string, options: RequestInit = {}) => {
+    if (path.endsWith('/strata-lots')) return reply({ organizationId: org, items: firstPage, nextCursor: firstPage[49].id });
+    if (restoredVersion === 0 && options.method === 'PATCH' && !writes.length) { writes.push(options); return reply({ code: 'idempotency_key_expired' }, 409); }
+    return request(path, options);
+  });
+  mount(); const retry = await screen.findByRole('button', { name: 'Retry original unit change' });
+  expect(writes).toHaveLength(0); expect(screen.getByLabelText(/^Unit identifier/)).toBeDisabled();
+  fireEvent.click(retry);
+  await screen.findByText(/Your draft is preserved. Refresh current records/);
+  expect(writes).toHaveLength(1); expect(JSON.parse(String(writes[0].body)).version).toBe(restoredVersion);
   expect(screen.queryByRole('button', { name: 'Keep draft after review' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Refresh current records' }));
   await screen.findByRole('heading', { name: 'Unit 101B · revision 2' });

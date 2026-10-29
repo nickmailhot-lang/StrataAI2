@@ -84,6 +84,22 @@ export function readLot(organization: string, actorId: string, lotId: string, si
     await admit(organization, actorId, bounded); await actor(bounded, actorId); bounded.throwIfAborted(); return lot;
   }, signal);
 }
+// A refused creation may already exist, or may never have reached storage.
+// Only current administrative admission can distinguish absence from withdrawal.
+export function readLotIfPresent(organization: string, actorId: string, lotId: string, signal: AbortSignal) {
+  return boundedWorkRead(async bounded => {
+    await actor(bounded, actorId); await admit(organization, actorId, bounded);
+    let value: unknown;
+    try { value = await request(`${path(organization)}/${id(lotId)}`, actorId, bounded); }
+    catch (reason) {
+      if (!(reason instanceof WorkRequestError) || reason.status !== 404) throw reason;
+      await admit(organization, actorId, bounded); await actor(bounded, actorId); bounded.throwIfAborted();
+      return undefined;
+    }
+    const lot = parseLot(value, organization, lotId);
+    await admit(organization, actorId, bounded); await actor(bounded, actorId); bounded.throwIfAborted(); return lot;
+  }, signal);
+}
 export function readLotHistory(organization: string, actorId: string, lotId: string, signal: AbortSignal, before?: number) {
   if (before !== undefined && (!Number.isSafeInteger(before) || before < 1)) throw new WorkInputError('Reload unit history.');
   return boundedWorkRead(async bounded => {

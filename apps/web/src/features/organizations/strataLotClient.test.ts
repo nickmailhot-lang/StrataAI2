@@ -1,4 +1,4 @@
-import { emptyLot, forgetLotChanges, LotIntent, lotErrors, parseLot, readLots, readLotHistory, retainLotIntent, recoveryKey } from './strataLotClient';
+import { emptyLot, forgetLotChanges, LotIntent, lotErrors, parseLot, readLots, readLotIfPresent, readLotHistory, retainLotIntent, recoveryKey } from './strataLotClient';
 const org = '11111111-1111-4111-8111-111111111111', actor = '22222222-2222-4222-8222-222222222222';
 const lotId = '33333333-3333-4333-8333-333333333333';
 const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
@@ -47,6 +47,28 @@ it('LOT-FR-006: validates descending history boundaries and stable identity', as
   stub(() => reply({ organizationId: org, strataLotId: lotId, items: [revision(2), revision(1)], nextBeforeVersion: null }));
   expect((await readLotHistory(org, actor, lotId, new AbortController().signal, 3)).items.map(r => r.lot.version)).toEqual([2, 1]);
   await expect(readLotHistory(org, actor, lotId, new AbortController().signal, 2)).rejects.toThrow();
+});
+it('PRD-28-TC-07/16: a missing refused creation is absent only after fresh administrative admission', async () => {
+  stub(() => reply({}, 404));
+  await expect(readLotIfPresent(org, actor, lotId, new AbortController().signal)).resolves.toBeUndefined();
+});
+it.each(['role', 'account'])('PRD-28-TC-06: a missing-creation lookup still withdraws on changed %s', async changed => {
+  let queried = false;
+  vi.stubGlobal('fetch', async (path: string) => {
+    if (path === '/me') return reply(queried && changed === 'account' ? { ...profile, id: lotId } : profile);
+    if (path === `/organizations/${org}`) return reply({ organization: { id: org, status: 0 }, role: queried && changed === 'role' ? 2 : 0 });
+    queried = true; return reply({}, 404);
+  });
+  await expect(readLotIfPresent(org, actor, lotId, new AbortController().signal)).rejects.toMatchObject({ status: changed === 'role' ? 404 : 401 });
+});
+it.each([2, 3])('PRD-28-TC-04/05: role %i cannot probe a refused creation', async role => {
+  const request = vi.fn(() => reply({}, 404)); stub(request, role);
+  await expect(readLotIfPresent(org, actor, lotId, new AbortController().signal)).rejects.toMatchObject({ status: 404 });
+  expect(request).not.toHaveBeenCalled();
+});
+it.each([401, 403, 500])('PRD-28-TC-06/16: lookup status %i is never treated as unit absence', async status => {
+  stub(() => reply({}, status));
+  await expect(readLotIfPresent(org, actor, lotId, new AbortController().signal)).rejects.toMatchObject({ status });
 });
 it('PRD-28-TC-07/15: preserves exact original bytes/key across a lost response and reload', async () => {
   const writes: RequestInit[] = [];
