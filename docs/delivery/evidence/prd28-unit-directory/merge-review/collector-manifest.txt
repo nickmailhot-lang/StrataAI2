@@ -1,0 +1,32 @@
+Name:      docker.io/otel/opentelemetry-collector-contrib:0.164.0
+MediaType: application/vnd.docker.distribution.manifest.list.v2+json
+Digest:    sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b
+           
+Manifests: 
+  Name:      docker.io/otel/opentelemetry-collector-contrib:0.164.0@sha256:40392928d2b988b77e7525dbac33e5e3d9bedb40b9ff8c1f9119d92ca3a8a1c3
+  MediaType: application/vnd.docker.distribution.manifest.v2+json
+  Platform:  linux/386
+             
+  Name:      docker.io/otel/opentelemetry-collector-contrib:0.164.0@sha256:ac0bb9cdc844b55d2fd2655d03e596243787d6a8c52dd408b1dc96dd1bd372ee
+  MediaType: application/vnd.docker.distribution.manifest.v2+json
+  Platform:  linux/amd64
+             
+  Name:      docker.io/otel/opentelemetry-collector-contrib:0.164.0@sha256:91433e0cbe761c34e4c98714b509cd46021b84ce8cb67001d01e34cf7594e109
+  MediaType: application/vnd.docker.distribution.manifest.v2+json
+  Platform:  linux/arm64
+             
+  Name:      docker.io/otel/opentelemetry-collector-contrib:0.164.0@sha256:642ac0db34ffe0d29ef3fd73ba2909ce0060f911eb030aa984b4eee142eb1c7e
+  MediaType: application/vnd.docker.distribution.manifest.v2+json
+  Platform:  linux/arm/v7
+             
+  Name:      docker.io/otel/opentelemetry-collector-contrib:0.164.0@sha256:80e5e533762dbae801ca3b1ef8177b37467f91110ee4884b2875459269c15ac5
+  MediaType: application/vnd.docker.distribution.manifest.v2+json
+  Platform:  linux/ppc64le
+             
+  Name:      docker.io/otel/opentelemetry-collector-contrib:0.164.0@sha256:d24dfd2eb34bc0b294d32ad45e36700783848c6ef2b4cc2a735c61ccd2b3e9fa
+  MediaType: application/vnd.docker.distribution.manifest.v2+json
+  Platform:  linux/riscv64
+             
+  Name:      docker.io/otel/opentelemetry-collector-contrib:0.164.0@sha256:76edfcad5828f449475a97224cd0895ed5fbab200bce2483bd950daa10232beb
+  MediaType: application/vnd.docker.distribution.manifest.v2+json
+  Platform:  linux/s390x

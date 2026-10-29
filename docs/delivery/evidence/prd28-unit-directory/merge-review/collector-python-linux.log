@@ -1,0 +1,6 @@
+debconf: delaying package configuration, since apt-utils is not installed
+...............................................................
+----------------------------------------------------------------------
+Ran 63 tests in 100.738s
+
+OK

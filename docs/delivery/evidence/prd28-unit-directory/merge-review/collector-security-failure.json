@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-29T00:46:00.804Z",
+  "revision": "bec293b8ff9fc0d5dc4541c13f5c97d0bd58f7c0",
+  "result": "Failed",
+  "workflowRun": 40789304058,
+  "job": 123188496773,
+  "step": "Scan and inventory pinned operator receiver",
+  "finding": {
+    "component": "Collector 0.161.0 / Go stdlib 1.26.8",
+    "vulnerability": "CVE-2026-56857",
+    "fixedVersion": "Go 1.26.9 or 1.27.2",
+    "severity": "CRITICAL"
+  },
+  "assessment": "All three application image scans passed, including the repaired Brotli package. The subsequent receiver gate found an actual fixed Critical vulnerability; no ignore/waiver is appropriate.",
+  "artifact": {
+    "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-security-failure.log",
+    "sha256": "99e7a3975a26f02ad8a0570dd8e7146665c2d5c924ca683103a19865ef6ce0f4"
+  }
+}
