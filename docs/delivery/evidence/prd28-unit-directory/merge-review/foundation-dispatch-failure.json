@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-29T06:54:23.442Z",
+  "revision": "048ef962468092591a0537a6c8300f4da4bf4c74",
+  "result": "Failed",
+  "workflowRun": 40823468200,
+  "job": 123294872850,
+  "step": "Attachment upload and isolated Worker image publication through explicit private test providers",
+  "assertion": "tests/browser/board-background-pipeline.case.ts:242:114 — original Board background recovery must produce its acknowledgment within the unchanged five seconds.",
+  "attachmentBrowserCases": {
+    "passed": 1,
+    "failed": 1,
+    "failedWidth": 1280,
+    "passedWidth": 390
+  },
+  "trace": {
+    "originalCommittedTransport": "One original native POST /boards/:board/background/image at monotonic 34596.792; routed API call returned 200, then its response was deliberately dropped. The direct earlier 400 public-consent refusal is a separate expected API check.",
+    "retryKey": "The keypress ran at 34942.857–34989.734; a parent Board GET started at 34967.81. No second native background POST or retry actor GET followed. The UI retained an enabled, unconfirmed original retry.",
+    "evaluation": "The fixture proved focus/enabled state immediately before Enter, but not that this key actually dispatched a command. The protected refresh overlapped activation; a harmless ignored key then made the acknowledgment assertion fail. This is fixture admission, not evidence that a second submitted command failed or should be replayed.",
+    "traceSha256": "46b0209d14e0c318da920ea8ea054ca4e8c3c40de339513099732f18b24b25d3"
+  },
+  "hostedArtifacts": [
+    {
+      "id": 12878079165,
+      "name": "browser-diagnostics-019d43bf480414f29384d50be59850f631a6c7f9-browser-foundation-1",
+      "sha256": "1c753324669db9c725b99cbfb4933ed2658e5bb2806508937023c69d141fbf15"
+    },
+    {
+      "id": 12878472483,
+      "name": "container-integration-diagnostics-019d43bf480414f29384d50be59850f631a6c7f9-browser-foundation-1",
+      "sha256": "5a6c1c5d61cf8eede5c69c1bef39e8aad192cdc0abf3796f80b0a94829088a52"
+    }
+  ],
+  "artifacts": {
+    "log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-hosted-failure.log",
+      "sha256": "eed52cbb10d2407c729236b52806bb914d90f424911f958fffcbb07066485760"
+    },
+    "context": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-context.md",
+      "sha256": "d7a106e64f2f530328e86eb7121bcbc23bb5a5524a055a8c8c74842e2bf5769d"
+    },
+    "owner": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-owner.png",
+      "sha256": "1a4540eca81b12c2f93290fe11fca3fb4e696ddfca9aa7584b7f5b29f1c62f09"
+    },
+    "secondary": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-secondary.png",
+      "sha256": "f6a37e4c324e501e993293ad5cf0885b5d3de655cec7d9840a372de52ca875a4"
+    },
+    "buildMetadata": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-failure-build-metadata.json",
+      "sha256": "0d3aa5ca6f15ed638875f71047816d928d3f22fa1a3b629bff65cd30da37057c"
+    }
+  },
+  "otherQualification": "Final-source web (3064 including 17 directory cases), domain/API, PostgreSQL, image builds, all image/receiver security and local delivery validation/36 contracts/report passed. Other integration groups were still running; no overall or release qualification is inferred."
+}

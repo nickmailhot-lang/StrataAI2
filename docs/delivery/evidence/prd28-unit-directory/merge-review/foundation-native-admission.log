@@ -1,0 +1,5 @@
+(node:7964) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-27/take/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native counterfactual: zero dispatched requests. Request-observed admission: exactly one original request and acknowledgment.

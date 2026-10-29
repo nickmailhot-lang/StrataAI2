@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-29T06:50:12.665Z",
+  "scope": "Controlled native-browser dispatch protocol, not application or release-pipeline qualification. Real hosted trace independently records the ignored original-recovery key.",
+  "counterfactual": {
+    "result": "Failed",
+    "attempts": 0,
+    "assessment": "Counterfactual: the focus-and-keypress helper returns after an ignored native key without starting any request; the required acknowledgment cannot be inferred."
+  },
+  "repair": {
+    "result": "Passed",
+    "attempts": 1,
+    "assessment": "Native request-observed admission starts exactly one original request with unchanged key/body and reaches acknowledgment."
+  }
+}

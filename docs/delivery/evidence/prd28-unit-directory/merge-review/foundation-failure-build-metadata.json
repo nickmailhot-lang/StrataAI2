@@ -1,0 +1,17 @@
+{
+  "repository": "nickmailhot-lang/StrataAI2",
+  "commitSha": "019d43bf480414f29384d50be59850f631a6c7f9",
+  "shortSha": "019d43bf4804",
+  "workflowRunId": "40823468200",
+  "workflowRunNumber": "29",
+  "workflowRunAttempt": "1",
+  "version": "0.1.0-29",
+  "releaseVersion": null,
+  "imageTag": "019d43bf480414f29384d50be59850f631a6c7f9",
+  "createdAt": "2026-10-29T05:29:41.539Z",
+  "images": {
+    "web": "strataai-web:019d43bf480414f29384d50be59850f631a6c7f9",
+    "api": "strataai-api:019d43bf480414f29384d50be59850f631a6c7f9",
+    "worker": "strataai-worker:019d43bf480414f29384d50be59850f631a6c7f9"
+  }
+}
