@@ -803,7 +803,7 @@ Linux execution is pending. No successful exporter execution is claimed yet.
 ## Optional receiver and ingestion gate
 
 `compose.metrics.yml` adds a digest-pinned official OpenTelemetry Collector
-0.161.0 to the release topology. Start it with
+0.164.0 to the release topology. Start it with
 `docker compose -f compose.release.yml -f compose.metrics.yml up -d`.
 It listens for OTLP only on the deployment's private Compose network. Its
 Prometheus scrape port is bound to host loopback at `127.0.0.1:9464/metrics`.
@@ -1349,3 +1349,8 @@ on cached runtime images, optional email verification and a controlled mail
 provider; it does not certify the new immutable release or managed delivery.
 The full current-commit CI, release milestone and full PRD-03 acceptance remain
 open. PRD-03 stays at **8% estimated work remaining**, a planning estimate.
+
+
+## Receiver security maintenance — 2026-10-28
+
+PR #131 qualification found fixed Critical CVE-2026-56857 in the Go standard library bundled by Collector 0.161.0. The Compose overlay and security inventory now pin official Collector 0.164.0 by the same manifest digest; the verifier records 0.164.0. The [vendor release](https://github.com/open-telemetry/opentelemetry-collector-releases/releases/tag/v0.164.0) builds with Go 1.26.10, beyond the advisory fix in 1.26.9. Prior 0.161.0 rehearsal records and implementation references remain historical. The committed receiver configuration, privacy assertions and fixed-Critical gate are unchanged. Configuration validation, a disposable OTLP-to-Prometheus ingestion check, local verifier contracts and the unchanged Trivy gate qualify this dependency update locally; current full CI must still prove the release API/Worker ingestion and recovery fixture.

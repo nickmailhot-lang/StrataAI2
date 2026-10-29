@@ -1545,7 +1545,7 @@ jobs:
       - name: Scan and inventory pinned operator receiver
         run: |
           set -euo pipefail
-          collector='otel/opentelemetry-collector-contrib:0.161.0@sha256:fd328de2552466ad78385e1b1289c3f2402b1c45f265b252aab1955b42845ac1'
+          collector='otel/opentelemetry-collector-contrib:0.164.0@sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b'
           docker run --rm -v "${PWD}/security-artifacts:/output" aquasec/trivy:0.74.0 image --format cyclonedx --output /output/metrics-collector.cdx.json "$collector"
           docker run --rm aquasec/trivy:0.74.0 image --exit-code 1 --ignore-unfixed --severity CRITICAL "$collector"
 

@@ -323,7 +323,7 @@ if __name__ == "__main__":
     if not verify(Path(source).read_text(), revision, version, backlog_available=expected_available):
         sys.exit(1)
     Path(target).write_text(json.dumps({"schemaVersion": 1, "revision": revision, "status": "passed",
-        "topology": "exact API through Nginx to pinned OTLP Collector", "collectorVersion": "0.161.0",
+        "topology": "exact API through Nginx to pinned OTLP Collector", "collectorVersion": "0.164.0",
         "verified": {"clientEvents": True, "clientDuration": True, "serverRequests": True,
                      "serverDuration": True, "activityClientEvents": True, "activityClientDuration": True,
                      "activityServerReads": True, "commentClientEvents": True, "commentClientDuration": True,
