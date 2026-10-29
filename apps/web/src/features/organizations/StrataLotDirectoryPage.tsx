@@ -33,7 +33,7 @@ function Directory({ organization }: { organization: string }) {
   const [actor, setActor] = useState<string>(); const actorRef = useRef<string | undefined>(undefined);
   const [ready, setReady] = useState(false); const [busy, setBusy] = useState(false);
   const [unavailable, setUnavailable] = useState(false); const [failure, setFailure] = useState<string>(); const [notice, setNotice] = useState<string>();
-  const [editor, setEditor] = useState<{ id: string; source?: Lot; draft: LotData }>();
+  const [editor, setEditor] = useState<{ id: string; source?: Lot; draft: LotData; existingUnit?: boolean }>();
   const [original, setOriginal] = useState<LotIntent>(); const [review, setReview] = useState(false);
   const [errors, setErrors] = useState<ReturnType<typeof lotErrors>>({}); const [conflict, setConflict] = useState(false);
   const [needsCurrent, setNeedsCurrent] = useState(false);
@@ -76,7 +76,7 @@ function Directory({ organization }: { organization: string }) {
     try {
       const result = await readLots(organization, controller.signal, actorRef.current, after);
       const selected = latest.current.editor;
-      const selectedId = selected?.source?.id ?? (!selected ? opening.current : undefined);
+      const selectedId = selected?.source?.id ?? (selected?.existingUnit && !latest.current.original ? selected.id : !selected ? opening.current : undefined);
       const current = selectedId ? await readLot(organization, result.actorId, selectedId, controller.signal) : undefined;
       if (!mounted.current || controller.signal.aborted || operation.current !== controller) return;
       forgetLotChanges(undefined, result.actorId);
@@ -87,16 +87,16 @@ function Directory({ organization }: { organization: string }) {
       setReady(true); setUnavailable(false); setFailure(undefined);
       setNeedsCurrent(false);
       if (restored && !latest.current.original) {
-        setOriginal(restored); setEditor({ id: restored.lotId, draft: { ...restored.data } });
+        setOriginal(restored); setEditor({ id: restored.lotId, draft: { ...restored.data }, existingUnit: restored.version > 0 });
         setNotice('An original unit change needs recovery. Retry it explicitly; a fresh read does not acknowledge it.');
       }
       if (!selected && current && opening.current === current.id && !restored) {
         opening.current = undefined; setEditor({ id: current.id, source: current, draft: { ...current.data } });
       }
-      if (selected?.source && current && current.id === selected.id && !latest.current.original && current.version !== selected.source.version) {
+      if (selected && current && current.id === selected.id && !latest.current.original && (!selected.source || current.version !== selected.source.version)) {
         setEditor({ ...selected, source: current }); setConflict(true); setHistory(undefined);
         setReview(false);
-        setNotice('This unit changed elsewhere. Compare the current values with your preserved draft.');
+        setNotice(selected.source ? 'This unit changed elsewhere. Compare the current values with your preserved draft.' : 'Current unit values loaded. Compare them with your preserved draft.');
       }
     } catch (reason) {
       if (mounted.current && !controller.signal.aborted && operation.current === controller) { setReady(false); setHistory(undefined); fail(reason); }
@@ -214,7 +214,7 @@ function Directory({ organization }: { organization: string }) {
       {unavailable ? <Alert severity="warning">The unit directory is unavailable to your account.</Alert> : <Button disabled={busy} onClick={() => void load(cursor)}>Refresh current records</Button>}
       {ready && !unavailable && <>
         {!editor && <>
-          {original ? <><Alert severity="warning">An original unit change still needs recovery.</Alert><Button onClick={() => setEditor({ id: original.lotId, draft: { ...original.data } })}>Recover original unit change</Button></>
+          {original ? <><Alert severity="warning">An original unit change still needs recovery.</Alert><Button onClick={() => setEditor({ id: original.lotId, draft: { ...original.data }, existingUnit: original.version > 0 })}>Recover original unit change</Button></>
             : <Button variant="contained" disabled={busy} onClick={() => void open()}>Add unit</Button>}
           {!page?.items.length && <Alert severity="info">{cursor ? 'No units remain on this page. Return to the first page or refresh.' : 'No units have been recorded. Add the first unit if you are authorized to administer this Organization.'}</Alert>}
           <Box component="ul" sx={{ p: 0, listStyle: 'none' }}>{page?.items.map(lot => <Box component="li" key={lot.id} sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}>

@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { StrataLotDirectoryPage } from './StrataLotDirectoryPage';
-import { emptyLot } from './strataLotClient';
+import { emptyLot, LotIntent, retainLotIntent } from './strataLotClient';
 const live = vi.hoisted(() => ({ watch: vi.fn<(options: { reset(): void }) => () => void>(() => vi.fn()) }));
 vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.watch }));
 const org = '11111111-1111-4111-8111-111111111111', actor = '22222222-2222-4222-8222-222222222222', lotId = '33333333-3333-4333-8333-333333333333';
@@ -87,6 +87,26 @@ it('PRD-28-TC-08/16: stale-version refusal requires a fresh read before explicit
   fireEvent.click(await screen.findByRole('button', { name: 'Confirm unit change' }));
   await screen.findByText('Change acknowledged. Current unit revision 3.');
   expect(JSON.parse(String(writes[1].body)).version).toBe(2);
+});
+it('PRD-28-TC-07/08/16: a refused restored existing edit loads its canonical source before explicit draft review', async () => {
+  lots = [{ id: lotId, organizationId: org, version: 2, data: { ...originalData, unitIdentifier: '101B' }, createdAt: '2026-10-28T00:00:00Z', updatedAt: '2026-10-28T00:00:00Z' }];
+  const original = new LotIntent(org, actor, lotId, 1, { ...originalData, unitIdentifier: '101A' });
+  retainLotIntent(original);
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Retry original unit change' }));
+  await screen.findByText(/This unit changed elsewhere/);
+  expect(writes).toHaveLength(1); expect(JSON.parse(String(writes[0].body)).version).toBe(1);
+  expect(screen.queryByRole('button', { name: 'Keep draft after review' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh current records' }));
+  await screen.findByRole('heading', { name: 'Unit 101B · revision 2' });
+  expect(screen.getByLabelText(/^Unit identifier/)).toHaveValue('101A');
+  expect(writes).toHaveLength(1);
+  fireEvent.click(screen.getByRole('button', { name: 'Keep draft after review' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Review unit change' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Confirm unit change' }));
+  await screen.findByText('Change acknowledged. Current unit revision 3.');
+  expect(writes).toHaveLength(2); expect(JSON.parse(String(writes[1].body)).version).toBe(2);
+  expect(new Headers(writes[0].headers).get('Idempotency-Key')).toBe(original.key);
+  expect(new Headers(writes[1].headers).get('Idempotency-Key')).not.toBe(original.key);
 });
 it('UXA-04: navigation protects unsent work and returns after explicit discard', async () => {
   mount(); fireEvent.click(await screen.findByRole('button', { name: 'Add unit' }));
