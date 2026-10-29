@@ -6,6 +6,7 @@ it.each([0, 1])('UX-002: current Organization role %i discovers administration w
   const links = organizationNavigation('org-a', source(role));
   expect(links.find(item => item.id === 'settings')?.to).toBe('/app/org-a/settings');
   expect(links.find(item => item.id === 'members')?.to).toBe('/app/org-a/members');
+  expect(links.find(item => item.id === 'unit-directory')?.to).toBe('/app/org-a/property/units');
   expect(links.some(item => item.id === 'delete')).toBe(role === 0);
   expect(new Set(links.map(item => item.to)).size).toBe(links.length);
 });

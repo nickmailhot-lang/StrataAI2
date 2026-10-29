@@ -1,0 +1,9 @@
+Running tests from /tmp/prd28-tests/bin/StrataAI.Api.Tests/debug/StrataAI.Api.Tests.dll (net10.0|x64)
+/tmp/prd28-tests/bin/StrataAI.Api.Tests/debug/StrataAI.Api.Tests.dll (net10.0|x64) passed (34s 570ms)
+
+Test run summary: Passed!
+  total: 10
+  failed: 0
+  succeeded: 10
+  skipped: 0
+  duration: 35s 154ms

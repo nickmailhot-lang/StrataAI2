@@ -1,0 +1,79 @@
+{
+  "at": "2026-10-29T05:09:59.099Z",
+  "revision": "5c6dbf657231cc36e4545109f4f0bce528f4d84b",
+  "result": "Failed",
+  "workflowRun": 40796213792,
+  "job": 123214075414,
+  "assertion": "tests/browser/strata-lot-directory.spec.ts:66:84 — Unit history heading must receive focus within the unchanged five-second deadline.",
+  "resultCounts": {
+    "browserGroup": {
+      "passed": 133,
+      "failed": 3
+    },
+    "allFullBrowserGroups": {
+      "passed": 546,
+      "failed": 3,
+      "skipped": 2
+    }
+  },
+  "failedWidths": [
+    320,
+    390,
+    768
+  ],
+  "passedWidths": [
+    1280
+  ],
+  "paging": "Passed",
+  "otherGates": "Source (3061 web, 1105 domain, 1450 API), PostgreSQL, image builds, all application/receiver security scans, command/notification/foundation groups passed. Overall required-ci failed; release-bundle was skipped, not qualified.",
+  "hostedDiagnosticArtifact": {
+    "id": 12873774559,
+    "name": "browser-diagnostics-62c83284e79aef3a9b2c0631610e76f86aefab2f-browser-full-4",
+    "sha256": "ae5928498d7cb664e29308c2750ef824f42cbee2dc8741fb2474281cb079d0aa"
+  },
+  "hosted": [
+    {
+      "width": 320,
+      "artifacts": {
+        "png": {
+          "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-320.png",
+          "sha256": "efcebbf9399208b665eaf6e154723a02658bc5fa8c873518d97e45e555391d77"
+        },
+        "md": {
+          "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-320.md",
+          "sha256": "110852daf250ac22723c545223cf07b45048653207b23a443e7d7a2589178ca2"
+        }
+      },
+      "originalTraceSha256": "0334ac09ace6918ba71f0131f498c408e40fe4286f385f9261dd6867bbff831a"
+    },
+    {
+      "width": 390,
+      "artifacts": {
+        "png": {
+          "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-390.png",
+          "sha256": "574cb1608b6ce01961a5ac97799a51e7ef86da05277adc223fca025e5dbe172d"
+        },
+        "md": {
+          "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-390.md",
+          "sha256": "aedb221d62b5c873631956fcc384fe9a42f5b569e16d9b374f5a7cefff3f1614"
+        }
+      },
+      "originalTraceSha256": "c81fbc9d69df5c82f1bfde9ad1d8acb03e5f03f6f149f8f4a0b4c83f278a72ec"
+    },
+    {
+      "width": 768,
+      "artifacts": {
+        "png": {
+          "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-768.png",
+          "sha256": "b6d434ee0472088703d96c266ce0159af313c974f427bad1ab46e3f6cc2f09b6"
+        },
+        "md": {
+          "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-768.md",
+          "sha256": "ee99419f9f16008d203b527add92a8d17c448f9bcc048ecc494ec2c6a56b75e8"
+        }
+      },
+      "originalTraceSha256": "46ec995944e4487c39e6e9d7df54c59a901651b0159fd1f711cd63517ad79c76"
+    }
+  ],
+  "assessment": "Real focus reliability defect. The page issued one animation-frame callback after updating history state, without waiting for that section to commit or be readmitted after authority retirement. A lost callback left the correct history visible but keyboard focus inactive. The deterministic unchanged-source run reproduces both early-frame and authority-retirement variants (15 passed/2 failed). Five local Demo cases passed before repair and therefore did not qualify the failing Production behavior."
+}

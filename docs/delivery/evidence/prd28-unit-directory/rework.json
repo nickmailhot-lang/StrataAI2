@@ -1,0 +1,46 @@
+{
+  "at": "2026-10-28T18:05:20.891Z",
+  "revision": "94244f6ff720409de301fb19b28eb163edbe4889",
+  "result": "Passed",
+  "reviewFinding": "A failed existing-unit opening token must not be applied to a new-unit draft. Clear it on failed opening/new entry/close, read it only without an editor, and require an existing source with matching unit identity before comparison.",
+  "checks": {
+    "unit": {
+      "passed": 124,
+      "failed": 0,
+      "skipped": 0
+    },
+    "browser": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "testDeadline": 30000
+    },
+    "build": "Passed, includes web TypeScript; existing bundle advisory retained",
+    "lint": "Passed",
+    "browserTypes": "Passed"
+  },
+  "results": {
+    "unit": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/rework-unit.json",
+      "sha256": "264418265521c6bf17eba3e5f147968d7883ea9053738d76fbb563cf0c579913"
+    },
+    "build": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/rework-build.log",
+      "sha256": "3e59b24db55768c1b9fd132faf2e4806eb44e9e72d8788beace15dafd40358d1"
+    },
+    "lint": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/rework-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    "browser": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/rework-browser.log",
+      "sha256": "efbe995eeb6a01222c7211f80a562803a46b17b3d9a36cea4cdd8e9fa1005c0d"
+    },
+    "browser-types": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/rework-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    }
+  },
+  "remaining": "Hosted PostgreSQL/RLS/security/immutable-image qualification, integration and independent acceptance remain pending. Earlier artifacts/history are retained unchanged."
+}

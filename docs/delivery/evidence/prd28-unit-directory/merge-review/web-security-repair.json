@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-28T23:43:09.357Z",
+  "revision": "0e5e3296819e74a303a94d3927e83ddf69cf81a2",
+  "result": "Passed",
+  "change": "RUN apk add --no-cache --upgrade 'brotli-libs>=1.2.1-r0' in the Nginx runtime stage.",
+  "sources": [
+    "https://security.alpinelinux.org/vuln/CVE-2026-111497",
+    "https://pkgs.alpinelinux.org/package/v3.23/main/x86_64/brotli-libs"
+  ],
+  "checks": {
+    "webRuntimeBuild": "Passed; includes web TypeScript and production build",
+    "installedPackage": "brotli-libs 1.2.1-r0 on Alpine 3.23.4",
+    "nginxConfiguration": "Passed with the existing API upstream name resolved in the disposable test container",
+    "localTrivy": {
+      "version": "0.74.0",
+      "exitCode": 0,
+      "policy": "--exit-code 1 --ignore-unfixed --severity CRITICAL",
+      "fixedCriticalFindings": 0,
+      "secrets": 0,
+      "scope": "Rebuilt web image only; no full-candidate/release qualification inferred."
+    }
+  },
+  "artifacts": {
+    "security-web-trivy.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-trivy.json",
+      "sha256": "e7326561e8bfe0b5790aeee4a7cc764e446d1d961006976031d4efdb0f3675af"
+    },
+    "security-web-nginx.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-nginx.log",
+      "sha256": "339e4ea8b4c56785f01817ba8839c78bc00ea87de8b45fcf30c0623c9df5aa1b"
+    },
+    "security-web-package.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-package.log",
+      "sha256": "a38d7e3fe905d6c3612eeb33fec71c95b00e8bf9b2ad6ffea45d1d53cc4f72f2"
+    },
+    "security-web-image-id.txt": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-image-id.txt",
+      "sha256": "2bbad6a7541c05ec5a6be7e201cd0c2fbde5f51f84226517d688314810ea95cd"
+    },
+    "security-web-build.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-build.log",
+      "sha256": "cb7b41ebccdb855dda80653885ce06a0b7b87ba7a501c27a11b811e8c6365c97"
+    }
+  },
+  "applicationSource": "Unchanged from 0bb68c23 (125 scoped regressions, build/web types and lint passed there).",
+  "remaining": [
+    "Fresh exact-candidate full required-ci, API/Worker/image scanning, real-service browser/bundle checks and delivery validation before merge.",
+    "Independent product acceptance and remaining PRD-28 work."
+  ]
+}

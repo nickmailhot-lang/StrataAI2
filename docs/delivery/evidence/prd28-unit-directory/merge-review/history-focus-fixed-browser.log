@@ -1,0 +1,14 @@
+npm notice run strataai2@0.1.0 npx
+npm notice run playwright test tests/browser/strata-lot-directory.spec.ts --output ../prd131-review/history-focus-fixed-browser
+
+Running 5 tests using 1 worker
+
+(node:25296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 320px (14.8s)
+  ok 2 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 390px (10.4s)
+  ok 3 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 768px (10.8s)
+  ok 4 tests\browser\strata-lot-directory.spec.ts:9:7 › PRD-28-TC-01/07/11/12 LOT-FR-001/002/005/006: unit directory create, correct, history and return at 1280px (12.9s)
+  ok 5 tests\browser\strata-lot-directory.spec.ts:83:5 › PRD-28-TC-01 LOT-FR-006: directory and history continue past 50 without losing references (5.0s)
+
+  5 passed (3.1m)

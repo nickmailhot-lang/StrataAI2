@@ -1,0 +1,727 @@
+﻿2026-10-29T00:33:08.0776258Z Current runner version: '2.338.0'
+2026-10-29T00:33:08.0812143Z ##[group]Runner Image Provisioner
+2026-10-29T00:33:08.0813724Z Hosted Compute Agent
+2026-10-29T00:33:08.0814803Z Version: 20261021.618
+2026-10-29T00:33:08.0816067Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-29T00:33:08.0817857Z Build Date: 2026-10-21T00:45:21Z
+2026-10-29T00:33:08.0819199Z Worker ID: {7d62f986-f25e-4095-a485-dcff53237561}
+2026-10-29T00:33:08.0820645Z Region: northcentralus
+2026-10-29T00:33:08.0821786Z Cloud: Azure
+2026-10-29T00:33:08.0822797Z ##[endgroup]
+2026-10-29T00:33:08.0825389Z ##[group]Operating System
+2026-10-29T00:33:08.0826489Z Ubuntu
+2026-10-29T00:33:08.0827740Z 24.04.5
+2026-10-29T00:33:08.0828734Z LTS
+2026-10-29T00:33:08.0829687Z ##[endgroup]
+2026-10-29T00:33:08.0830785Z ##[group]Runner Image
+2026-10-29T00:33:08.0831900Z Image: ubuntu-24.04
+2026-10-29T00:33:08.0832885Z Version: 20261025.353.1
+2026-10-29T00:33:08.0835233Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-29T00:33:08.0838627Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+2026-10-29T00:33:08.0840407Z ##[endgroup]
+2026-10-29T00:33:08.0842388Z ##[group]GITHUB_TOKEN Permissions
+2026-10-29T00:33:08.0845186Z Contents: read
+2026-10-29T00:33:08.0846132Z Metadata: read
+2026-10-29T00:33:08.0847214Z ##[endgroup]
+2026-10-29T00:33:08.0850660Z Secret source: Actions
+2026-10-29T00:33:08.0852406Z Cache mode: write
+2026-10-29T00:33:08.0853701Z Prepare workflow directory
+2026-10-29T00:33:08.1710723Z Prepare all required actions
+2026-10-29T00:33:08.1788828Z Getting action download info
+2026-10-29T00:33:08.4234700Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-29T00:33:08.5221643Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+2026-10-29T00:33:08.8560148Z Download action repository 'actions/setup-node@v7' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)
+2026-10-29T00:33:08.9362530Z Download action repository 'actions/setup-dotnet@v6' (SHA:a98b56852c35b8e3190ac28c8c2271da59106c68)
+2026-10-29T00:33:09.2412645Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-29T00:33:09.4478812Z Uses: nickmailhot-lang/StrataAI2/.github/workflows/full-sanity.yml@refs/pull/131/merge (9a8f5bebbc1770f4f9348660019e755370719c89)
+2026-10-29T00:33:09.4484730Z Complete job name: full / security
+2026-10-29T00:33:09.5672650Z ##[group]Run actions/checkout@v7
+2026-10-29T00:33:09.5674077Z with:
+2026-10-29T00:33:09.5674944Z   repository: nickmailhot-lang/StrataAI2
+2026-10-29T00:33:09.5684247Z   token: ***
+2026-10-29T00:33:09.5685097Z   ssh-strict: true
+2026-10-29T00:33:09.5685942Z   ssh-user: git
+2026-10-29T00:33:09.5686794Z   persist-credentials: true
+2026-10-29T00:33:09.5687883Z   clean: true
+2026-10-29T00:33:09.5688751Z   sparse-checkout-cone-mode: true
+2026-10-29T00:33:09.5689766Z   fetch-depth: 1
+2026-10-29T00:33:09.5690608Z   fetch-tags: false
+2026-10-29T00:33:09.5691449Z   show-progress: true
+2026-10-29T00:33:09.5692294Z   lfs: false
+2026-10-29T00:33:09.5693078Z   submodules: false
+2026-10-29T00:33:09.5693929Z   set-safe-directory: true
+2026-10-29T00:33:09.5694892Z   allow-unsafe-pr-checkout: false
+2026-10-29T00:33:09.5696185Z env:
+2026-10-29T00:33:09.5696996Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:09.5698178Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:09.5699125Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:09.5700387Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:09.5701862Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:09.5703088Z ##[endgroup]
+2026-10-29T00:33:09.9034491Z Syncing repository: nickmailhot-lang/StrataAI2
+2026-10-29T00:33:09.9038384Z ##[group]Getting Git version info
+2026-10-29T00:33:09.9040035Z Working directory is '/home/runner/work/StrataAI2/StrataAI2'
+2026-10-29T00:33:09.9041988Z [command]/usr/bin/git version
+2026-10-29T00:33:09.9115366Z git version 2.56.0
+2026-10-29T00:33:09.9142806Z ##[endgroup]
+2026-10-29T00:33:09.9153803Z Temporarily overriding HOME='/home/runner/work/_temp/32445647-a313-4c88-8903-e1df0bb0b654' before making global git config changes
+2026-10-29T00:33:09.9157521Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-29T00:33:09.9160785Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/StrataAI2/StrataAI2
+2026-10-29T00:33:09.9214265Z Deleting the contents of '/home/runner/work/StrataAI2/StrataAI2'
+2026-10-29T00:33:09.9218841Z ##[group]Determining repository object format
+2026-10-29T00:33:09.9225231Z ##[endgroup]
+2026-10-29T00:33:09.9226895Z ##[group]Initializing the repository
+2026-10-29T00:33:09.9229464Z [command]/usr/bin/git init /home/runner/work/StrataAI2/StrataAI2
+2026-10-29T00:33:09.9352774Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-29T00:33:09.9355340Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-29T00:33:09.9358207Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-29T00:33:09.9359924Z hint: call:
+2026-10-29T00:33:09.9360714Z hint:
+2026-10-29T00:33:09.9361686Z hint: 	git config --global init.defaultBranch <name>
+2026-10-29T00:33:09.9362873Z hint:
+2026-10-29T00:33:09.9363994Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-29T00:33:09.9365872Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-29T00:33:09.9367600Z hint:
+2026-10-29T00:33:09.9368996Z hint: 	git branch -m <name>
+2026-10-29T00:33:09.9370165Z hint:
+2026-10-29T00:33:09.9371385Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-29T00:33:09.9381889Z Initialized empty Git repository in /home/runner/work/StrataAI2/StrataAI2/.git/
+2026-10-29T00:33:09.9395752Z [command]/usr/bin/git remote add origin https://github.com/nickmailhot-lang/StrataAI2
+2026-10-29T00:33:09.9455775Z ##[endgroup]
+2026-10-29T00:33:09.9458142Z ##[group]Disabling automatic garbage collection
+2026-10-29T00:33:09.9461104Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-29T00:33:09.9500250Z ##[endgroup]
+2026-10-29T00:33:09.9502947Z ##[group]Setting up auth
+2026-10-29T00:33:09.9504788Z Removing SSH command configuration
+2026-10-29T00:33:09.9507589Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-29T00:33:09.9556018Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-29T00:33:09.9992191Z Removing HTTP extra header
+2026-10-29T00:33:09.9998730Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-29T00:33:10.0046601Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-29T00:33:10.0285263Z Removing includeIf entries pointing to credentials config files
+2026-10-29T00:33:10.0290624Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-29T00:33:10.0337169Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-29T00:33:10.0604584Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-29T00:33:10.0656943Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git.path /home/runner/work/_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config
+2026-10-29T00:33:10.0704565Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config
+2026-10-29T00:33:10.0751077Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config
+2026-10-29T00:33:10.0801488Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config
+2026-10-29T00:33:10.0848507Z ##[endgroup]
+2026-10-29T00:33:10.0851190Z ##[group]Fetching the repository
+2026-10-29T00:33:10.0858333Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9a8f5bebbc1770f4f9348660019e755370719c89:refs/remotes/pull/131/merge
+2026-10-29T00:33:12.1368513Z From https://github.com/nickmailhot-lang/StrataAI2
+2026-10-29T00:33:12.1370836Z  * [new ref]         9a8f5bebbc1770f4f9348660019e755370719c89 -> pull/131/merge
+2026-10-29T00:33:12.1373910Z ##[endgroup]
+2026-10-29T00:33:12.1375032Z ##[group]Determining the checkout info
+2026-10-29T00:33:12.1376100Z ##[endgroup]
+2026-10-29T00:33:12.1381388Z [command]/usr/bin/git sparse-checkout disable
+2026-10-29T00:33:12.1450605Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-29T00:33:12.1496455Z ##[group]Checking out the ref
+2026-10-29T00:33:12.1501515Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/131/merge
+2026-10-29T00:33:12.4758534Z Note: switching to 'refs/remotes/pull/131/merge'.
+2026-10-29T00:33:12.4759352Z 
+2026-10-29T00:33:12.4759971Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-29T00:33:12.4761395Z changes and commit them, and you can discard any commits you make in this
+2026-10-29T00:33:12.4762816Z state without impacting any branches by switching back to a branch.
+2026-10-29T00:33:12.4763708Z 
+2026-10-29T00:33:12.4764135Z If you want to create a new branch to retain commits you create, you may
+2026-10-29T00:33:12.4765178Z do so (now or later) by using -c with the switch command. Example:
+2026-10-29T00:33:12.4765766Z 
+2026-10-29T00:33:12.4766005Z   git switch -c <new-branch-name>
+2026-10-29T00:33:12.4766403Z 
+2026-10-29T00:33:12.4766691Z Or undo this operation with:
+2026-10-29T00:33:12.4767050Z 
+2026-10-29T00:33:12.4767523Z   git switch -
+2026-10-29T00:33:12.4767921Z 
+2026-10-29T00:33:12.4768398Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-29T00:33:12.4769533Z 
+2026-10-29T00:33:12.4770810Z HEAD is now at 9a8f5be Merge bec293b8ff9fc0d5dc4541c13f5c97d0bd58f7c0 into 02ed9b9d366f11cf81202fc4b0187fb9725cc567
+2026-10-29T00:33:12.4773404Z ##[endgroup]
+2026-10-29T00:33:12.4830614Z [command]/usr/bin/git log -1 --format=%H
+2026-10-29T00:33:12.4868699Z 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:12.5132064Z ##[group]Run actions/download-artifact@v8
+2026-10-29T00:33:12.5132443Z with:
+2026-10-29T00:33:12.5132777Z   name: strataai-images-9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:12.5133213Z   path: image-artifacts
+2026-10-29T00:33:12.5133496Z   merge-multiple: false
+2026-10-29T00:33:12.5133785Z   repository: nickmailhot-lang/StrataAI2
+2026-10-29T00:33:12.5134108Z   run-id: 40789304058
+2026-10-29T00:33:12.5134402Z   skip-decompress: false
+2026-10-29T00:33:12.5134680Z   digest-mismatch: error
+2026-10-29T00:33:12.5134939Z env:
+2026-10-29T00:33:12.5135185Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:12.5135485Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:12.5135766Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:12.5136138Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:12.5136573Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:12.5136928Z ##[endgroup]
+2026-10-29T00:33:12.6590677Z Downloading single artifact
+2026-10-29T00:33:12.8114637Z Preparing to download the following artifacts:
+2026-10-29T00:33:12.8116251Z - strataai-images-9a8f5bebbc1770f4f9348660019e755370719c89 (ID: 12862783777, Size: 522786895, Expected Digest: sha256:2c7b3d722d3663aa88e704afab9dc814814065566622c34338f713996385dd69)
+2026-10-29T00:33:13.0660562Z Redirecting to blob download url: https://productionresultssa10.blob.core.windows.net/actions-results/d0c1051d-6607-81b6-8579-deb04157caad/workflow-job-run-7eddb440-6217-5192-9824-986a0165f79a/artifacts/b868ab0b833e17ea637769e6b865c252332b3c982c02f2ff4c9258fdedf4bd78.zip
+2026-10-29T00:33:13.0663288Z Starting download of artifact to: /home/runner/work/StrataAI2/StrataAI2/image-artifacts
+2026-10-29T00:33:13.2626114Z (node:2302) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-29T00:33:13.2627784Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-29T00:33:22.6005319Z SHA256 digest of downloaded artifact is 2c7b3d722d3663aa88e704afab9dc814814065566622c34338f713996385dd69
+2026-10-29T00:33:22.6006201Z Artifact download completed successfully.
+2026-10-29T00:33:22.6006566Z Total of 1 artifact(s) downloaded
+2026-10-29T00:33:22.6012665Z Download artifact has finished successfully
+2026-10-29T00:33:22.6173855Z ##[group]Run set -euo pipefail
+2026-10-29T00:33:22.6174236Z [36;1mset -euo pipefail[0m
+2026-10-29T00:33:22.6174589Z [36;1m(cd image-artifacts && sha256sum --check SHA256SUMS)[0m
+2026-10-29T00:33:22.6175893Z [36;1mjq -e --arg repository "$GITHUB_REPOSITORY" --arg revision "$GITHUB_SHA" --arg run "$GITHUB_RUN_ID" --arg version "$STRATAAI_BUILD_VERSION" '.repository == $repository and .commitSha == $revision and .imageTag == $revision and .workflowRunId == $run and .version == $version' image-artifacts/build-metadata.json >/dev/null[0m
+2026-10-29T00:33:22.6177148Z [36;1mmkdir -p security-artifacts[0m
+2026-10-29T00:33:22.6177987Z [36;1mcp image-artifacts/build-metadata.json security-artifacts/build-metadata.json[0m
+2026-10-29T00:33:22.6178646Z [36;1mcp image-artifacts/image-provenance.json security-artifacts/image-provenance.json[0m
+2026-10-29T00:33:22.6203722Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-29T00:33:22.6204083Z env:
+2026-10-29T00:33:22.6204342Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:22.6204621Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:22.6204862Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:22.6205207Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:22.6205626Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:22.6205970Z   STRATAAI_BUILD_VERSION: 0.1.0-26
+2026-10-29T00:33:22.6206231Z ##[endgroup]
+2026-10-29T00:33:22.6499736Z strataai-web.tar.gz: OK
+2026-10-29T00:33:22.8045860Z strataai-api.tar.gz: OK
+2026-10-29T00:33:23.0050759Z strataai-worker.tar.gz: OK
+2026-10-29T00:33:23.0051434Z build-metadata.json: OK
+2026-10-29T00:33:23.0051943Z image-provenance.json: OK
+2026-10-29T00:33:23.0235559Z ##[group]Run actions/setup-node@v7
+2026-10-29T00:33:23.0235864Z with:
+2026-10-29T00:33:23.0236076Z   node-version: 24
+2026-10-29T00:33:23.0236324Z   cache: npm
+2026-10-29T00:33:23.0236540Z   check-latest: false
+2026-10-29T00:33:23.0239295Z   token: ***
+2026-10-29T00:33:23.0239540Z   package-manager-cache: true
+2026-10-29T00:33:23.0239800Z env:
+2026-10-29T00:33:23.0240017Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:23.0240292Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:23.0240540Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:23.0240880Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:23.0241284Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:23.0241604Z ##[endgroup]
+2026-10-29T00:33:23.1579028Z Found in cache @ /opt/hostedtoolcache/node/24.22.1/x64
+2026-10-29T00:33:23.2517143Z ##[group]Environment details
+2026-10-29T00:33:23.6510677Z node: v24.22.1
+2026-10-29T00:33:23.6511141Z npm: 11.19.1
+2026-10-29T00:33:23.6511606Z yarn: 1.22.22
+2026-10-29T00:33:23.6512428Z ##[endgroup]
+2026-10-29T00:33:23.6529503Z [command]/opt/hostedtoolcache/node/24.22.1/x64/bin/npm config get cache
+2026-10-29T00:33:23.7772785Z /home/runner/.npm
+2026-10-29T00:33:23.9222231Z Cache hit for: node-cache-Linux-x64-npm-28fe8ef0338507bdbbee0b97897ddb80c836905c8cea4fdaf14c9c3419fcd91e
+2026-10-29T00:33:24.1265582Z Received 681 of 681 (100.0%), 0.0 MBs/sec
+2026-10-29T00:33:24.1266207Z Cache Size: ~0 MB (681 B)
+2026-10-29T00:33:24.1292268Z [command]/usr/bin/tar -xf /home/runner/work/_temp/256ec6da-21fc-44e5-bd73-c31916c5434d/cache.tzst -P -C /home/runner/work/StrataAI2/StrataAI2 --use-compress-program unzstd
+2026-10-29T00:33:24.1352683Z Cache restored successfully
+2026-10-29T00:33:24.1357193Z Cache restored from key: node-cache-Linux-x64-npm-28fe8ef0338507bdbbee0b97897ddb80c836905c8cea4fdaf14c9c3419fcd91e
+2026-10-29T00:33:24.1524587Z ##[group]Run actions/setup-dotnet@v6
+2026-10-29T00:33:24.1524915Z with:
+2026-10-29T00:33:24.1525144Z   dotnet-version: 10.0.402
+2026-10-29T00:33:24.1525400Z   cache: true
+2026-10-29T00:33:24.1525664Z   cache-dependency-path: **/packages.lock.json
+2026-10-29T00:33:24.1525988Z env:
+2026-10-29T00:33:24.1526235Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:24.1526518Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:24.1526770Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:24.1527131Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:24.1527886Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:24.1528232Z ##[endgroup]
+2026-10-29T00:33:24.2967596Z [command]/home/runner/work/_actions/actions/setup-dotnet/v6/externals/install-dotnet.sh --skip-non-versioned-files --runtime dotnet --channel LTS
+2026-10-29T00:33:24.5216546Z dotnet-install: .NET Core Runtime with version '10.0.14' is already installed.
+2026-10-29T00:33:24.5243479Z [command]/home/runner/work/_actions/actions/setup-dotnet/v6/externals/install-dotnet.sh --skip-non-versioned-files --version 10.0.402
+2026-10-29T00:33:25.6633081Z dotnet-install: Attempting to download using primary link https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.402/dotnet-sdk-10.0.402-linux-x64.tar.gz
+2026-10-29T00:33:26.7922177Z dotnet-install: Remote file https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.402/dotnet-sdk-10.0.402-linux-x64.tar.gz size is 240279509 bytes.
+2026-10-29T00:33:26.7924776Z dotnet-install: Extracting archive from https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.402/dotnet-sdk-10.0.402-linux-x64.tar.gz
+2026-10-29T00:33:31.4995194Z dotnet-install: Downloaded file size is 240279509 bytes.
+2026-10-29T00:33:31.4996050Z dotnet-install: The remote and local file sizes are equal.
+2026-10-29T00:33:31.9631032Z dotnet-install: Installed version is 10.0.402
+2026-10-29T00:33:31.9691695Z dotnet-install: Adding to current process PATH: `/usr/share/dotnet`. Note: This change will be visible only when sourcing script.
+2026-10-29T00:33:31.9694148Z dotnet-install: Note that the script does not resolve dependencies during installation.
+2026-10-29T00:33:31.9695521Z dotnet-install: To check the list of dependencies, go to https://learn.microsoft.com/dotnet/core/install, select your operating system and check the "Dependencies" section.
+2026-10-29T00:33:31.9696562Z dotnet-install: Installation finished successfully.
+2026-10-29T00:33:35.8412333Z Cache hit for: dotnet-cache-Linux-9ed630cf6c88f3961e6ab97012584566994a1ca0806912321fa36613c84d9ac8
+2026-10-29T00:33:36.9751665Z Received 134217728 of 341406115 (39.3%), 128.0 MBs/sec
+2026-10-29T00:33:37.9779981Z Received 333017507 of 341406115 (97.5%), 158.7 MBs/sec
+2026-10-29T00:33:38.0383025Z Received 341406115 of 341406115 (100.0%), 157.8 MBs/sec
+2026-10-29T00:33:38.0383913Z Cache Size: ~326 MB (341406115 B)
+2026-10-29T00:33:38.0420698Z [command]/usr/bin/tar -xf /home/runner/work/_temp/4e9ad564-a272-469e-b173-ac0b58fbdc80/cache.tzst -P -C /home/runner/work/StrataAI2/StrataAI2 --use-compress-program unzstd
+2026-10-29T00:33:39.2557702Z Cache restored successfully
+2026-10-29T00:33:39.2709955Z Cache restored from key: dotnet-cache-Linux-9ed630cf6c88f3961e6ab97012584566994a1ca0806912321fa36613c84d9ac8
+2026-10-29T00:33:39.3058510Z ##[group]Run npm ci
+2026-10-29T00:33:39.3058986Z [36;1mnpm ci[0m
+2026-10-29T00:33:39.3086905Z shell: /usr/bin/bash -e {0}
+2026-10-29T00:33:39.3087190Z env:
+2026-10-29T00:33:39.3087699Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:39.3087989Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:39.3088240Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:39.3088601Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:39.3089022Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:39.3089381Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:33:39.3089649Z ##[endgroup]
+2026-10-29T00:33:49.7425179Z 
+2026-10-29T00:33:49.7426124Z added 376 packages, and audited 378 packages in 10s
+2026-10-29T00:33:49.7426683Z 
+2026-10-29T00:33:49.7427089Z 135 packages are looking for funding
+2026-10-29T00:33:49.7428150Z   run `npm fund` for details
+2026-10-29T00:33:49.7439255Z 
+2026-10-29T00:33:49.7439708Z found 0 vulnerabilities
+2026-10-29T00:33:49.8206197Z ##[group]Run npm audit --audit-level=high
+2026-10-29T00:33:49.8206812Z [36;1mnpm audit --audit-level=high[0m
+2026-10-29T00:33:49.8233351Z shell: /usr/bin/bash -e {0}
+2026-10-29T00:33:49.8233792Z env:
+2026-10-29T00:33:49.8234155Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:49.8234630Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:49.8235050Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:49.8235655Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:49.8236370Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:49.8236969Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:33:49.8237625Z ##[endgroup]
+2026-10-29T00:33:50.3175429Z found 0 vulnerabilities
+2026-10-29T00:33:50.3340798Z ##[group]Run dotnet restore StrataAI2.slnx --locked-mode
+2026-10-29T00:33:50.3341612Z [36;1mdotnet restore StrataAI2.slnx --locked-mode[0m
+2026-10-29T00:33:50.3371566Z shell: /usr/bin/bash -e {0}
+2026-10-29T00:33:50.3372065Z env:
+2026-10-29T00:33:50.3372455Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:50.3372961Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:50.3373419Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:50.3374078Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:50.3374832Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:50.3375479Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:33:50.3375960Z ##[endgroup]
+2026-10-29T00:33:53.3150393Z   Determining projects to restore...
+2026-10-29T00:33:56.3764044Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Domain/StrataAI.Domain.csproj (in 224 ms).
+2026-10-29T00:33:56.4178514Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Application/StrataAI.Application.csproj (in 32 ms).
+2026-10-29T00:33:56.9418909Z   Restored /home/runner/work/StrataAI2/StrataAI2/tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj (in 514 ms).
+2026-10-29T00:33:56.9449194Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Infrastructure/StrataAI.Infrastructure.csproj (in 846 ms).
+2026-10-29T00:33:56.9469640Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Api/StrataAI.Api.csproj (in 845 ms).
+2026-10-29T00:33:56.9549312Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Worker/StrataAI.Worker.csproj (in 7 ms).
+2026-10-29T00:33:59.3441039Z   Restored /home/runner/work/StrataAI2/StrataAI2/tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj (in 3.25 sec).
+2026-10-29T00:33:59.3546310Z   Restored /home/runner/work/StrataAI2/StrataAI2/tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj (in 2.41 sec).
+2026-10-29T00:33:59.4290712Z ##[group]Run dotnet list StrataAI2.slnx package --vulnerable --include-transitive
+2026-10-29T00:33:59.4291354Z [36;1mdotnet list StrataAI2.slnx package --vulnerable --include-transitive[0m
+2026-10-29T00:33:59.4311567Z shell: /usr/bin/bash -e {0}
+2026-10-29T00:33:59.4311844Z env:
+2026-10-29T00:33:59.4312072Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:33:59.4312359Z   DOTNET_NOLOGO: true
+2026-10-29T00:33:59.4312623Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:33:59.4313184Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:33:59.4313611Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:33:59.4313970Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:33:59.4314242Z ##[endgroup]
+2026-10-29T00:34:00.2054530Z   Determining projects to restore...
+2026-10-29T00:34:01.1963285Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Application/StrataAI.Application.csproj (in 316 ms).
+2026-10-29T00:34:01.3699621Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Api/StrataAI.Api.csproj (in 504 ms).
+2026-10-29T00:34:01.3710301Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Worker/StrataAI.Worker.csproj (in 502 ms).
+2026-10-29T00:34:01.3760022Z   Restored /home/runner/work/StrataAI2/StrataAI2/tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj (in 148 ms).
+2026-10-29T00:34:01.3969046Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Domain/StrataAI.Domain.csproj (in 6 ms).
+2026-10-29T00:34:01.4379398Z   Restored /home/runner/work/StrataAI2/StrataAI2/src/StrataAI.Infrastructure/StrataAI.Infrastructure.csproj (in 25 ms).
+2026-10-29T00:34:01.4465757Z   Restored /home/runner/work/StrataAI2/StrataAI2/tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj (in 534 ms).
+2026-10-29T00:34:01.4919334Z   Restored /home/runner/work/StrataAI2/StrataAI2/tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj (in 104 ms).
+2026-10-29T00:34:10.2399338Z 
+2026-10-29T00:34:10.2400148Z The following sources were used:
+2026-10-29T00:34:10.2400846Z    https://api.nuget.org/v3/index.json
+2026-10-29T00:34:10.2401226Z 
+2026-10-29T00:34:10.2401928Z The given project `StrataAI.Api` has no vulnerable packages given the current sources.
+2026-10-29T00:34:10.2402754Z The given project `StrataAI.Application` has no vulnerable packages given the current sources.
+2026-10-29T00:34:10.2403560Z The given project `StrataAI.Domain` has no vulnerable packages given the current sources.
+2026-10-29T00:34:10.2404396Z The given project `StrataAI.Infrastructure` has no vulnerable packages given the current sources.
+2026-10-29T00:34:10.2405278Z The given project `StrataAI.Worker` has no vulnerable packages given the current sources.
+2026-10-29T00:34:10.2406051Z The given project `StrataAI.Api.Tests` has no vulnerable packages given the current sources.
+2026-10-29T00:34:10.2406845Z The given project `StrataAI.Domain.Tests` has no vulnerable packages given the current sources.
+2026-10-29T00:34:10.2408076Z The given project `StrataAI.Persistence.Contracts` has no vulnerable packages given the current sources.
+2026-10-29T00:34:10.2856412Z ##[group]Run set -euo pipefail
+2026-10-29T00:34:10.2856794Z [36;1mset -euo pipefail[0m
+2026-10-29T00:34:10.2857188Z [36;1mgunzip -c image-artifacts/strataai-web.tar.gz | docker load[0m
+2026-10-29T00:34:10.2858083Z [36;1mgunzip -c image-artifacts/strataai-api.tar.gz | docker load[0m
+2026-10-29T00:34:10.2858587Z [36;1mgunzip -c image-artifacts/strataai-worker.tar.gz | docker load[0m
+2026-10-29T00:34:10.2859423Z [36;1mdocker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json[0m
+2026-10-29T00:34:10.2860855Z [36;1mpython3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json --archives image-artifacts[0m
+2026-10-29T00:34:10.2861923Z [36;1mrm -- image-artifacts/loaded-image-inspection.json[0m
+2026-10-29T00:34:10.2882597Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-29T00:34:10.2882975Z env:
+2026-10-29T00:34:10.2883350Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:34:10.2883650Z   DOTNET_NOLOGO: true
+2026-10-29T00:34:10.2883916Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:34:10.2884281Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:34:10.2884717Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:34:10.2885251Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:34:10.2885535Z ##[endgroup]
+2026-10-29T00:34:12.3625136Z Loaded image: strataai-web:9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:34:21.0995198Z Loaded image: strataai-api:9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:34:30.7217895Z Loaded image: strataai-worker:9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:34:30.8782956Z Exactly three image identities and OCI source/revision/version/creation labels verified.
+2026-10-29T00:34:30.8901742Z ##[group]Run set -euo pipefail
+2026-10-29T00:34:30.8902375Z [36;1mset -euo pipefail[0m
+2026-10-29T00:34:30.8902915Z [36;1mmkdir -p security-artifacts[0m
+2026-10-29T00:34:30.8903494Z [36;1mfor image in web api worker; do[0m
+2026-10-29T00:34:30.8905485Z [36;1m  docker run --rm               -v /var/run/docker.sock:/var/run/docker.sock               -v "${PWD}/security-artifacts:/output"               aquasec/trivy:0.74.0               image --format cyclonedx               --output "/output/strataai-${image}.cdx.json"               "strataai-${image}:${GITHUB_SHA}"[0m
+2026-10-29T00:34:30.8907824Z [36;1mdone[0m
+2026-10-29T00:34:30.8932604Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-29T00:34:30.8933259Z env:
+2026-10-29T00:34:30.8933664Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:34:30.8934196Z   DOTNET_NOLOGO: true
+2026-10-29T00:34:30.8934666Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:34:30.8935269Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:34:30.8935711Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:34:30.8936070Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:34:30.8936343Z ##[endgroup]
+2026-10-29T00:34:30.9172442Z Unable to find image 'aquasec/trivy:0.74.0' locally
+2026-10-29T00:34:31.3480272Z 0.74.0: Pulling from aquasec/trivy
+2026-10-29T00:34:31.4652235Z 55afa1ecc21d: Pulling fs layer
+2026-10-29T00:34:31.4654471Z 0c664a59f299: Pulling fs layer
+2026-10-29T00:34:31.4655483Z 9b17763e725d: Pulling fs layer
+2026-10-29T00:34:31.4661329Z 99f1ca71a2b5: Pulling fs layer
+2026-10-29T00:34:31.4661999Z 99f1ca71a2b5: Waiting
+2026-10-29T00:34:31.5870631Z 55afa1ecc21d: Verifying Checksum
+2026-10-29T00:34:31.5876326Z 55afa1ecc21d: Download complete
+2026-10-29T00:34:31.5956649Z 0c664a59f299: Verifying Checksum
+2026-10-29T00:34:31.5958016Z 0c664a59f299: Download complete
+2026-10-29T00:34:31.6602355Z 99f1ca71a2b5: Verifying Checksum
+2026-10-29T00:34:31.6603897Z 99f1ca71a2b5: Download complete
+2026-10-29T00:34:31.7274556Z 9b17763e725d: Verifying Checksum
+2026-10-29T00:34:31.7274992Z 9b17763e725d: Download complete
+2026-10-29T00:34:31.7331658Z 55afa1ecc21d: Pull complete
+2026-10-29T00:34:31.9338694Z 0c664a59f299: Pull complete
+2026-10-29T00:34:32.7626241Z 9b17763e725d: Pull complete
+2026-10-29T00:34:32.7758149Z 99f1ca71a2b5: Pull complete
+2026-10-29T00:34:32.7806547Z Digest: sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969
+2026-10-29T00:34:32.7818358Z Status: Downloaded newer image for aquasec/trivy:0.74.0
+2026-10-29T00:34:33.0310087Z 2026-10-29T00:34:33Z	INFO	"--format cyclonedx" disables security scanning. Specify "--scanners vuln" explicitly if you want to include vulnerabilities in the "cyclonedx" report.
+2026-10-29T00:34:33.5176140Z 2026-10-29T00:34:33Z	INFO	Detected OS	family="alpine" version="3.23.4"
+2026-10-29T00:34:33.5176920Z 2026-10-29T00:34:33Z	INFO	Number of language-specific files	num=0
+2026-10-29T00:34:33.5279706Z 
+2026-10-29T00:34:33.5280605Z 📣 [34mNotices:[0m
+2026-10-29T00:34:33.5281376Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:34:33.5281709Z 
+2026-10-29T00:34:33.8029874Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:34:33.8030297Z 
+2026-10-29T00:34:33.8031160Z 2026-10-29T00:34:33Z	INFO	"--format cyclonedx" disables security scanning. Specify "--scanners vuln" explicitly if you want to include vulnerabilities in the "cyclonedx" report.
+2026-10-29T00:34:37.9548175Z 2026-10-29T00:34:37Z	INFO	Detected OS	family="ubuntu" version="24.04"
+2026-10-29T00:34:37.9549094Z 2026-10-29T00:34:37Z	INFO	Number of language-specific files	num=3
+2026-10-29T00:34:38.0315868Z 
+2026-10-29T00:34:38.0316805Z 📣 [34mNotices:[0m
+2026-10-29T00:34:38.0317655Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:34:38.0318104Z 
+2026-10-29T00:34:38.0318485Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:34:38.0318931Z 
+2026-10-29T00:34:38.3324745Z 2026-10-29T00:34:38Z	INFO	"--format cyclonedx" disables security scanning. Specify "--scanners vuln" explicitly if you want to include vulnerabilities in the "cyclonedx" report.
+2026-10-29T00:34:43.6585026Z 2026-10-29T00:34:43Z	INFO	Detected OS	family="ubuntu" version="24.04"
+2026-10-29T00:34:43.6586123Z 2026-10-29T00:34:43Z	INFO	Number of language-specific files	num=3
+2026-10-29T00:34:43.7565033Z 
+2026-10-29T00:34:43.7566106Z 📣 [34mNotices:[0m
+2026-10-29T00:34:43.7567095Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:34:43.7567946Z 
+2026-10-29T00:34:43.7568727Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:34:43.7569444Z 
+2026-10-29T00:34:43.8644309Z ##[group]Run docker run --rm             -v "${PWD}:/workspace"             aquasec/trivy:0.74.0             fs --scanners secret --exit-code 1 /workspace
+2026-10-29T00:34:43.8645239Z [36;1mdocker run --rm             -v "${PWD}:/workspace"             aquasec/trivy:0.74.0             fs --scanners secret --exit-code 1 /workspace[0m
+2026-10-29T00:34:43.8665902Z shell: /usr/bin/bash -e {0}
+2026-10-29T00:34:43.8666187Z env:
+2026-10-29T00:34:43.8666416Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:34:43.8666705Z   DOTNET_NOLOGO: true
+2026-10-29T00:34:43.8666961Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:34:43.8667615Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:34:43.8668196Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:34:43.8668572Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:34:43.8668843Z ##[endgroup]
+2026-10-29T00:34:44.0647742Z 2026-10-29T00:34:44Z	INFO	[secret] Secret scanning is enabled
+2026-10-29T00:34:44.0649338Z 2026-10-29T00:34:44Z	INFO	[secret] Please see https://trivy.dev/docs/v0.74/guide/scanner/secret#recommendation for faster secret detection
+2026-10-29T00:34:48.1671798Z 2026-10-29T00:34:48Z	INFO	Suppressing dependencies for development and testing. To display them, try the '--include-dev-deps' flag.
+2026-10-29T00:34:48.1673531Z 2026-10-29T00:34:48Z	INFO	Number of language-specific files	num=8
+2026-10-29T00:34:48.1676754Z 
+2026-10-29T00:34:48.1676843Z 
+2026-10-29T00:34:48.1677706Z 📣 [34mNotices:[0m
+2026-10-29T00:34:48.1678585Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:34:48.1679157Z 
+2026-10-29T00:34:48.1679832Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:34:48.1680498Z 
+2026-10-29T00:34:48.1680693Z Report Summary
+2026-10-29T00:34:48.1680938Z 
+2026-10-29T00:34:48.1681794Z ┌─────────────────────────────────────────────────────────┬────────────────┬─────────┐
+2026-10-29T00:34:48.1683077Z │                         Target                          │      Type      │ Secrets │
+2026-10-29T00:34:48.1684371Z ├─────────────────────────────────────────────────────────┼────────────────┼─────────┤
+2026-10-29T00:34:48.1686175Z │ Directory.Packages.props                                │ packages-props │    -    │
+2026-10-29T00:34:48.1687809Z ├─────────────────────────────────────────────────────────┼────────────────┼─────────┤
+2026-10-29T00:34:48.1688972Z │ package-lock.json                                       │      npm       │    -    │
+2026-10-29T00:34:48.1690185Z ├─────────────────────────────────────────────────────────┼────────────────┼─────────┤
+2026-10-29T00:34:48.1691458Z │ src/StrataAI.Api/packages.lock.json                     │     nuget      │    -    │
+2026-10-29T00:34:48.1693110Z ├─────────────────────────────────────────────────────────┼────────────────┼─────────┤
+2026-10-29T00:34:48.1694370Z │ src/StrataAI.Infrastructure/packages.lock.json          │     nuget      │    -    │
+2026-10-29T00:34:48.1695803Z ├─────────────────────────────────────────────────────────┼────────────────┼─────────┤
+2026-10-29T00:34:48.1696962Z │ src/StrataAI.Worker/packages.lock.json                  │     nuget      │    -    │
+2026-10-29T00:34:48.1698496Z ├─────────────────────────────────────────────────────────┼────────────────┼─────────┤
+2026-10-29T00:34:48.1699791Z │ tests/StrataAI.Api.Tests/packages.lock.json             │     nuget      │    -    │
+2026-10-29T00:34:48.1701155Z ├─────────────────────────────────────────────────────────┼────────────────┼─────────┤
+2026-10-29T00:34:48.1702416Z │ tests/StrataAI.Domain.Tests/packages.lock.json          │     nuget      │    -    │
+2026-10-29T00:34:48.1703758Z ├─────────────────────────────────────────────────────────┼────────────────┼─────────┤
+2026-10-29T00:34:48.1705059Z │ tests/StrataAI.Persistence.Contracts/packages.lock.json │     nuget      │    -    │
+2026-10-29T00:34:48.1706425Z └─────────────────────────────────────────────────────────┴────────────────┴─────────┘
+2026-10-29T00:34:48.1707550Z Legend:
+2026-10-29T00:34:48.1707994Z - '-': Not scanned
+2026-10-29T00:34:48.1708576Z - '0': Clean (no security findings detected)
+2026-10-29T00:34:48.1708945Z 
+2026-10-29T00:34:48.2707174Z ##[group]Run set -euo pipefail
+2026-10-29T00:34:48.2707885Z [36;1mset -euo pipefail[0m
+2026-10-29T00:34:48.2708188Z [36;1mfor image in web api worker; do[0m
+2026-10-29T00:34:48.2709055Z [36;1m  docker run --rm               -v /var/run/docker.sock:/var/run/docker.sock               aquasec/trivy:0.74.0               image --exit-code 1 --ignore-unfixed --severity CRITICAL               "strataai-${image}:${GITHUB_SHA}"[0m
+2026-10-29T00:34:48.2709895Z [36;1mdone[0m
+2026-10-29T00:34:48.2730330Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-29T00:34:48.2730725Z env:
+2026-10-29T00:34:48.2730950Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:34:48.2731229Z   DOTNET_NOLOGO: true
+2026-10-29T00:34:48.2731477Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:34:48.2731838Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:34:48.2732252Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:34:48.2732625Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:34:48.2732907Z ##[endgroup]
+2026-10-29T00:34:48.4736252Z 2026-10-29T00:34:48Z	INFO	[vulndb] Need to update DB
+2026-10-29T00:34:48.4737534Z 2026-10-29T00:34:48Z	INFO	[vulndb] Downloading vulnerability DB...
+2026-10-29T00:34:48.4738956Z 2026-10-29T00:34:48Z	INFO	[vulndb] Downloading artifact...	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-29T00:34:53.0690730Z 32.14 MiB / 130.33 MiB [-------------->_____________________________________________] 24.66% ? p/s ?86.67 MiB / 130.33 MiB [--------------------------------------->____________________] 66.50% ? p/s ?130.33 MiB / 130.33 MiB [--------------------------------------------------------->] 100.00% ? p/s ?130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.55 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.55 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.55 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 152.99 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 152.99 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 152.99 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.12 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.12 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.12 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 133.89 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 133.89 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 133.89 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.25 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.25 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.25 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.17 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.17 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.17 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [-----------------------------------------------] 100.00% 32.36 MiB p/s 4.2s2026-10-29T00:34:53Z	INFO	[vulndb] Artifact successfully downloaded	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-29T00:34:53.0702584Z 2026-10-29T00:34:53Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-29T00:34:53.0703410Z 2026-10-29T00:34:53Z	INFO	[secret] Secret scanning is enabled
+2026-10-29T00:34:53.0704891Z 2026-10-29T00:34:53Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-10-29T00:34:53.0707825Z 2026-10-29T00:34:53Z	INFO	[secret] Please see https://trivy.dev/docs/v0.74/guide/scanner/secret#recommendation for faster secret detection
+2026-10-29T00:34:56.6756731Z 2026-10-29T00:34:56Z	INFO	Detected OS	family="alpine" version="3.23.4"
+2026-10-29T00:34:56.6758790Z 2026-10-29T00:34:56Z	INFO	[alpine] Detecting vulnerabilities...	os_version="3.23" repository="3.23" pkg_num=72
+2026-10-29T00:34:56.6840766Z 2026-10-29T00:34:56Z	INFO	Number of language-specific files	num=0
+2026-10-29T00:34:56.6844159Z 2026-10-29T00:34:56Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/docs/v0.74/guide/scanner/vulnerability#severity-selection for details.
+2026-10-29T00:34:56.6980043Z 
+2026-10-29T00:34:56.6980320Z Report Summary
+2026-10-29T00:34:56.6980572Z 
+2026-10-29T00:34:56.6981851Z ┌───────────────────────────────────────────────────────────────────────┬────────┬─────────────────┬─────────┐
+2026-10-29T00:34:56.6983504Z │                                Target                                 │  Type  │ Vulnerabilities │ Secrets │
+2026-10-29T00:34:56.6985271Z ├───────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
+2026-10-29T00:34:56.6998574Z 
+2026-10-29T00:34:56.6998956Z 📣 [34mNotices:[0m
+2026-10-29T00:34:56.6999729Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:34:56.7000250Z 
+2026-10-29T00:34:56.7000888Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:34:56.7001482Z 
+2026-10-29T00:34:56.7002792Z │ strataai-web:9a8f5bebbc1770f4f9348660019e755370719c89 (alpine 3.23.4) │ alpine │        0        │    -    │
+2026-10-29T00:34:56.7004831Z └───────────────────────────────────────────────────────────────────────┴────────┴─────────────────┴─────────┘
+2026-10-29T00:34:56.7005568Z Legend:
+2026-10-29T00:34:56.7005974Z - '-': Not scanned
+2026-10-29T00:34:56.7006569Z - '0': Clean (no security findings detected)
+2026-10-29T00:34:56.7006956Z 
+2026-10-29T00:34:57.0002165Z 2026-10-29T00:34:56Z	INFO	[vulndb] Need to update DB
+2026-10-29T00:34:57.0009463Z 2026-10-29T00:34:56Z	INFO	[vulndb] Downloading vulnerability DB...
+2026-10-29T00:34:57.0010275Z 2026-10-29T00:34:56Z	INFO	[vulndb] Downloading artifact...	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-29T00:35:01.8585328Z 31.02 MiB / 130.33 MiB [-------------->_____________________________________________] 23.80% ? p/s ?78.71 MiB / 130.33 MiB [------------------------------------>_______________________] 60.39% ? p/s ?130.33 MiB / 130.33 MiB [--------------------------------------------------------->] 100.00% ? p/s ?130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 165.49 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 165.49 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 165.49 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 154.81 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 154.81 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 154.81 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 144.82 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 144.82 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 144.82 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 135.48 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 135.48 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 135.48 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 126.74 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 126.74 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 126.74 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 118.56 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 118.56 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 118.56 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 110.91 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [-----------------------------------------------] 100.00% 30.19 MiB p/s 4.5s2026-10-29T00:35:01Z	INFO	[vulndb] Artifact successfully downloaded	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-29T00:35:01.8596692Z 2026-10-29T00:35:01Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-29T00:35:01.8597528Z 2026-10-29T00:35:01Z	INFO	[secret] Secret scanning is enabled
+2026-10-29T00:35:01.8599066Z 2026-10-29T00:35:01Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-10-29T00:35:01.8600945Z 2026-10-29T00:35:01Z	INFO	[secret] Please see https://trivy.dev/docs/v0.74/guide/scanner/secret#recommendation for faster secret detection
+2026-10-29T00:35:08.2990727Z 2026-10-29T00:35:08Z	INFO	Detected OS	family="ubuntu" version="24.04"
+2026-10-29T00:35:08.2991764Z 2026-10-29T00:35:08Z	INFO	[ubuntu] Detecting vulnerabilities...	os_version="24.04" pkg_num=112
+2026-10-29T00:35:08.3023087Z 2026-10-29T00:35:08Z	INFO	Number of language-specific files	num=3
+2026-10-29T00:35:08.3024229Z 2026-10-29T00:35:08Z	INFO	[dotnet-core] Detecting vulnerabilities...
+2026-10-29T00:35:08.3742968Z 
+2026-10-29T00:35:08.3743521Z 📣 [34mNotices:[0m
+2026-10-29T00:35:08.3744178Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:35:08.3744497Z 
+2026-10-29T00:35:08.3744875Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:35:08.3745234Z 
+2026-10-29T00:35:08.3745281Z 
+2026-10-29T00:35:08.3745393Z Report Summary
+2026-10-29T00:35:08.3745544Z 
+2026-10-29T00:35:08.3746232Z ┌──────────────────────────────────────────────────────────────────────────────────┬─────────────┬─────────────────┬─────────┐
+2026-10-29T00:35:08.3747142Z │                                      Target                                      │    Type     │ Vulnerabilities │ Secrets │
+2026-10-29T00:35:08.3748399Z ├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+2026-10-29T00:35:08.3749453Z │ strataai-api:9a8f5bebbc1770f4f9348660019e755370719c89 (ubuntu 24.04)             │   ubuntu    │        0        │    -    │
+2026-10-29T00:35:08.3750561Z ├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+2026-10-29T00:35:08.3751474Z │ app/StrataAI.Api.deps.json                                                       │ dotnet-core │        0        │    -    │
+2026-10-29T00:35:08.3752830Z ├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+2026-10-29T00:35:08.3753910Z │ usr/share/dotnet/shared/Microsoft.AspNetCore.App/10.0.14/Microsoft.AspNetCore.A- │ dotnet-core │        0        │    -    │
+2026-10-29T00:35:08.3754894Z │ pp.deps.json                                                                     │             │                 │         │
+2026-10-29T00:35:08.3755798Z ├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+2026-10-29T00:35:08.3756809Z │ usr/share/dotnet/shared/Microsoft.NETCore.App/10.0.14/Microsoft.NETCore.App.dep- │ dotnet-core │        0        │    -    │
+2026-10-29T00:35:08.3758593Z │ s.json                                                                           │             │                 │         │
+2026-10-29T00:35:08.3759542Z └──────────────────────────────────────────────────────────────────────────────────┴─────────────┴─────────────────┴─────────┘
+2026-10-29T00:35:08.3760015Z Legend:
+2026-10-29T00:35:08.3760275Z - '-': Not scanned
+2026-10-29T00:35:08.3760625Z - '0': Clean (no security findings detected)
+2026-10-29T00:35:08.3760850Z 
+2026-10-29T00:35:08.8656950Z 2026-10-29T00:35:08Z	INFO	[vulndb] Need to update DB
+2026-10-29T00:35:13.5528290Z 2026-10-29T00:35:08Z	INFO	[vulndb] Downloading vulnerability DB...
+2026-10-29T00:35:13.5529882Z 2026-10-29T00:35:08Z	INFO	[vulndb] Downloading artifact...	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-29T00:35:13.5555801Z 32.00 MiB / 130.33 MiB [-------------->_____________________________________________] 24.55% ? p/s ?83.55 MiB / 130.33 MiB [-------------------------------------->_____________________] 64.10% ? p/s ?130.33 MiB / 130.33 MiB [--------------------------------------------------------->] 100.00% ? p/s ?130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.80 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.80 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.80 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 153.23 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 153.23 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 153.23 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.35 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.35 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.35 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 134.10 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 134.10 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 134.10 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.45 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.45 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.45 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.35 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.35 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.35 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [-----------------------------------------------] 100.00% 32.14 MiB p/s 4.3s2026-10-29T00:35:13Z	INFO	[vulndb] Artifact successfully downloaded	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-29T00:35:13.5568535Z 2026-10-29T00:35:13Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-29T00:35:13.5569573Z 2026-10-29T00:35:13Z	INFO	[secret] Secret scanning is enabled
+2026-10-29T00:35:13.5571014Z 2026-10-29T00:35:13Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-10-29T00:35:13.5572941Z 2026-10-29T00:35:13Z	INFO	[secret] Please see https://trivy.dev/docs/v0.74/guide/scanner/secret#recommendation for faster secret detection
+2026-10-29T00:35:20.7484880Z 2026-10-29T00:35:20Z	INFO	Detected OS	family="ubuntu" version="24.04"
+2026-10-29T00:35:20.7485879Z 2026-10-29T00:35:20Z	INFO	[ubuntu] Detecting vulnerabilities...	os_version="24.04" pkg_num=112
+2026-10-29T00:35:20.7517577Z 2026-10-29T00:35:20Z	INFO	Number of language-specific files	num=3
+2026-10-29T00:35:20.7519453Z 2026-10-29T00:35:20Z	INFO	[dotnet-core] Detecting vulnerabilities...
+2026-10-29T00:35:20.8453074Z 
+2026-10-29T00:35:20.8453421Z Report Summary
+2026-10-29T00:35:20.8453717Z 
+2026-10-29T00:35:20.8454736Z ┌──────────────────────────────────────────────────────────────────────────────────┬─────────────┬─────────────────┬─────────┐
+2026-10-29T00:35:20.8455708Z │                                      Target                                      │    Type     │ Vulnerabilities │ Secrets │
+2026-10-29T00:35:20.8456651Z ├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+2026-10-29T00:35:20.8468377Z │ strataai-worker:9a8f5bebbc1770f4f9348660019e755370719c89 (ubuntu 24.04)          │   ubuntu    │        0        │    -    │
+2026-10-29T00:35:20.8469591Z ├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+2026-10-29T00:35:20.8470535Z │ app/StrataAI.Worker.deps.json                                                    │ dotnet-core │        0        │    -    │
+2026-10-29T00:35:20.8471554Z ├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+2026-10-29T00:35:20.8472703Z │ usr/share/dotnet/shared/Microsoft.AspNetCore.App/10.0.14/Microsoft.AspNetCore.A- │ dotnet-core │        0        │    -    │
+2026-10-29T00:35:20.8473960Z │ pp.deps.json                                                                     │             │                 │         │
+2026-10-29T00:35:20.8474887Z ├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+2026-10-29T00:35:20.8475907Z │ usr/share/dotnet/shared/Microsoft.NETCore.App/10.0.14/Microsoft.NETCore.App.dep- │ dotnet-core │        0        │    -    │
+2026-10-29T00:35:20.8476906Z │ s.json                                                                           │             │                 │         │
+2026-10-29T00:35:20.8499053Z └──────────────────────────────────────────────────────────────────────────────────┴─────────────┴─────────────────┴─────────┘
+2026-10-29T00:35:20.8499792Z Legend:
+2026-10-29T00:35:20.8500177Z - '-': Not scanned
+2026-10-29T00:35:20.8500757Z - '0': Clean (no security findings detected)
+2026-10-29T00:35:20.8501141Z 
+2026-10-29T00:35:20.8501190Z 
+2026-10-29T00:35:20.8501494Z 📣 [34mNotices:[0m
+2026-10-29T00:35:20.8502274Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:35:20.8502794Z 
+2026-10-29T00:35:20.8503450Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:35:20.8504033Z 
+2026-10-29T00:35:21.1454410Z ##[group]Run set -euo pipefail
+2026-10-29T00:35:21.1454763Z [36;1mset -euo pipefail[0m
+2026-10-29T00:35:21.1455434Z [36;1mcollector='otel/opentelemetry-collector-contrib:0.161.0@sha256:fd328de2552466ad78385e1b1289c3f2402b1c45f265b252aab1955b42845ac1'[0m
+2026-10-29T00:35:21.1456588Z [36;1mdocker run --rm -v "${PWD}/security-artifacts:/output" aquasec/trivy:0.74.0 image --format cyclonedx --output /output/metrics-collector.cdx.json "$collector"[0m
+2026-10-29T00:35:21.1457981Z [36;1mdocker run --rm aquasec/trivy:0.74.0 image --exit-code 1 --ignore-unfixed --severity CRITICAL "$collector"[0m
+2026-10-29T00:35:21.1478596Z shell: /usr/bin/bash -e {0}
+2026-10-29T00:35:21.1478891Z env:
+2026-10-29T00:35:21.1479123Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:35:21.1479423Z   DOTNET_NOLOGO: true
+2026-10-29T00:35:21.1479682Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:35:21.1480059Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:35:21.1480536Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:35:21.1480904Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:35:21.1481192Z ##[endgroup]
+2026-10-29T00:35:21.3520460Z 2026-10-29T00:35:21Z	INFO	"--format cyclonedx" disables security scanning. Specify "--scanners vuln" explicitly if you want to include vulnerabilities in the "cyclonedx" report.
+2026-10-29T00:35:24.9454309Z 2026-10-29T00:35:24Z	INFO	Number of language-specific files	num=1
+2026-10-29T00:35:24.9688806Z 
+2026-10-29T00:35:24.9689923Z 📣 [34mNotices:[0m
+2026-10-29T00:35:24.9691104Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:35:24.9691620Z 
+2026-10-29T00:35:24.9692383Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:35:24.9692952Z 
+2026-10-29T00:35:25.2789784Z 2026-10-29T00:35:25Z	INFO	[vulndb] Need to update DB
+2026-10-29T00:35:25.2790604Z 2026-10-29T00:35:25Z	INFO	[vulndb] Downloading vulnerability DB...
+2026-10-29T00:35:25.2791878Z 2026-10-29T00:35:25Z	INFO	[vulndb] Downloading artifact...	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-29T00:35:29.7727922Z 32.00 MiB / 130.33 MiB [-------------->_____________________________________________] 24.55% ? p/s ?93.81 MiB / 130.33 MiB [------------------------------------------->________________] 71.98% ? p/s ?130.33 MiB / 130.33 MiB [--------------------------------------------------------->] 100.00% ? p/s ?130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.86 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.86 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 163.86 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 153.29 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 153.29 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 153.29 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.40 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.40 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 143.40 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 134.15 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 134.15 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 134.15 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.50 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.50 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 125.50 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.40 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.40 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [------------------------------------------->] 100.00% 117.40 MiB p/s ETA 0s130.33 MiB / 130.33 MiB [-----------------------------------------------] 100.00% 32.46 MiB p/s 4.2s2026-10-29T00:35:29Z	INFO	[vulndb] Artifact successfully downloaded	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-29T00:35:29.7740115Z 2026-10-29T00:35:29Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-29T00:35:29.7741141Z 2026-10-29T00:35:29Z	INFO	[secret] Secret scanning is enabled
+2026-10-29T00:35:29.7742540Z 2026-10-29T00:35:29Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-10-29T00:35:29.7744496Z 2026-10-29T00:35:29Z	INFO	[secret] Please see https://trivy.dev/docs/v0.74/guide/scanner/secret#recommendation for faster secret detection
+2026-10-29T00:35:33.4276190Z 2026-10-29T00:35:33Z	INFO	Number of language-specific files	num=1
+2026-10-29T00:35:33.4277651Z 2026-10-29T00:35:33Z	INFO	[gobinary] Detecting vulnerabilities...
+2026-10-29T00:35:33.4489537Z 2026-10-29T00:35:33Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/docs/v0.74/guide/scanner/vulnerability#severity-selection for details.
+2026-10-29T00:35:33.4490829Z 
+2026-10-29T00:35:33.4491320Z Report Summary
+2026-10-29T00:35:33.4491617Z 
+2026-10-29T00:35:33.4492410Z ┌─────────────────┬──────────┬─────────────────┬─────────┐
+2026-10-29T00:35:33.4493366Z │     Target      │   Type   │ Vulnerabilities │ Secrets │
+2026-10-29T00:35:33.4494334Z ├─────────────────┼──────────┼─────────────────┼─────────┤
+2026-10-29T00:35:33.4495288Z │ otelcol-contrib │ gobinary │        1        │    -    │
+2026-10-29T00:35:33.4496244Z └─────────────────┴──────────┴─────────────────┴─────────┘
+2026-10-29T00:35:33.4496940Z Legend:
+2026-10-29T00:35:33.4497379Z - '-': Not scanned
+2026-10-29T00:35:33.4498110Z - '0': Clean (no security findings detected)
+2026-10-29T00:35:33.4498493Z 
+2026-10-29T00:35:33.4498503Z 
+2026-10-29T00:35:33.4498796Z otelcol-contrib (gobinary)
+2026-10-29T00:35:33.4499273Z ==========================
+2026-10-29T00:35:33.4499724Z Total: 1 (CRITICAL: 1)
+2026-10-29T00:35:33.4499983Z 
+2026-10-29T00:35:33.4501215Z ┌─────────┬────────────────┬──────────┬────────┬───────────────────┬────────────────┬─────────────────────────────────────────────────────────┐
+2026-10-29T00:35:33.4503540Z │ Library │ Vulnerability  │ Severity │ Status │ Installed Version │ Fixed Version  │                          Title                          │
+2026-10-29T00:35:33.4505666Z ├─────────┼────────────────┼──────────┼────────┼───────────────────┼────────────────┼─────────────────────────────────────────────────────────┤
+2026-10-29T00:35:33.4507818Z │ stdlib  │ CVE-2026-56857 │ CRITICAL │ fixed  │ v1.26.8           │ 1.26.9, 1.27.2 │ Root.Mkdir(All) can follow junctions out of the root on │
+2026-10-29T00:35:33.4509734Z │         │                │          │        │                   │                │ Windows in os...                                        │
+2026-10-29T00:35:33.4511431Z │         │                │          │        │                   │                │ https://avd.aquasec.com/nvd/cve-2026-56857              │
+2026-10-29T00:35:33.4512106Z 
+2026-10-29T00:35:33.4512397Z 📣 [34mNotices:[0m
+2026-10-29T00:35:33.4513140Z   - Version 0.76.1 of Trivy is now available, current version is 0.74.0
+2026-10-29T00:35:33.4513680Z 
+2026-10-29T00:35:33.4514313Z To suppress version checks, run Trivy scans with the --skip-version-check flag
+2026-10-29T00:35:33.4514905Z 
+2026-10-29T00:35:33.4516152Z └─────────┴────────────────┴──────────┴────────┴───────────────────┴────────────────┴─────────────────────────────────────────────────────────┘
+2026-10-29T00:35:36.1545169Z ##[error]Process completed with exit code 1.
+2026-10-29T00:35:36.1601414Z ##[group]Run set -euo pipefail
+2026-10-29T00:35:36.1601759Z [36;1mset -euo pipefail[0m
+2026-10-29T00:35:36.1602065Z [36;1mif [ -d security-artifacts ]; then[0m
+2026-10-29T00:35:36.1602645Z [36;1m  (cd security-artifacts && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)[0m
+2026-10-29T00:35:36.1603199Z [36;1mfi[0m
+2026-10-29T00:35:36.1623446Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-29T00:35:36.1623808Z env:
+2026-10-29T00:35:36.1624041Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:35:36.1624340Z   DOTNET_NOLOGO: true
+2026-10-29T00:35:36.1624603Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:35:36.1625011Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:35:36.1625437Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:35:36.1625786Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:35:36.1626051Z ##[endgroup]
+2026-10-29T00:35:36.1779118Z ##[group]Run actions/upload-artifact@v7
+2026-10-29T00:35:36.1779458Z with:
+2026-10-29T00:35:36.1779786Z   name: security-evidence-9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:35:36.1780195Z   path: security-artifacts/
+2026-10-29T00:35:36.1780467Z   if-no-files-found: ignore
+2026-10-29T00:35:36.1780730Z   retention-days: 30
+2026-10-29T00:35:36.1780969Z   compression-level: 6
+2026-10-29T00:35:36.1781213Z   overwrite: false
+2026-10-29T00:35:36.1781451Z   include-hidden-files: false
+2026-10-29T00:35:36.1781716Z   archive: true
+2026-10-29T00:35:36.1781950Z env:
+2026-10-29T00:35:36.1782182Z   STRATAAI_POST_MVP_LOAD_TESTS: 0
+2026-10-29T00:35:36.1782455Z   DOTNET_NOLOGO: true
+2026-10-29T00:35:36.1782712Z   DOTNET_CLI_TELEMETRY_OPTOUT: true
+2026-10-29T00:35:36.1783063Z   STRATAAI_IMAGE_TAG: 9a8f5bebbc1770f4f9348660019e755370719c89
+2026-10-29T00:35:36.1783476Z   STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: 40789304058-1
+2026-10-29T00:35:36.1783819Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-29T00:35:36.1784113Z ##[endgroup]
+2026-10-29T00:35:36.3289821Z With the provided path, there will be 7 files uploaded
+2026-10-29T00:35:36.3297962Z Artifact name is valid!
+2026-10-29T00:35:36.3298742Z Root directory input is valid!
+2026-10-29T00:35:36.5555128Z Uploading artifact: security-evidence-9a8f5bebbc1770f4f9348660019e755370719c89.zip
+2026-10-29T00:35:36.5595953Z Beginning upload of artifact content to blob storage
+2026-10-29T00:35:36.7522783Z Uploaded bytes 95873
+2026-10-29T00:35:36.7807036Z Finished uploading artifact content to blob storage!
+2026-10-29T00:35:36.7808908Z SHA256 digest of uploaded artifact is f910b6160803a1ebd60a34c264103ef2d225cf86d90ff158a9afa8b72f6992bb
+2026-10-29T00:35:36.7810559Z Finalizing artifact upload
+2026-10-29T00:35:37.1980233Z Artifact security-evidence-9a8f5bebbc1770f4f9348660019e755370719c89 successfully finalized. Artifact ID 12862613870
+2026-10-29T00:35:37.1981902Z Artifact security-evidence-9a8f5bebbc1770f4f9348660019e755370719c89 has been successfully uploaded! Final size is 95873 bytes. Artifact ID is 12862613870
+2026-10-29T00:35:37.1984142Z Artifact download URL: https://github.com/nickmailhot-lang/StrataAI2/actions/runs/40789304058/artifacts/12862613870
+2026-10-29T00:35:37.2210407Z Post job cleanup.
+2026-10-29T00:35:37.3078861Z [command]/usr/bin/git version
+2026-10-29T00:35:37.3159957Z git version 2.56.0
+2026-10-29T00:35:37.3204132Z Temporarily overriding HOME='/home/runner/work/_temp/9bcafac4-846c-4ed7-87b3-8ee781590e94' before making global git config changes
+2026-10-29T00:35:37.3206703Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-29T00:35:37.3209408Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/StrataAI2/StrataAI2
+2026-10-29T00:35:37.3251080Z Removing SSH command configuration
+2026-10-29T00:35:37.3256944Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-29T00:35:37.3301451Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-29T00:35:37.3598708Z Removing HTTP extra header
+2026-10-29T00:35:37.3599859Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-29T00:35:37.3638825Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-29T00:35:37.3923291Z Removing includeIf entries pointing to credentials config files
+2026-10-29T00:35:37.3938514Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-29T00:35:37.3978239Z includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git.path
+2026-10-29T00:35:37.3979432Z includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git/worktrees/*.path
+2026-10-29T00:35:37.3980172Z includeif.gitdir:/github/workspace/.git.path
+2026-10-29T00:35:37.3980823Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-29T00:35:37.3988865Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git.path
+2026-10-29T00:35:37.4027993Z /home/runner/work/_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config
+2026-10-29T00:35:37.4042355Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-fd5983d9\-3f54\-4480\-abbd\-9305081e1adb\.config
+2026-10-29T00:35:37.4105378Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git/worktrees/*.path
+2026-10-29T00:35:37.4148560Z /home/runner/work/_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config
+2026-10-29T00:35:37.4161572Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/StrataAI2/StrataAI2/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-fd5983d9\-3f54\-4480\-abbd\-9305081e1adb\.config
+2026-10-29T00:35:37.4201977Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-29T00:35:37.4238054Z /github/runner_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config
+2026-10-29T00:35:37.4247125Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-fd5983d9\-3f54\-4480\-abbd\-9305081e1adb\.config
+2026-10-29T00:35:37.4293486Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-29T00:35:37.4328234Z /github/runner_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config
+2026-10-29T00:35:37.4336901Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-fd5983d9\-3f54\-4480\-abbd\-9305081e1adb\.config
+2026-10-29T00:35:37.4383623Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-29T00:35:37.4632154Z Removing credentials config '/home/runner/work/_temp/git-credentials-fd5983d9-3f54-4480-abbd-9305081e1adb.config'
+2026-10-29T00:35:37.4781617Z Cleaning up orphan processes
+2026-10-29T00:35:37.5171326Z Terminate orphan process: pid (2882) (dotnet)
+2026-10-29T00:35:37.5196236Z Terminate orphan process: pid (2883) (dotnet)
+2026-10-29T00:35:37.5240130Z Terminate orphan process: pid (2884) (dotnet)

@@ -1,0 +1,201 @@
+..........FFF.FFFFFFFFF.FF.....................................
+======================================================================
+FAIL: test_api_readiness_must_recover_before_business_request (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_api_readiness_must_recover_before_business_request)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 226, in test_api_readiness_must_recover_before_business_request
+    self.run_driver("api-not-ready")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_api_restart_cannot_count_as_pool_recovery (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_api_restart_cannot_count_as_pool_recovery)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 223, in test_api_restart_cannot_count_as_pool_recovery
+    self.run_driver("api-recreated")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_changed_job_rows_refuse_evidence (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_changed_job_rows_refuse_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 205, in test_changed_job_rows_refuse_evidence
+    self.run_driver("changed-jobs")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_complete_driver_requires_three_stages_and_restores_owned_resources (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_complete_driver_requires_three_stages_and_restores_owned_resources)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 187, in test_complete_driver_requires_three_stages_and_restores_owned_resources
+    self.run_driver("")
+    ~~~~~~~~~~~~~~~^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_duplicate_registration_event_refuses_evidence (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_duplicate_registration_event_refuses_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 232, in test_duplicate_registration_event_refuses_evidence
+    self.run_driver("duplicate-account-event")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_duplicate_registration_refuses_evidence (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_duplicate_registration_refuses_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 229, in test_duplicate_registration_refuses_evidence
+    self.run_driver("duplicate-account")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_failed_first_database_restart_is_retried_only_by_cleanup (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_failed_first_database_restart_is_retried_only_by_cleanup)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 196, in test_failed_first_database_restart_is_retried_only_by_cleanup
+    self.run_driver("restart-fails-once")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_failed_stop_still_restores_database (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_failed_stop_still_restores_database)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 199, in test_failed_stop_still_restores_database
+    self.run_driver("stop-fails")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_first_recovered_request_failure_cannot_be_retried_into_success (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_first_recovered_request_failure_cannot_be_retried_into_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 220, in test_first_recovered_request_failure_cannot_be_retried_into_success
+    self.run_driver("first-request-fails")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_incorrect_readiness_refuses_evidence (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_incorrect_readiness_refuses_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 202, in test_incorrect_readiness_refuses_evidence
+    self.run_driver("wrong-readiness")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_missing_initial_job_rows_refuse_before_database_stop (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_missing_initial_job_rows_refuse_before_database_stop)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 214, in test_missing_initial_job_rows_refuse_before_database_stop
+    self.run_driver("missing-before")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_missing_recovered_job_rows_refuse_recovery_evidence (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_missing_recovered_job_rows_refuse_recovery_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 217, in test_missing_recovered_job_rows_refuse_recovery_evidence
+    self.run_driver("missing-after")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_stale_healthy_snapshot_refuses_outage_evidence_and_restores_database (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_stale_healthy_snapshot_refuses_outage_evidence_and_restores_database)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 190, in test_stale_healthy_snapshot_refuses_outage_evidence_and_restores_database
+    self.run_driver("stale-healthy")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+======================================================================
+FAIL: test_stale_unavailable_snapshot_refuses_recovery_evidence (operator_metrics_fixture_test.OperatorFixtureDriverTests.test_stale_unavailable_snapshot_refuses_recovery_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 193, in test_stale_unavailable_snapshot_refuses_recovery_evidence
+    self.run_driver("stale-unavailable")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nickm\Documents\Codex\2026-10-27\take\work\StrataAI2\tests\operator_metrics_fixture_test.py", line 153, in run_driver
+    self.assertIn("scope-worker", journal, result.stderr[-2000:])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'scope-worker' not found in [] : scripts/ci/test-operator-metrics.sh: line 32: jq: command not found
+Driver failure at line 32
+
+
+----------------------------------------------------------------------
+Ran 63 tests in 22.765s
+
+FAILED (failures=14)

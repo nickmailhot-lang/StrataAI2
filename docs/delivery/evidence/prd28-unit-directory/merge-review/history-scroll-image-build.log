@@ -1,0 +1,111 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.web
+#1 transferring dockerfile: 1.50kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/nginx:1.29-alpine
+#2 ...
+
+#3 [auth] library/nginx:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#4 [auth] library/node:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/library/node:24-alpine
+#5 DONE 1.2s
+
+#2 [internal] load metadata for docker.io/library/nginx:1.29-alpine
+#2 DONE 1.2s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 536B 0.0s done
+#6 DONE 0.1s
+
+#7 [internal] load build context
+#7 DONE 0.0s
+
+#8 [runtime 1/6] FROM docker.io/library/nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+#8 resolve docker.io/library/nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de 0.1s done
+#8 DONE 0.1s
+
+#9 [build 1/7] FROM docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+#9 resolve docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+#9 resolve docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 0.1s done
+#9 DONE 0.1s
+
+#7 [internal] load build context
+#7 transferring context: 71.39kB 0.1s done
+#7 DONE 0.2s
+
+#10 [build 2/7] WORKDIR /app
+#10 CACHED
+
+#11 [build 3/7] COPY package.json package-lock.json ./
+#11 CACHED
+
+#12 [build 4/7] COPY apps/web/package.json apps/web/package.json
+#12 CACHED
+
+#13 [build 5/7] RUN npm ci --ignore-scripts
+#13 CACHED
+
+#14 [build 6/7] COPY apps/web apps/web
+#14 DONE 0.4s
+
+#15 [build 7/7] RUN npm run build
+#15 1.151 
+#15 1.151 > strataai2@0.1.0 build
+#15 1.151 > npm --workspace @strataai/web run build
+#15 1.151 
+#15 1.588 
+#15 1.588 > @strataai/web@0.1.0 build
+#15 1.588 > tsc --noEmit && vite build
+#15 1.588 
+#15 61.26 vite v8.3.4 building client environment for production...
+#15 61.31 transforming...
+#15 62.87 ✓ 12063 modules transformed.
+#15 63.53 rendering chunks...
+#15 64.40 computing gzip size...
+#15 64.44 dist/build-metadata.json            0.07 kB │ gzip:   0.08 kB
+#15 64.44 dist/index.html                     0.57 kB │ gzip:   0.34 kB
+#15 64.44 dist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB
+#15 64.44 dist/assets/index-CnntxUbL.js   1,668.77 kB │ gzip: 464.99 kB
+#15 64.44 
+#15 64.74 [plugin builtin:vite-reporter] 
+#15 64.74 (!) Some chunks are larger than 500 kB after minification. Consider:
+#15 64.74 - Using dynamic import() to code-split the application
+#15 64.74 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+#15 64.74 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#15 67.90 ✓ built in 6.63s
+#15 DONE 68.2s
+
+#16 [runtime 3/6] COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+#16 CACHED
+
+#17 [runtime 4/6] COPY apps/web/tls-disabled.inc /etc/nginx/strataai-tls.inc
+#17 CACHED
+
+#18 [runtime 2/6] RUN apk add --no-cache --upgrade 'brotli-libs>=1.2.1-r0'
+#18 CACHED
+
+#19 [runtime 5/6] COPY apps/web/security-headers.inc /etc/nginx/security-headers.inc
+#19 CACHED
+
+#20 [runtime 6/6] COPY --from=build /app/apps/web/dist /usr/share/nginx/html
+#20 DONE 0.1s
+
+#21 exporting to image
+#21 exporting layers
+#21 exporting layers 0.4s done
+#21 exporting manifest sha256:290c5e9a83c65fa10efe84262d3fa784b083291f29541df15b8c252b0f9a724a 0.1s done
+#21 exporting config sha256:2029604b8f6d097aeef4b2ff52c147d1751da9e729f4e8a1e32fa67a36d090e5 0.1s done
+#21 exporting attestation manifest sha256:b6713e1406384d824198006957da81f2f3c1852565d6b5ef4571a271edf5f180 0.1s done
+#21 exporting manifest list sha256:457d6414eb1599d860f377458c2c14b02201a3ec05d3a8709fc2976de0dc63e5
+#21 exporting manifest list sha256:457d6414eb1599d860f377458c2c14b02201a3ec05d3a8709fc2976de0dc63e5 0.1s done
+#21 naming to docker.io/library/strataai-web:pr131-history-scroll 0.0s done
+#21 unpacking to docker.io/library/strataai-web:pr131-history-scroll 0.1s done
+#21 DONE 1.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/tnc39c89qmoav1qovshn961qc

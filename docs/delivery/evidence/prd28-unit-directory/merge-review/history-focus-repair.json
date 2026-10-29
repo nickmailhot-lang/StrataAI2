@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-29T05:09:59.099Z",
+  "revision": "ee1a3881af73d4d5c2daf20b3a41d934df5e14a3",
+  "result": "Passed",
+  "change": "Replace the one-shot history animation callback with the existing owned focus request, consumed in the layout effect only after history is committed and current authority is ready. Capture the original launcher owner; a later chosen navigation target prevents restoration.",
+  "checks": {
+    "counterfactual": "Unchanged candidate source + new tests: 15 passed/2 failed; exact history focus expectation fails in early-frame and retired-section cases.",
+    "repair": "199 passed/0 failed/0 skipped across directory/client/Organization/Profile/surface/navigation regressions, including the later-navigation no-steal case.",
+    "typesLintBuild": "Web/browser types, zero-warning lint and production web build passed. Initial test-only exact matcher option type failure was corrected to an equally strict anchored name regex and retained separately.",
+    "browser": "Five unchanged native browser cases passed against rebuilt web image with committed repair revision and the existing compiled Demo API. Four widths, original request recovery, reflow/Axe, history and paging; original pacing/deadlines/assertions retained. This is local scoped proof, not Production qualification."
+  },
+  "artifacts": {
+    "history-focus-hosted-failure.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-hosted-failure.log",
+      "sha256": "548ed98864516e28530fb92e4dc5c3cfb5cf52e07d2162e7e2c4158676e12cfe"
+    },
+    "history-focus-counterfactual.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-counterfactual.json",
+      "sha256": "d9ab5d1301a0133b6177c4e1dc842a5b034b0f0be2a26545f8ba05df5156b920"
+    },
+    "history-focus-final-unit.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-final-unit.json",
+      "sha256": "f72ade6267496f379c9bfa4189766155e730d936a809416fad128b8d3ddf86ec"
+    },
+    "history-focus-final-types.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-final-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    "history-focus-types-initial-failure.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-types-initial-failure.log",
+      "sha256": "90232595689240f245592f48d6f3933cdc236176f0408e613983d8648a028f2f"
+    },
+    "history-focus-browser-types.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    "history-focus-lint.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    "history-focus-build.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-build.log",
+      "sha256": "7627bec9a3f90e8183c37eab50fe42d2ed2a831ea854f6d956a330337964017f"
+    },
+    "history-focus-image-build.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-image-build.log",
+      "sha256": "b50aa5824aaa7f9b4629714d91506a0cb96abcc001a01a20b529b13a27383b93"
+    },
+    "history-focus-image-identity.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-image-identity.json",
+      "sha256": "0464aeedaa61bc72384718b335dfbdab823baa4f5aefd57e59751eaacd068da9"
+    },
+    "history-focus-fixed-browser.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-fixed-browser.log",
+      "sha256": "c6a6f780288b0146eb5a354e28a1450cf97f5a2cf3f00679b916d42fec470710"
+    },
+    "browser-reproduction.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/browser-reproduction.log",
+      "sha256": "e859eb9d911ea196a155d2d16be3173b531d33af904306c84c16a08e3c21825e"
+    }
+  },
+  "remaining": [
+    "Fresh exact-candidate full hosted required-ci, Production PostgreSQL/RLS/browser/security/bundle and delivery qualification before merge.",
+    "Original PRD scope and independent acceptance remain open."
+  ]
+}

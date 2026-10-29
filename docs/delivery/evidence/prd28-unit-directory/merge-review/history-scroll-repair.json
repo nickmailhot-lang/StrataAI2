@@ -1,0 +1,69 @@
+{
+  "at": "2026-10-29T05:26:50.197Z",
+  "revision": "74ad04dec701ef771803cff4d6e866ec26718e25",
+  "result": "Passed",
+  "change": "Explicit history focus scrolls naturally after commit/readmission; background focus restoration preserves scroll position. The original owner guard still respects a later navigation choice.",
+  "checks": {
+    "source": "199 passed/0 failed/0 skipped, one local worker to avoid competing suite startup; every original five-second limit and assertion retained.",
+    "typesLint": "Web/browser types and zero-warning lint passed.",
+    "builtWeb": "Production web image built with the exact refinement revision; five native Demo-backed browser cases pass. Existing original-recovery, mutation-count, history-focus, accessibility, reflow and paging assertions retained; added history-heading in-viewport assertion. No Production qualification inferred.",
+    "remaining": "Fresh exact-candidate full hosted source/security/database/browser/bundle and delivery checks before merge."
+  },
+  "supersededLocalDelivery": {
+    "candidate": "58c02fbbdcd4ef2ecbfd72d575b03aa2765cd438",
+    "result": "Interrupted",
+    "exitCode": 137,
+    "assessment": "Stopped the verified disposable read-only helper before final ledger refinement. No pass is claimed; a fresh stable-candidate validation/contracts/report run remains required.",
+    "artifact": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-delivery.log",
+      "sha256": "1c5f58e05a2a63fd24dc6f006bd7b395bb9c9c5e9440e18e14288c2597dc9857"
+    }
+  },
+  "artifacts": {
+    "history-scroll-red.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-red.json",
+      "sha256": "cf8b16f288abd78a28e57bc84e3c54d566811034b099e493a6e591051aad7ec1"
+    },
+    "history-scroll-contention.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-contention.json",
+      "sha256": "263af0e72ea1aa54f3e72bc22553351839445e6fce10f694a8ffcb9b797e6123"
+    },
+    "history-scroll-contention.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-contention.log",
+      "sha256": "5a00f20e47bc0a303324067b3cad14d96bf8b88e3d4b6ade57260912577e4e40"
+    },
+    "history-scroll-green.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-green.json",
+      "sha256": "4b99d49b2059ca39e2bac43316ba1299db7d890dba9ba42266d285639770be40"
+    },
+    "history-scroll-types.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    "history-scroll-browser-types.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    "history-scroll-lint.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    "history-scroll-image-build.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-image-build.log",
+      "sha256": "f640c6b2b5102431f59986a0fd0d0798d7492a5eaacdbe96e1ae05bf5aa8952f"
+    },
+    "history-scroll-image-identity.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-image-identity.json",
+      "sha256": "bac023ecbf42bea8788a5cc661adecd3b9341011070f8c2b8249d293c72df2a6"
+    },
+    "history-scroll-browser.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-browser.log",
+      "sha256": "6c1107f6889750265240a3a3bf480cfbe2f92b37ee70bb22e0f6a44a0afc4e3a"
+    },
+    "history-focus-delivery.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-delivery.log",
+      "sha256": "1c5f58e05a2a63fd24dc6f006bd7b395bb9c9c5e9440e18e14288c2597dc9857"
+    }
+  },
+  "previousEvidence": "Prior hosted history-focus failures, scheduling counterfactuals and first repair proof remain unchanged. Run 40821834783 on 58c02fbb was started before this final local review and is superseded; its passes cannot qualify the refinement."
+}

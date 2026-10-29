@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-29T05:26:50.197Z",
+  "revision": "ee1a3881af73d4d5c2daf20b3a41d934df5e14a3",
+  "result": "Failed",
+  "assessment": "Final source review caught an accessibility regression in the first focus repair: an explicit history opening inherited field-restoration preventScroll=true. The heading could receive focus without natural scrolling into view. This is a new local review finding, not a reported hosted failure.",
+  "counterfactual": {
+    "passed": 16,
+    "failed": 1,
+    "expected": "Explicit history focus uses native scrolling.",
+    "received": "preventScroll: true",
+    "artifact": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-red.json",
+      "sha256": "cf8b16f288abd78a28e57bc84e3c54d566811034b099e493a6e591051aad7ec1"
+    }
+  },
+  "correction": "Retain a per-request scrolling intent: explicit history focus uses preventScroll=false; background restoration defaults to true. Preserve ownership/no-steal checks. Add a native browser in-viewport assertion after the existing focus assertion."
+}

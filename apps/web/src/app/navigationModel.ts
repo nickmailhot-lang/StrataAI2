@@ -26,6 +26,7 @@ export function organizationNavigation(organizationId: string | undefined, sourc
   ];
   if (source.role === 0) links.push({ id: 'delete', label: 'Request Organization deletion', to: `${scope}/delete` });
   if (source.role <= 1) links.push(
+    { id: 'unit-directory', label: 'Unit directory', to: `${scope}/property/units` },
     { id: 'operational-lifecycle', label: 'Organization lifecycle', to: `${scope}/operational-lifecycle` },
     { id: 'settings', label: 'Organization settings', to: `${scope}/settings` },
     { id: 'configuration', label: 'Organization configuration', to: `${scope}/configuration` },

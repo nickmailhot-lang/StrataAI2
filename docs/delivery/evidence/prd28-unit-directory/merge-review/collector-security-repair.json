@@ -1,0 +1,80 @@
+{
+  "at": "2026-10-29T00:46:00.804Z",
+  "revision": "c7b33d47fa1220033d68dc705e4a56b2a21e4daa",
+  "result": "Passed",
+  "change": "Pin official Collector 0.164.0 manifest sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b in Compose and CI; verifier reports accurate version.",
+  "sources": [
+    "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/tag/v0.164.0",
+    "https://pkg.go.dev/vuln/GO-2026-6604"
+  ],
+  "checks": {
+    "trivy": "0.74.0; unchanged --exit-code 1 --ignore-unfixed --severity CRITICAL; exit 0, zero findings/secrets",
+    "configuration": "Pinned binary validates unchanged committed configuration.",
+    "ingestion": "Disposable receiver with existing read-only root/config, cap-drop and memory limits accepts OTLP HTTP sum and exports expected Prometheus value/resource labels. This is a dependency probe, not the complete API/Worker recovery fixture.",
+    "workflowContracts": "328 passed in a clean Linux source archive with installed lockfile dependencies; generated workflow and integration coverage checks pass.",
+    "operatorContracts": "63 passed on Linux with jq; 37 scoped parser/privacy tests also passed natively.",
+    "retainedLocalFailures": "Native workflow test cannot spawn npm; Windows shell fixture lacks jq (14 failures); Linux mount attempts cannot consume Windows node_modules/junction; clean Linux installation resolves these without source/assertion changes. The Git archive carries Windows line endings; regeneration in the disposable Linux checkout produces the identical canonical Git blob 04008c43054d0f79f421efed9873b3e908a159bb, after which all 328 contracts pass. Initial ad-hoc ingestion regex omitted automatic job label, then corrected after inspecting scrape; no CI assertion altered."
+  },
+  "artifacts": {
+    "collector-security-failure.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-security-failure.log",
+      "sha256": "99e7a3975a26f02ad8a0570dd8e7146665c2d5c924ca683103a19865ef6ce0f4"
+    },
+    "collector-manifest.txt": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-manifest.txt",
+      "sha256": "c52ba58c02785f7e6eca6425f2e5321bea930a7be5220a23a3f0997bd1b82a9e"
+    },
+    "collector-config.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-config.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector-trivy.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-trivy.json",
+      "sha256": "8518d82017e60206c28fa87e7bf3efe26ce0b177dec744466866d52ef055e4ae"
+    },
+    "collector-ingestion.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-ingestion.log",
+      "sha256": "ae6432085ff9e0ad41de25c56292e4584b0cfc73d824712865b6b49006776f50"
+    },
+    "collector-verifier-scoped.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-verifier-scoped.log",
+      "sha256": "f76e694268ff5f6f28dc3af53896e523e168152eeefdabb3f842546b47a3691e"
+    },
+    "collector-verifier.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-verifier.log",
+      "sha256": "63bac35e63166692ad9596c2636f731b2aa4955293651b9300232fa02cb84d4b"
+    },
+    "collector-contracts.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts.log",
+      "sha256": "27b57a963d9a7ccd9df3922d45b8635f2e1e52c6bc94e2b8020778231a3cc081"
+    },
+    "collector-contracts-linux.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux.log",
+      "sha256": "7bbae62c332ce85fbcd1876e737b03179b78c59b047373e4299f47a6094cbefa"
+    },
+    "collector-contracts-linux-mounted.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux-mounted.log",
+      "sha256": "826b8d1bb435d3fe894f574ef44de72a49ddb8506526dc40ea2e68a88d6ebd2d"
+    },
+    "collector-contracts-linux-installed.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux-installed.log",
+      "sha256": "3b4a65634bad88c04f2bc92e55d3c87a948908a71981567ec1e18d417e51ffdc"
+    },
+    "collector-contracts-clean-linux.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-clean-linux.log",
+      "sha256": "b6165012af87d099cf4611854e12fc938e516e477f05a56e0d21904185fcde78"
+    },
+    "collector-contracts-final-linux.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-final-linux.log",
+      "sha256": "5856f80dfb797750641488323c6df23bed7121c466ddc4d546afb5d3b41fa675"
+    },
+    "collector-python-linux.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/collector-python-linux.log",
+      "sha256": "b28ebdfadaa264f6443ce4e51eb3953b9c6e2a56ed4c3ac2ccc5e91c43354ede"
+    }
+  },
+  "remaining": [
+    "Exact-candidate full hosted security, release API/Worker ingestion/recovery, browser/bundle and delivery qualification before merge.",
+    "Original PRD/product acceptance remains open."
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-28T22:33:31.551Z",
+  "revision": "0bb68c23dd1ee99db93efe42f0fab1dbfad6bf8d",
+  "result": "Passed",
+  "change": "Open refuses a pending original; unit directory controls are disabled until its explicit recovery. No mutation, idempotency, authority, timeout, retry or rate-limit changes.",
+  "checks": {
+    "regressions": {
+      "passed": 125,
+      "failed": 0,
+      "skipped": 0
+    },
+    "build": "Passed, includes web TypeScript; existing bundle advisory retained",
+    "lint": "Passed"
+  },
+  "artifacts": {
+    "unit-red": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/unit-red.json",
+      "sha256": "315fcbdc25cdc101e94e6a3becbceb73dfd6de7fbe91ff6bb3a5f5f6d335a9de"
+    },
+    "unit-green": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/unit-green.json",
+      "sha256": "6651cb95cb951cbaed4c58c113542e27b8f0218adcf960b08e82b67c555f1be7"
+    },
+    "build": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/build.log",
+      "sha256": "315ece7c74be8be712f215669e847d6a383cfa027b5d6a4d32b9092e49a7a953"
+    },
+    "lint": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    }
+  },
+  "notRun": [
+    "Local production browser rerun and backend rerun: unchanged protocols; fresh hosted full qualification is required on this repair candidate.",
+    "Independent product acceptance and target integration."
+  ],
+  "historicalQualification": {
+    "revision": "b35f96e89562af693c04ff84f1f2972143ebe268",
+    "run": 40742346469,
+    "result": "Passed",
+    "scope": "Previous complete CI qualification; does not qualify the new source repair."
+  }
+}

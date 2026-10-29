@@ -1,0 +1,106 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.web
+#1 transferring dockerfile: 1.50kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/nginx:1.29-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#4 [auth] library/nginx:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/library/node:24-alpine
+#5 DONE 1.1s
+
+#2 [internal] load metadata for docker.io/library/nginx:1.29-alpine
+#2 DONE 1.1s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 536B 0.0s done
+#6 DONE 0.1s
+
+#7 [internal] load build context
+#7 DONE 0.0s
+
+#8 [build 1/7] FROM docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+#8 resolve docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+#8 resolve docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 0.1s done
+#8 DONE 0.1s
+
+#9 [runtime 1/6] FROM docker.io/library/nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+#9 resolve docker.io/library/nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de 0.1s done
+#9 DONE 0.1s
+
+#7 [internal] load build context
+#7 transferring context: 93.97kB 0.1s done
+#7 DONE 0.1s
+
+#10 [build 2/7] WORKDIR /app
+#10 CACHED
+
+#11 [build 3/7] COPY package.json package-lock.json ./
+#11 CACHED
+
+#12 [build 4/7] COPY apps/web/package.json apps/web/package.json
+#12 CACHED
+
+#13 [build 5/7] RUN npm ci --ignore-scripts
+#13 CACHED
+
+#14 [build 6/7] COPY apps/web apps/web
+#14 DONE 0.5s
+
+#15 [build 7/7] RUN npm run build
+#15 0.849 
+#15 0.849 > strataai2@0.1.0 build
+#15 0.849 > npm --workspace @strataai/web run build
+#15 0.849 
+#15 1.197 
+#15 1.197 > @strataai/web@0.1.0 build
+#15 1.197 > tsc --noEmit && vite build
+#15 1.197 
+#15 32.57 failed to load config from /app/apps/web/vite.config.ts
+#15 32.58 error during build:
+#15 32.58 Error: Invalid web build revision.
+#15 32.58     at createBuildIdentity (file:///app/node_modules/.vite-temp/vite.config.ts.timestamp-1793263961217-8f428f5afd7978.mjs:6:125)
+#15 32.58     at file:///app/node_modules/.vite-temp/vite.config.ts.timestamp-1793263961217-8f428f5afd7978.mjs:16:24
+#15 32.58     at loadConfigFromFile (file:///app/node_modules/vite/dist/node/chunks/node.js:37940:62)
+#15 32.58     at async resolveConfig (file:///app/node_modules/vite/dist/node/chunks/node.js:37540:22)
+#15 32.58     at async createBuilder (file:///app/node_modules/vite/dist/node/chunks/node.js:35112:17)
+#15 32.58     at async CAC.<anonymous> (file:///app/node_modules/vite/dist/node/cli.js:769:19)
+#15 32.61 npm error Lifecycle script `build` failed with error:
+#15 32.61 npm error code 1
+#15 32.61 npm error path /app/apps/web
+#15 32.61 npm error workspace @strataai/web@0.1.0
+#15 32.61 npm error location /app/apps/web
+#15 32.61 npm error command failed
+#15 32.61 npm error command sh -c tsc --noEmit && vite build
+#15 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+------
+ > [build 7/7] RUN npm run build:
+32.58     at async resolveConfig (file:///app/node_modules/vite/dist/node/chunks/node.js:37540:22)
+32.58     at async createBuilder (file:///app/node_modules/vite/dist/node/chunks/node.js:35112:17)
+32.58     at async CAC.<anonymous> (file:///app/node_modules/vite/dist/node/cli.js:769:19)
+32.61 npm error Lifecycle script `build` failed with error:
+32.61 npm error code 1
+32.61 npm error path /app/apps/web
+32.61 npm error workspace @strataai/web@0.1.0
+32.61 npm error location /app/apps/web
+32.61 npm error command failed
+32.61 npm error command sh -c tsc --noEmit && vite build
+------
+Dockerfile.web:17
+--------------------
+  15 |     ENV VITE_STRATAAI_BUILD_VERSION=$STRATAAI_BUILD_VERSION
+  16 |     
+  17 | >>> RUN npm run build
+  18 |     
+  19 |     FROM nginx:1.29-alpine AS runtime
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/1qh4bzpd646kq0y0zqu5ma8n4

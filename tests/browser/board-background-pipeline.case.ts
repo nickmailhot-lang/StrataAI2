@@ -118,9 +118,9 @@ for (const width of [1280, 390]) {
     const coverWrites: { key: string | undefined; body: string | null }[] = [];
     await page.route('**' + coverPath, async route => {
       if (route.request().method() !== 'PUT') return route.continue();
-      coverWrites.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
+      const attempt = coverWrites.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
       const result = await route.fetch(); expect(result.status()).toBe(200);
-      if (coverWrites.length === 1) await route.abort('failed');
+      if (attempt === 1) await route.abort('failed');
       else await route.fulfill({ response: result });
     });
     const coverReview = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Card cover', exact: true }));
@@ -135,12 +135,12 @@ for (const width of [1280, 390]) {
     await expect(coverConfirm).toBeDisabled();
     const coverConsent = page.getByRole('checkbox', { name: 'I understand this cover image will be publicly visible', exact: true });
     await expect(coverConsent).toBeFocused(); await pressAdmittedAction(coverConsent, 'Space');
-    await pressAdmittedAction(coverConfirm);
+    await pressObservedRequest(coverConfirm, () => coverWrites.length, 1);
     const coverRetry = page.getByRole('button', { name: 'Retry original cover change', exact: true });
     await expect(coverRetry).toBeEnabled(); await expect(coverRetry).toBeFocused();
     await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(initialCover.cardVersion + 1);
     for (const name of ['Save card', 'Manage attachments', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
-    await pressAdmittedAction(coverRetry); await expect(page.getByText('Card cover updated.', { exact: true })).toBeVisible();
+    await pressObservedRequest(coverRetry, () => coverWrites.length, 2); await expect(page.getByText('Card cover updated.', { exact: true })).toBeVisible();
     expect(coverWrites).toHaveLength(2); expect(coverWrites[1]).toEqual(coverWrites[0]);
     expect(coverWrites[0].key).toMatch(/^[0-9a-f-]{36}$/i);
     expect(JSON.parse(coverWrites[0].body!)).toEqual({ attachmentId: candidate.attachmentId,
@@ -204,7 +204,7 @@ for (const width of [1280, 390]) {
       await openCoverReview();
       await pressAdmittedAction(page.getByRole('button', { name: 'Remove Card cover', exact: true }));
       await expect(coverConsent).toHaveCount(0);
-      await pressAdmittedAction(page.getByRole('button', { name: 'Confirm cover removal', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Confirm cover removal', exact: true }), () => coverWrites.length, 3);
       await expect(page.getByText('Card cover removed.', { exact: true })).toBeVisible(); await expect(coverImage).toHaveCount(0);
       await expect(coverReview).toBeFocused(); expect(coverWrites).toHaveLength(3);
       const removedCoverResponse = await context.request.get(coverPath); expect(removedCoverResponse.status()).toBe(200);
@@ -223,9 +223,11 @@ for (const width of [1280, 390]) {
     const attempts: { key: string | undefined; body: string | null }[] = [];
     await page.route(`**/boards/${board}/background/image`, async route => {
       expect(route.request().method()).toBe('POST');
+      // Observe dispatch before transport resolves. A read may retire keyboard
+      // admission without starting a command; never send another key after it.
+      const attempt = attempts.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
       const result = await route.fetch(); expect(result.status()).toBe(200);
-      attempts.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
-      if (attempts.length === 1) await route.abort('failed');
+      if (attempt === 1) await route.abort('failed');
       else { expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]); await route.fulfill({ response: result }); }
     });
     const review = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Board background images', exact: true }));
@@ -235,11 +237,11 @@ for (const width of [1280, 390]) {
     await expect(confirm).toBeDisabled();
     const consent = page.getByRole('checkbox', { name: 'I understand this Board background image will be publicly visible', exact: true });
     await expect(consent).toBeFocused(); await pressAdmittedAction(consent, 'Space');
-    await pressAdmittedAction(confirm);
+    await pressObservedRequest(confirm, () => attempts.length, 1);
     const retry = page.getByRole('button', { name: 'Retry original Board background change', exact: true });
     await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
     for (const name of ['Save card', 'Review Card cover', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
-    await pressAdmittedAction(retry); await expect(page.getByText('Board background updated.', { exact: true })).toBeVisible();
+    await pressObservedRequest(retry, () => attempts.length, 2); await expect(page.getByText('Board background updated.', { exact: true })).toBeVisible();
     await expect(review).toBeFocused(); expect(attempts).toHaveLength(2);
     expect(JSON.parse(attempts[0].body!)).toMatchObject({ publicVisibilityConfirmed: true, boardVersion: before.version + 1 });
     const sourceResponse = await context.request.get(`/boards/${board}`); expect(sourceResponse.status()).toBe(200);

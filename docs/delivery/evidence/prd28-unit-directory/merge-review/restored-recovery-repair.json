@@ -1,0 +1,85 @@
+{
+  "at": "2026-10-29T08:58:31.357Z",
+  "revision": "55ab8b571e25f01a7fcf550605b3ff91ad346b5b",
+  "result": "Passed",
+  "change": "Retain the restored original version as editor context. Only after definitive refusal clears the original, read its stable ID independently of directory pagination and bind current authority without replacing the preserved draft. Missing version-zero records require a bounded optional read with Owner/Admin and same-actor admission before and after 404. Known existing records still fail closed on absence.",
+  "checks": {
+    "source": "209 passed, zero failed/skipped, one worker; includes version-zero/one beyond-page refusal recovery plus optional-read role/actor/status security cases.",
+    "types": "Application and browser types pass; lint passes.",
+    "native": "Seven built-web/Demo native cases pass. Two new cases lose the original transport before commit, create a real concurrent revision, reload, retry identical original key/body into real 409, read current values, preserve draft, and require explicit new review/confirm with a fresh key/current version.",
+    "build": "Exact source image built. Initial local short-revision identity input was rejected; retained separately and corrected to full SHA without changing source or validation.",
+    "historical": "Hosted run 40832081829 on superseded 9aa passed source/database/images/security, commands and actual corrected attachment foundation pipeline. Other groups were still running; no overall or new-source qualification inferred.",
+    "remaining": "Fresh final-candidate full hosted source/security/Production integration, release bundle and local delivery validation/36 contracts/report required before merge."
+  },
+  "preserved": [
+    "Pending original remains immutable and blocks competing editor actions; no automatic retry, write, key regeneration or acknowledgment.",
+    "401/403/500 and actor/role changes remain errors; only reauthorized version-zero 404 may mean absent.",
+    "Draft comparison, explicit Keep draft, explicit new Review/Confirm, original deadlines, pacing, security gates and Worker isolation remain."
+  ],
+  "artifacts": {
+    "restored-conflict-red.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-conflict-red.json",
+      "sha256": "4548e3c1b20761d771e38c34584c27586a933c1728270451405218db0ffefe29"
+    },
+    "restored-conflict-red.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-conflict-red.log",
+      "sha256": "0f0c7af688ec0c75fef6b79e79f88853cd68c0f4081e5439ec258e007e618d1f"
+    },
+    "restored-conflict-green.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-conflict-green.json",
+      "sha256": "388b8da7aefff8327155f8981d2ab671b7273f0ba2ae2cf7f007090e6f0041c8"
+    },
+    "restored-conflict-green.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-conflict-green.log",
+      "sha256": "e37696b815a8e4c2db4299a3bea353ae921064032c827eb46b0f1048e1f412e8"
+    },
+    "restored-create-red.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-create-red.json",
+      "sha256": "8a9806111511380da8f2a8e67a891304d54af46bdfc1253dc19c2556bc9bd5c2"
+    },
+    "restored-create-red.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-create-red.log",
+      "sha256": "200740afd3281beda51206dfd2853eabab8860719ec2dbd4c18abf89ae1a9cd8"
+    },
+    "restored-recovery-green.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-green.json",
+      "sha256": "5a5011d57fcfc36696ebe68c45d3c9b73bce7a0af8aeec1e45d37f113dc7af65"
+    },
+    "restored-recovery-green.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-green.log",
+      "sha256": "6e883281527e05c43b2160b06a3543ff323bf45b6622cf31ef7ace1d68e032cd"
+    },
+    "restored-recovery-types.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    "restored-recovery-browser-types-initial.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser-types-initial.log",
+      "sha256": "35000f5f3cb60d9bf971c76cfa22a699f2e9c4d1c400ccb52d38fe44f9778881"
+    },
+    "restored-recovery-browser-types.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    "restored-recovery-lint.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    "restored-recovery-image-build-initial.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-image-build-initial.log",
+      "sha256": "616343072586db222203d97a459fb3d6c580a4de428d05cf60bb289384140d66"
+    },
+    "restored-recovery-image-build.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-image-build.log",
+      "sha256": "7d269bab2cd8769e781d43414cfd475bb52bd11e1107375ff34884756f67dd7e"
+    },
+    "restored-recovery-image-identity.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-image-identity.json",
+      "sha256": "2d722023ccff7a4f840623062118e2a2b5b8c7e40ebbdafd259acf014d1929be"
+    },
+    "restored-recovery-browser.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser.log",
+      "sha256": "222fe999e86875501b79b41496504043263d84b66b2366378a18faaf78fe5327"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "failures": [
+    {
+      "path": "docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt1.log",
+      "sha256": "9f29d07639245f91fe5575e05d47e29677606392683464884bf7d546b82d6f9a",
+      "qualification": "Development working tree; not an exact final-source qualification. Original file retained unchanged."
+    },
+    {
+      "path": "docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt2.log",
+      "sha256": "5ce1db44a926251c8335f1dabfeb26354388814b353bf1ae08d091f395b769a2",
+      "qualification": "Development working tree; not an exact final-source qualification. Original file retained unchanged."
+    },
+    {
+      "path": "docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt3.log",
+      "sha256": "dee4c68833c68b51383c4b6faa92063aff5bfd96da4089d3cb91b6482fca8c3c",
+      "qualification": "Development working tree; not an exact final-source qualification. Original file retained unchanged."
+    },
+    {
+      "path": "docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt4.log",
+      "sha256": "5fa6e3f163f9374da71ff13e5142dd47cc785c965d7a33334fe10482911083b8",
+      "qualification": "Development working tree; not an exact final-source qualification. Original file retained unchanged."
+    },
+    {
+      "path": "docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-live.log",
+      "sha256": "0199fca82a28e38e8d84a4d8ecb2c6f7155fd4f827943d9fc4f5433d7633435b",
+      "qualification": "Development working tree; not an exact final-source qualification. Original file retained unchanged."
+    },
+    {
+      "path": "docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-live-final.log",
+      "sha256": "ff96e8da6f249bc3cdf6a93f19d55f793e5f1daafaf56443077c4e148668bd08",
+      "qualification": "Development working tree; not an exact final-source qualification. Original file retained unchanged."
+    },
+    {
+      "path": "docs/delivery/evidence/prd28-unit-directory/development/prd28-regression.json",
+      "sha256": "5e7e63b0af8f1f99b35240762dab4790749a566ba5d2f77afa69813911a94e2b",
+      "qualification": "Development working tree; not an exact final-source qualification. Original file retained unchanged."
+    },
+    {
+      "path": "docs/delivery/evidence/prd28-unit-directory/development/prd28-regression-qualified.json",
+      "sha256": "07d2c7da7bd9e8115ffe1c1e8ae7310c5e925153b3e7e5d4a4d1277f446863db",
+      "qualification": "Development working tree; not an exact final-source qualification. Original file retained unchanged."
+    }
+  ],
+  "assessment": [
+    "Initial source type checks found a UUID-default type annotation, MUI typography prop and Testing Library option mismatch; corrected without weakening gates.",
+    "First focused run: 45 passed/6 failed; three synchronous response stubs and three dialog-exit timing assumptions were corrected. Later 51 passed.",
+    "Broader run: 113 passed/4 failed because the exact Owner/Admin action inventory lacked the authorized new Unit directory link. Existing Member/refusal expectations retained. Later 120 passed.",
+    "Focus-owner regression exploration: 121 passed/1 failed because the test selected a navigation link during the closing review modal. Awaited the actual admitted link; final 123 passed including storage refusal.",
+    "Browser attempts 1 and 2: 0 passed/5 failed. Authority reset retired reviews/history/open reads and MUI paper consumed default focus. Preserve admitted review/history state, resume interrupted read-only opening, and focus the safe action only from its own dialog paper.",
+    "Browser attempts 3 and 4: 1 passed/4 failed. Guard read-only admission and native request dispatch using existing helpers; queue authority refresh behind a submitted command rather than aborting its original receipt. No mutation was automatically retried after dispatch.",
+    "Browser attempt 5: 5 passed under missing realtime-origin configuration, with live-update fallback active. This is retained development evidence, not final revision qualification.",
+    "Normal live-origin development runs: 4 passed/1 failed each. One found editor focus loss after temporary withdrawal (fixed with owned focus restoration and no-steal regression); another hit the existing 30-second deadline amid concurrent development reloads/build checks. Exact timeout cause is unproven. Frozen production-built run passed all five in 43 seconds; deadlines, pacing, retries and assertions unchanged.",
+    "Windows lifecycle CLI attempt was interrupted due validation latency before writing transitions; exported official transition function batched identical validated lifecycle records, followed by the full Linux CLI validator/evolution check. No validator was bypassed."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "at": "2026-10-29T06:54:23.442Z",
+  "revision": "4a735fdcf00cb2e2ed964606a8bd9a9e637e7ec9",
+  "result": "Passed",
+  "change": "Use the existing pressObservedRequest helper for all five cover/background mutation activations in this fixture. Record background attempts before transport starts and snapshot each request ordinal so the first committed response is always the one deliberately dropped.",
+  "preserved": [
+    "Original five-second dispatch/focus/outcome deadlines, overall case timeout and 25-second production pacing.",
+    "Exact two original key/body attempts, successful receipt/current revision, public consent, image bytes/dimensions, private metadata exclusion, independent references/copy, source cleanup and session withdrawal assertions.",
+    "Existing shell-owned IntegrationTest attachment providers, immutable images, explicit Organization Worker scope, delivery predicate and finally cleanup; no global discovery or new scope controller.",
+    "All application/API/Worker code, helper implementation, CI workflows and security policies."
+  ],
+  "checks": {
+    "nativeProtocol": "Controlled real Chromium: counterfactual focus/key-only admission dispatched zero requests; existing request-observed admission dispatched exactly one unchanged original request and reached acknowledgment. This is a protocol fixture, not product/release qualification.",
+    "keyboardContracts": "38 passed/0 failed/0 skipped, covering ignored keys, stop-at-request-start, requests observed during focus and rejection of extra writes.",
+    "integrationContracts": "290 passed/0 failed/0 skipped; 4 groups/7 isolated executions/130 registered mandatory steps retained.",
+    "browserTypes": "Passed.",
+    "remaining": "Fresh exact-candidate full hosted qualification including the real attachment pipeline, unit-directory Production browser cases, release bundle and delivery validation before merge."
+  },
+  "artifacts": {
+    "foundation-hosted-failure.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-hosted-failure.log",
+      "sha256": "eed52cbb10d2407c729236b52806bb914d90f424911f958fffcbb07066485760"
+    },
+    "foundation-keyboard-contracts.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-keyboard-contracts.log",
+      "sha256": "6989ac2ff73be2ba589718678d7bcd7f4b03ad76b5b2960d33c640963ee79967"
+    },
+    "foundation-integration-contracts.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-integration-contracts.log",
+      "sha256": "5df0edb56912e29ba032e610ffba40367e74a72f37b585ff3ec14c06dbc66c43"
+    },
+    "foundation-integration-coverage.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-integration-coverage.log",
+      "sha256": "0bc779b0d8ab1b4f8dcbb06e1563d5c397159cc4e6f7b5ad5e6c6a5040bc18cb"
+    },
+    "foundation-browser-types.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    "foundation-native-admission.json": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-native-admission.json",
+      "sha256": "d11edfd675e975c0abc6076ad8d53352e05bb3f522873208c0071340ae510de7"
+    },
+    "foundation-native-admission.log": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-native-admission.log",
+      "sha256": "66dd6c06de377126e01fdd6bb6829da54ddddaba2a091cdf39e12411da2cc132"
+    },
+    "foundation-native-admission.mjs": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-native-admission.mjs",
+      "sha256": "c2c18cb4c8cb784907fe386da3f421daa58c14f87c151fab1d5144ef2cdf0253"
+    },
+    "context.md": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-context.md",
+      "sha256": "d7a106e64f2f530328e86eb7121bcbc23bb5a5524a055a8c8c74842e2bf5769d"
+    },
+    "owner.png": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-owner.png",
+      "sha256": "1a4540eca81b12c2f93290fe11fca3fb4e696ddfca9aa7584b7f5b29f1c62f09"
+    },
+    "secondary.png": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-secondary.png",
+      "sha256": "f6a37e4c324e501e993293ad5cf0885b5d3de655cec7d9840a372de52ca875a4"
+    },
+    "buildMetadata": {
+      "path": "docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-failure-build-metadata.json",
+      "sha256": "0d3aa5ca6f15ed638875f71047816d928d3f22fa1a3b629bff65cd30da37057c"
+    }
+  },
+  "applicationSource": "Unchanged from 74ad04dec701ef771803cff4d6e866ec26718e25; no local runtime rebuild needed for this test-only wiring correction."
+}

@@ -4,6 +4,7 @@ import { apiFetch } from '../../api/apiFetch';
 import { forgetInvitationIntents } from '../organizations/invitationIntent';
 import { forgetSearchReturn } from '../search/searchReturn';
 import { forgetConfigurationChanges } from '../organizations/organizationConfigurationRecovery';
+import { forgetLotChanges } from '../organizations/strataLotClient';
 import { forgetRetentionPolicyChanges } from '../records/retentionPolicyRecovery';
 import { forgetHoldIntents } from '../records/retentionHoldClient';
 import { forgetRetentionSourceClassifications } from '../records/retentionSourceRecovery';
@@ -307,6 +308,7 @@ export function ProfilePage() {
       forgetInvitationIntents();
       forgetSearchReturn();
       forgetConfigurationChanges();
+      forgetLotChanges();
       forgetRetentionPolicyChanges();
       forgetRetentionSourceClassifications();
       forgetHoldIntents();
@@ -337,6 +339,7 @@ export function ProfilePage() {
         forgetInvitationIntents();
         forgetSearchReturn();
         forgetConfigurationChanges();
+        forgetLotChanges();
         forgetRetentionPolicyChanges();
         forgetRetentionSourceClassifications();
       forgetHoldIntents();

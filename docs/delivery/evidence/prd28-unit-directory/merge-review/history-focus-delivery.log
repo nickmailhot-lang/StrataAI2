@@ -1,0 +1,14 @@
+
+> strataai2@0.1.0 delivery:validate
+> node scripts/delivery-progress.mjs validate --base-ref origin/main
+
+Valid: 1652 work items; 3950 criteria. No unsupported Done claims.
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+
+> strataai2@0.1.0 delivery:test
+> node --test tests/delivery-progress.test.mjs
+
