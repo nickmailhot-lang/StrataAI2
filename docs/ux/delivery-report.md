@@ -2066,3 +2066,9 @@ outside-tree verification receipt; hosted full qualification, independent review
 integration and product acceptance remain separate and pending. This CLI-only
 change adds no product routes or schemas. See the implementation evidence record
 and local-first/multi-agent guides; no parent or MVP completion is claimed.
+
+### Local-first workflow: verified implementation (2026-10-30T03:11:40.882Z)
+
+Source 76b71472dcf24b907e7b1a9776159617b6041672, tested tree 89e102f29f7d77ef6ed8cf9bd9e2d591d2666739, passed the complete applicable local feature gate before commit. Evidence: [local-first result summary](../delivery/evidence/local-first-20261029.json). UXA-01–08 and UX-008 apply to the developer/reviewer pipeline: commands persist claims/receipts and return status and evidence. Product layout, responsive and visual UI gates are not applicable because this increment changes development tooling. Local workflow tasks/tests advance to Testing with append-only lifecycle history; acceptance criteria remain unverified pending hosted qualification, independent review and integration. Existing deferred tests remain separate from passing results. No parent PRD or MVP completion is claimed.
+
+For long runs on this Mac, use `caffeinate -isu npm run verify:local -- --base origin/main` to prevent idle sleep.

@@ -175,3 +175,9 @@ if the API supplies different commit metadata; metadata changes cannot authorize
 a different source tree. Never treat connector access as a verification bypass.
 
 API contracts run in the local Linux SDK container so production private-file checks execute and Linux socket semantics match CI. API methods are discovered from the built assembly and all run in bounded groups of 20, each in a fresh xUnit process, with independent collection scheduling disabled. XML results must cover the complete discovered inventory exactly once across batches, with no failed, errored or not-run cases. Existing skips remain separate. Test bodies, internal concurrency, deadlines and assertions are unchanged. This bounds memory on this 8GB Mac; the original hosted single-process suite remains required. The immutable source snapshot is copied to disposable container storage, keeping host bin/obj files separate.
+
+On this Mac, use `caffeinate -isu npm run verify:local -- --base origin/main` to enter FullWake and prevent system/idle sleep while verification runs on AC power. Sleep can consume command deadlines and distort wall-time measurements.
+
+Preserve every ordered merge parent when publishing a merge commit through an API; use a single-parent API call only for a single-parent commit.
+
+For an evidence/documentation follow-up, retain the full passing receipt for the code parent and verify the documentation tree against that qualified commit with `--base COMMIT`. Record both source identities and scopes. Executable-source or CI changes use the ordinary `origin/main` comparison; PR CI still compares the complete branch against its target. This follow-up cannot qualify previously untested code.
