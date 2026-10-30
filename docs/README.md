@@ -374,3 +374,12 @@ retirement and the retained baseline and verification boundaries.
 
 [Card label support references](board-label-api.md#card-label-public-failure-references)
 records disclosure/editing recovery and its source and native browser evidence.
+
+## Developer workflow
+
+- [Local-first setup, verification and evidence](development/local-first.md)
+- [Multi-agent ownership and integration](development/multi-agent.md)
+- [Local-first implementation evidence and limits](development/local-first-evidence.md)
+- [Coordinator prompt](prompts/coordinator.md)
+- [Worker prompt](prompts/worker.md)
+- [Integration prompt](prompts/integrator.md)

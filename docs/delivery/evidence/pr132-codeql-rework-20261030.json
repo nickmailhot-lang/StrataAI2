@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "b74366a1ccb73db5cba19ee81f3fec487d7125e5",
+  "result": "Failed",
+  "owner": "integrator",
+  "checkRun": 123900665811,
+  "alert": "https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/14",
+  "message": "Shell command built from environment values still reported at generic verify dispatcher after scripts moved to files.",
+  "cause": "Generic dispatch mixed shell and tool execution; CodeQL merged environment-derived command/path arguments across call sites.",
+  "correction": "Separate dedicated shell execution from ordinary tools. Constant source \"$1\" shell text receives a quoted positional path and closed child stdin. No environment/path interpolation into shell program text.",
+  "additionalDiagnosis": "Passing script bodies through stdin avoided the query but a child cat consumed later script text and returned empty stdout. Added regression preserving closed child stdin, plus timeout, hostile values, exclusive scripts and nonzero-status checks.",
+  "localQualification": "Prior exact-tree full pass for b743 retained separately; changed dispatcher requires fresh final gate and fresh hosted CodeQL.",
+  "reviewer": "User deferred a separate reviewer until requested."
+}

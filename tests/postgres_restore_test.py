@@ -1,3 +1,4 @@
+from local_test_tools import test_bash
 import hashlib
 import os
 from pathlib import Path
@@ -20,7 +21,7 @@ class PostgresRestoreTests(unittest.TestCase):
     def setUpClass(cls):
         cls.root=Path(tempfile.mkdtemp(prefix='strataai-restore-command-'))
         cls.repo=Path(__file__).resolve().parents[1]
-        cls.bash='C:/Program Files/Git/bin/bash.exe' if os.name=='nt' else '/bin/bash'
+        cls.bash=test_bash()
         cls.script=cls.repo/'scripts/restore-postgres.sh'
         try:
             for name in ('recipient','wrong'):

@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 
-const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+import { testBash as bash } from './local-test-tools.mjs';
 const script = resolve('scripts/verify-release-runtime.sh');
 const expected = { commitSha: 'a'.repeat(40), version: '1.0.0' };
 const identity = { revision: expected.commitSha, version: expected.version };

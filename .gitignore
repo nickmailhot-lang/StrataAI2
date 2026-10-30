@@ -1,5 +1,8 @@
 # .NET
 **/bin/
+!/scripts/local/bin/
+/scripts/local/bin/*
+!/scripts/local/bin/cat
 **/obj/
 *.user
 *.suo

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "90df985854134f4ce85954f5015b54a075ce6294",
+  "result": "Failed",
+  "owner": "integrator",
+  "checkRun": 123923513585,
+  "alert": "https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/16",
+  "rule": "js/bad-code-sanitization",
+  "location": "tests/local-workflow.test.mjs:172",
+  "message": "Code construction depends on an improperly sanitized value.",
+  "originalFindings": "Shell-dispatch findings 14 and 15 were automatically resolved by hosted CodeQL on this head.",
+  "cause": "The regression fixture constructed JavaScript expressions from test paths and sent them through the fixture eval helper.",
+  "correction": "Import the actual module directly for this regression and call its functions with ordinary values; retain hostile inputs, EEXIST, child stdin, ambient startup, timeout and nonzero-status assertions.",
+  "validation": "All 16 targeted workflow tests passed; complete local JavaScript code-scanning suite and a fresh final local gate remain pending.",
+  "qualification": "Existing passing code and documentation receipts remain retained and are not substituted for this test-source correction."
+}

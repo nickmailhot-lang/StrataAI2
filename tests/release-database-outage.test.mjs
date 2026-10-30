@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { copyFileSync, existsSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
 
-const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+import { testBash as bash } from './local-test-tools.mjs';
 const source = readFileSync('scripts/ci/test-release-bundle-startup.sh', 'utf8');
 const contract = source.match(/check_database_outage\(\) \{[\s\S]*?\n\}/)?.[0];
 assert.ok(contract, 'Maintained database outage contract must be present');

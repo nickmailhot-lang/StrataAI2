@@ -1,0 +1,1040 @@
+{
+  "schemaVersion": 1,
+  "task": {
+    "id": "PRD25-LOCAL-FIRST-V5",
+    "owner": "integrator",
+    "branch": "feature/local-first-workflow",
+    "paths": [
+      ".githooks/pre-commit",
+      ".githooks/pre-push",
+      ".github/pull_request_template.md",
+      ".github/workflows/feature-ci.yml",
+      ".github/workflows/feature-runtime.yml",
+      ".github/workflows/full-sanity.yml",
+      "AGENTS.md",
+      "README.md",
+      "docs/README.md",
+      "docs/delivery/progress.json",
+      "docs/development/local-first-evidence.md",
+      "docs/development/local-first.md",
+      "docs/development/multi-agent.md",
+      "docs/prompts/coordinator.md",
+      "docs/prompts/integrator.md",
+      "docs/prompts/worker.md",
+      "docs/ux/delivery-report.md",
+      "package.json",
+      "scripts/local/agents.mjs",
+      "scripts/local/doctor.mjs",
+      "scripts/local/hooks.mjs",
+      "scripts/local/persistence.mjs",
+      "scripts/local/repository.mjs",
+      "scripts/local/runtime.mjs",
+      "scripts/local/secret-scan.mjs",
+      "scripts/local/verify.mjs",
+      "tests/core_mail_outage_admission_test.py",
+      "tests/health-check.test.mjs",
+      "tests/https-certificate.test.mjs",
+      "tests/https-recovery-cursor.test.mjs",
+      "tests/local-test-tools.mjs",
+      "tests/local-workflow.test.mjs",
+      "tests/local_test_tools.py",
+      "tests/postgres_backup_test.py",
+      "tests/postgres_restore_test.py",
+      "tests/recovery_dump_test.py",
+      "tests/release-bundle-startup.test.mjs",
+      "tests/release-database-outage.test.mjs",
+      "tests/release-demo-bundle-startup.test.mjs",
+      "tests/release-runtime.test.mjs",
+      "tests/work-events-admission.test.mjs",
+      "scripts/local/source-tests.mjs",
+      "scripts/local/api-test-results.py",
+      "tests/local_api_results_test.py"
+    ]
+  },
+  "selection": {
+    "ciFullSelected": true,
+    "localRuntime": true,
+    "browserFiles": [
+      "tests/browser/board.spec.ts"
+    ],
+    "canonicalCommands": [
+      "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+      "Private board discovery and revoked membership against restricted PostgreSQL runtime"
+    ],
+    "reasons": [
+      "Unmapped change: .githooks/pre-commit",
+      "Unmapped change: .githooks/pre-push",
+      "Shared/runtime/configuration change: .github/pull_request_template.md",
+      "Shared/runtime/configuration change: .github/workflows/feature-ci.yml",
+      "Shared/runtime/configuration change: .github/workflows/feature-runtime.yml",
+      "Shared/runtime/configuration change: .github/workflows/full-sanity.yml",
+      "Shared/runtime/configuration change: package.json",
+      "Shared/runtime/configuration change: scripts/local/agents.mjs",
+      "Shared/runtime/configuration change: scripts/local/api-test-results.py",
+      "Shared/runtime/configuration change: scripts/local/doctor.mjs",
+      "Shared/runtime/configuration change: scripts/local/hooks.mjs",
+      "Shared/runtime/configuration change: scripts/local/persistence.mjs",
+      "Shared/runtime/configuration change: scripts/local/repository.mjs",
+      "Shared/runtime/configuration change: scripts/local/runtime.mjs",
+      "Shared/runtime/configuration change: scripts/local/secret-scan.mjs",
+      "Shared/runtime/configuration change: scripts/local/source-tests.mjs",
+      "Shared/runtime/configuration change: scripts/local/verify.mjs",
+      "Shared/runtime/configuration change: tests/core_mail_outage_admission_test.py",
+      "Shared/runtime/configuration change: tests/health-check.test.mjs",
+      "Shared/runtime/configuration change: tests/https-certificate.test.mjs",
+      "Shared/runtime/configuration change: tests/https-recovery-cursor.test.mjs",
+      "Shared/runtime/configuration change: tests/local-test-tools.mjs",
+      "Shared/runtime/configuration change: tests/local-workflow.test.mjs",
+      "Shared/runtime/configuration change: tests/local_api_results_test.py",
+      "Shared/runtime/configuration change: tests/local_test_tools.py",
+      "Shared/runtime/configuration change: tests/postgres_backup_test.py",
+      "Shared/runtime/configuration change: tests/postgres_restore_test.py",
+      "Shared/runtime/configuration change: tests/recovery_dump_test.py",
+      "Shared/runtime/configuration change: tests/release-bundle-startup.test.mjs",
+      "Shared/runtime/configuration change: tests/release-database-outage.test.mjs",
+      "Shared/runtime/configuration change: tests/release-demo-bundle-startup.test.mjs",
+      "Shared/runtime/configuration change: tests/release-runtime.test.mjs",
+      "Shared/runtime/configuration change: tests/work-events-admission.test.mjs"
+    ]
+  },
+  "priorCandidateRuns": [
+    {
+      "runId": "1793307368626-a14e73e4",
+      "tree": "0de4e829e22b537727b8c0be46985ecfe8eaba49",
+      "outcome": "Failed",
+      "owner": "integrator",
+      "scope": "Local candidate verification; not product acceptance",
+      "disposition": "Retained. Corrections and limits are described in docs/development/local-first-evidence.md; this final candidate has independent fresh results.",
+      "failedCommands": [
+        {
+          "name": "repository-contracts",
+          "log": "0-repository-contracts.log",
+          "recordedLogSha256": "2b84a44eff4ee77958e5070e74fcc82b157cffcb14f9c0317038ae6b2a9ac9cc",
+          "currentLogSha256": "2b84a44eff4ee77958e5070e74fcc82b157cffcb14f9c0317038ae6b2a9ac9cc"
+        }
+      ]
+    },
+    {
+      "runId": "1793307893909-fe4edba3",
+      "tree": "d581404a712e769e1ecb221979f22301e5e80397",
+      "outcome": "Cancelled",
+      "owner": "integrator",
+      "scope": "Local candidate verification; not product acceptance",
+      "disposition": "Retained. Corrections and limits are described in docs/development/local-first-evidence.md; this final candidate has independent fresh results.",
+      "failedCommands": []
+    },
+    {
+      "runId": "1793309135113-66666ead",
+      "tree": "4958f09b47f378caeb44523f8f3668fdc8593e34",
+      "outcome": "Cancelled",
+      "owner": "integrator",
+      "scope": "Local candidate verification; not product acceptance",
+      "disposition": "Retained. Corrections and limits are described in docs/development/local-first-evidence.md; this final candidate has independent fresh results.",
+      "failedCommands": []
+    },
+    {
+      "runId": "1793311932224-1df1dd6f",
+      "tree": "6dee0b96cfcdedfc342c73afba0871c89116e403",
+      "outcome": "Failed",
+      "owner": "integrator",
+      "scope": "Local candidate verification; not product acceptance",
+      "disposition": "Retained. Corrections and limits are described in docs/development/local-first-evidence.md; this final candidate has independent fresh results.",
+      "failedCommands": [
+        {
+          "name": "dotnet-Api",
+          "log": "12-dotnet-Api.log",
+          "recordedLogSha256": "de120070ecb5b25bcc35c524b50480b86e037c03cb3030d6e92db5dd314be2fb",
+          "currentLogSha256": "de120070ecb5b25bcc35c524b50480b86e037c03cb3030d6e92db5dd314be2fb"
+        }
+      ]
+    },
+    {
+      "runId": "1793315903126-b0ea2234",
+      "tree": "f910db4c89781f54ebf07497826747f9c156349e",
+      "outcome": "Failed",
+      "owner": "integrator",
+      "scope": "Local candidate verification; not product acceptance",
+      "disposition": "Retained. Corrections and limits are described in docs/development/local-first-evidence.md; this final candidate has independent fresh results.",
+      "failedCommands": [
+        {
+          "name": "dotnet-Api-linux",
+          "log": "12-dotnet-Api-linux.log",
+          "recordedLogSha256": "c84d66ffef0ce0b7560ba23bbcb3b3f4003b526af252f71a810fdcf33fc4b49d",
+          "currentLogSha256": "c84d66ffef0ce0b7560ba23bbcb3b3f4003b526af252f71a810fdcf33fc4b49d"
+        }
+      ]
+    },
+    {
+      "runId": "1793319383475-2ff62395",
+      "tree": "d26398ffbd3cbe6c6b01f92bf796d47923b500d5",
+      "outcome": "Cancelled",
+      "owner": "integrator",
+      "scope": "Local candidate verification; not product acceptance",
+      "disposition": "Retained. Corrections and limits are described in docs/development/local-first-evidence.md; this final candidate has independent fresh results.",
+      "failedCommands": [
+        {
+          "name": "repository-contracts",
+          "log": "0-repository-contracts.log",
+          "recordedLogSha256": "daecf55654bba2de8433f06eb732bc4fae4e345aa27ea1c68ebb799d44e156e2",
+          "currentLogSha256": "daecf55654bba2de8433f06eb732bc4fae4e345aa27ea1c68ebb799d44e156e2"
+        }
+      ]
+    },
+    {
+      "runId": "1793319495252-e365aadf",
+      "tree": "01e11552862f6e5364c7cf221f16b86dae51f13a",
+      "outcome": "Failed",
+      "owner": "integrator",
+      "scope": "Local candidate verification; not product acceptance",
+      "disposition": "Retained. Corrections and limits are described in docs/development/local-first-evidence.md; this final candidate has independent fresh results.",
+      "failedCommands": [
+        {
+          "name": "dotnet-Api-linux",
+          "log": "12-dotnet-Api-linux.log",
+          "recordedLogSha256": "f1e7708dd0075259364a1dfe0239c832f2ac06a4e6b500761f6be4089a55050d",
+          "currentLogSha256": "f1e7708dd0075259364a1dfe0239c832f2ac06a4e6b500761f6be4089a55050d"
+        }
+      ]
+    },
+    {
+      "runId": "1793320293861-e9a0b51e",
+      "tree": "89e102f29f7d77ef6ed8cf9bd9e2d591d2666739",
+      "outcome": "Failed",
+      "owner": "integrator",
+      "scope": "Local candidate verification; not product acceptance",
+      "disposition": "Retained. Corrections and limits are described in docs/development/local-first-evidence.md; this final candidate has independent fresh results.",
+      "failedCommands": [
+        {
+          "name": "feature-runtime",
+          "log": "16-feature-runtime.log",
+          "recordedLogSha256": "fb25719afd955aba02c3f5246a020ba65970b620597edc55e4bc2c7f2e85b8dc",
+          "currentLogSha256": "fb25719afd955aba02c3f5246a020ba65970b620597edc55e4bc2c7f2e85b8dc"
+        }
+      ]
+    }
+  ],
+  "uxApplicability": {
+    "owner": "PRD-25",
+    "foundation": "UX-008",
+    "consumers": "Developer and reviewer CLI pipeline",
+    "journey": "Run commands, persist claims and exact-tree verification receipts, return status, then review the verified feature branch.",
+    "uiGates": "Product layout, responsive and visual UI checks are not applicable to this development-tooling increment. Existing application regression and role checks remain separate; hosted qualification and review are pending."
+  },
+  "revision": "76b71472dcf24b907e7b1a9776159617b6041672",
+  "tree": "89e102f29f7d77ef6ed8cf9bd9e2d591d2666739",
+  "baseRevision": "ff4c17121d3f66c43c7a3319914c7c6580ee1737",
+  "runId": "1793326338033-e42abce6",
+  "result": "Passed",
+  "qualification": "Local feature evidence only; required-ci and exact-revision full release qualification remain required.",
+  "mode": "final",
+  "startedAt": "2026-10-30T02:12:18.034Z",
+  "completedAt": "2026-10-30T03:01:50.286Z",
+  "durationMs": 2972252,
+  "platform": "darwin",
+  "architecture": "arm64",
+  "runtimePlatform": "linux/amd64",
+  "results": [
+    {
+      "name": "repository-contracts",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "tests/browser-performance.test.mjs",
+        "tests/browser-shards.test.mjs",
+        "tests/build-metadata.test.mjs",
+        "tests/delivery-progress.test.mjs",
+        "tests/feature-ci.test.mjs",
+        "tests/health-check.test.mjs",
+        "tests/https-certificate.test.mjs",
+        "tests/https-live-board.test.mjs",
+        "tests/https-recovery-cursor.test.mjs",
+        "tests/integration-suites.test.mjs",
+        "tests/local-workflow.test.mjs",
+        "tests/mail-outage-browser.test.mjs",
+        "tests/recipient-clock-browser.test.mjs",
+        "tests/release-bundle-startup.test.mjs",
+        "tests/release-database-outage.test.mjs",
+        "tests/release-demo-bundle-startup.test.mjs",
+        "tests/release-runtime.test.mjs",
+        "tests/ticket-dependencies.test.mjs",
+        "tests/web-architecture.test.mjs",
+        "tests/web-capacity-phase.test.mjs",
+        "tests/work-events-admission.test.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 118465,
+      "log": "0-repository-contracts.log",
+      "sha256": "b95ff2790251d1b3c222af7cd8103e2c2b4e601a7d45e8a73aa6d175b384ffc5"
+    },
+    {
+      "name": "ledger",
+      "command": [
+        "node",
+        "scripts/delivery-progress.mjs",
+        "validate",
+        "--base-ref",
+        "ff4c17121d3f66c43c7a3319914c7c6580ee1737"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 9891,
+      "log": "1-ledger.log",
+      "sha256": "335d1bbe9d24fbd0a27c0c69c603782fea32ff5f478ad0ffd2200dd6039f48cf"
+    },
+    {
+      "name": "integration-inventory",
+      "command": [
+        "node",
+        "scripts/ci/verify-integration-suites.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 74,
+      "log": "2-integration-inventory.log",
+      "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+    },
+    {
+      "name": "runtime-drift",
+      "command": [
+        "node",
+        "scripts/ci/generate-feature-runtime.mjs",
+        "--check"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 73,
+      "log": "3-runtime-drift.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "web-types",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 7119,
+      "log": "4-web-types.log",
+      "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+    },
+    {
+      "name": "browser-types",
+      "command": [
+        "npm",
+        "run",
+        "typecheck:browser"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 2067,
+      "log": "5-browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "name": "lint",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 4758,
+      "log": "6-lint.log",
+      "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+    },
+    {
+      "name": "web-unit",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "--maxWorkers=1"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 376786,
+      "log": "7-web-unit.log",
+      "sha256": "f6ddf07ee613b3911abb53c2d6ab402a0bd4a70219dfbc8bda3e67c7dacddc05"
+    },
+    {
+      "name": "web-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 9269,
+      "log": "8-web-build.log",
+      "sha256": "8de470279252e8f7875dfec76afa3fcd05043921f9cc49a16a98cb120fb7ffe8"
+    },
+    {
+      "name": "dotnet-restore",
+      "command": [
+        "dotnet",
+        "restore",
+        "StrataAI2.slnx",
+        "--locked-mode"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 1472,
+      "log": "9-dotnet-restore.log",
+      "sha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce"
+    },
+    {
+      "name": "dotnet-build",
+      "command": [
+        "dotnet",
+        "build",
+        "StrataAI2.slnx",
+        "-c",
+        "Release",
+        "--no-restore",
+        "-warnaserror"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 1681,
+      "log": "10-dotnet-build.log",
+      "sha256": "0b926aac4885e3cf29a95bc850d3e36485831ae842cda16beb71883cb0f7e0c6"
+    },
+    {
+      "name": "dotnet-Domain",
+      "command": [
+        "dotnet",
+        "test",
+        "--project",
+        "tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj",
+        "-c",
+        "Release",
+        "--no-build"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 2980,
+      "log": "11-dotnet-Domain.log",
+      "sha256": "459817c6e2eb3fddf725f124aaf02c19d6702d4f8ceac6f4629d871b0ca8c7d6"
+    },
+    {
+      "name": "dotnet-Api-linux",
+      "command": [
+        "node",
+        "scripts/local/source-tests.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 1150061,
+      "log": "12-dotnet-Api-linux.log",
+      "sha256": "85f68960f436db4ca1288d141b66d281f80fd2ddf8ed99b7dae7ef8102ed182d"
+    },
+    {
+      "name": "python-contracts",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "*_test.py"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 116048,
+      "log": "13-python-contracts.log",
+      "sha256": "09d701ecbafaec3f7b8ec9696f517d7726b6c50e4c45095febf79e4fd51c404d"
+    },
+    {
+      "name": "secret-scan",
+      "command": [
+        "node",
+        "scripts/local/secret-scan.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 4705,
+      "log": "14-secret-scan.log",
+      "sha256": "c169823b0b94292f419c5e2204625263bbe69edb271731aab781923be45974cd"
+    },
+    {
+      "name": "persistence",
+      "command": [
+        "node",
+        "scripts/local/persistence.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 167509,
+      "log": "15-persistence.log",
+      "sha256": "667811c75f500c27ca8f12e6dff6538e5a9a06f429434ff15f466468ae31c888"
+    },
+    {
+      "name": "feature-runtime",
+      "command": [
+        "node",
+        "scripts/local/runtime.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 997646,
+      "log": "16-feature-runtime.log",
+      "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "0-repository-contracts.log",
+      "sha256": "b95ff2790251d1b3c222af7cd8103e2c2b4e601a7d45e8a73aa6d175b384ffc5"
+    },
+    {
+      "path": "1-ledger.log",
+      "sha256": "335d1bbe9d24fbd0a27c0c69c603782fea32ff5f478ad0ffd2200dd6039f48cf"
+    },
+    {
+      "path": "10-dotnet-build.log",
+      "sha256": "0b926aac4885e3cf29a95bc850d3e36485831ae842cda16beb71883cb0f7e0c6"
+    },
+    {
+      "path": "11-dotnet-Domain.log",
+      "sha256": "459817c6e2eb3fddf725f124aaf02c19d6702d4f8ceac6f4629d871b0ca8c7d6"
+    },
+    {
+      "path": "12-dotnet-Api-linux.log",
+      "sha256": "85f68960f436db4ca1288d141b66d281f80fd2ddf8ed99b7dae7ef8102ed182d"
+    },
+    {
+      "path": "13-python-contracts.log",
+      "sha256": "09d701ecbafaec3f7b8ec9696f517d7726b6c50e4c45095febf79e4fd51c404d"
+    },
+    {
+      "path": "14-secret-scan.log",
+      "sha256": "c169823b0b94292f419c5e2204625263bbe69edb271731aab781923be45974cd"
+    },
+    {
+      "path": "15-persistence.log",
+      "sha256": "667811c75f500c27ca8f12e6dff6538e5a9a06f429434ff15f466468ae31c888"
+    },
+    {
+      "path": "16-feature-runtime.log",
+      "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+    },
+    {
+      "path": "2-integration-inventory.log",
+      "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+    },
+    {
+      "path": "3-runtime-drift.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "4-web-types.log",
+      "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+    },
+    {
+      "path": "5-browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "path": "6-lint.log",
+      "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+    },
+    {
+      "path": "7-web-unit.log",
+      "sha256": "f6ddf07ee613b3911abb53c2d6ab402a0bd4a70219dfbc8bda3e67c7dacddc05"
+    },
+    {
+      "path": "8-web-build.log",
+      "sha256": "8de470279252e8f7875dfec76afa3fcd05043921f9cc49a16a98cb120fb7ffe8"
+    },
+    {
+      "path": "9-dotnet-restore.log",
+      "sha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce"
+    },
+    {
+      "path": "api-source/batch-000.log",
+      "sha256": "65a16653741db9bc978704053afc68b332502ef0f641259f1d1969447377ebe2"
+    },
+    {
+      "path": "api-source/batch-001.log",
+      "sha256": "34fb248639fffb1d9222982a6978ce58873d207aa3e42b932595f5840b64a24c"
+    },
+    {
+      "path": "api-source/batch-002.log",
+      "sha256": "a545854d52e6d01ae9e30bfb064201c7b6f2145529dcefb4df5e639808fe2e06"
+    },
+    {
+      "path": "api-source/batch-003.log",
+      "sha256": "02e35e617b54d158575f3679445cb73c8e37afec3ec321f05737050ee9cbddd8"
+    },
+    {
+      "path": "api-source/batch-004.log",
+      "sha256": "90ed31f052874957ed46332ded7ac75564a0d361d3cacf0c0c63b2aa85002f2c"
+    },
+    {
+      "path": "api-source/batch-005.log",
+      "sha256": "86bb723e81e3fcf2030ad97c02954e680edebf86fa87efb478b3130abe741cf0"
+    },
+    {
+      "path": "api-source/batch-006.log",
+      "sha256": "441e280bb571ea22edf8c935eb67a71e7b7ee8e9aab4d87eb696520c9cdd0aeb"
+    },
+    {
+      "path": "api-source/batch-007.log",
+      "sha256": "9083d0783a5fa19bfe30ffa8b887ee025a7da27ef7b538921068826daf9a2d26"
+    },
+    {
+      "path": "api-source/batch-008.log",
+      "sha256": "bdc7727d78e87b6d8efaaaace5576a4e7b39b12ae04fbb1c64368a9f83a5bfa4"
+    },
+    {
+      "path": "api-source/batch-009.log",
+      "sha256": "e01fd588c9d2ce5f11cff7752a5663c81f476d8ecff759236f98049da319b34a"
+    },
+    {
+      "path": "api-source/batch-010.log",
+      "sha256": "619a113bdf1bfeda7cd683f77567051d70c84e1ca9b5461a378e28cd395c7ad3"
+    },
+    {
+      "path": "api-source/batch-011.log",
+      "sha256": "a3b35bc978a75b542c4ccb97962ec2355fa450ce7093ec44f7edd4132ae56f27"
+    },
+    {
+      "path": "api-source/batch-012.log",
+      "sha256": "71f527ad491535ea7ebfae10578b474bd4d2aa602e03ced73de4cd7a42cc389d"
+    },
+    {
+      "path": "api-source/batch-013.log",
+      "sha256": "ac18f861fca43e879eb84e724711c12824d1f26acd9b00f6724cb7a4b3dac9a1"
+    },
+    {
+      "path": "api-source/batch-014.log",
+      "sha256": "953db626bb79db177945d06162f0b4cca9c96f356b2d822fcee3a107f71e1deb"
+    },
+    {
+      "path": "api-source/batch-015.log",
+      "sha256": "4625e3be9d1aae1b673cf2bcc352b594830325cb1d986e0360ce3da9a8879d40"
+    },
+    {
+      "path": "api-source/batch-016.log",
+      "sha256": "0b98a1bc729789d6bc1e1c29df494721e17c10c6a35345b12fa5c42023cf25fa"
+    },
+    {
+      "path": "api-source/batch-017.log",
+      "sha256": "54b4885cb0d8d558b3ec05e2b77b02438c992a85fbc7b31d3e48a9ce256ad35b"
+    },
+    {
+      "path": "api-source/batch-018.log",
+      "sha256": "7514721f67f787238cc83dde5fc898d4134ac529a793e1eef945977e98c8b35c"
+    },
+    {
+      "path": "api-source/batch-019.log",
+      "sha256": "8821329e7f982a961ede71e915e33cb49f4328b74b12ba99d3c093918f9a6b05"
+    },
+    {
+      "path": "api-source/batch-020.log",
+      "sha256": "1004f7449ae76862769d45609130bc7ddf11e6bc4beeecc8602da9dcfc36105b"
+    },
+    {
+      "path": "api-source/batch-021.log",
+      "sha256": "507be660f8c69c0343afebc310c5c262e8228f1642535f7e9eaa52e092e940af"
+    },
+    {
+      "path": "api-source/batch-022.log",
+      "sha256": "dbc05998874ad7037f61a608bf77e31cf549468459e8fe3bcac3528759f55fa8"
+    },
+    {
+      "path": "api-source/batch-023.log",
+      "sha256": "2aee714922fda7cd730c1d6e61a3ac0e42a39a13225a286bb89678d4b1a00b73"
+    },
+    {
+      "path": "api-source/batch-024.log",
+      "sha256": "364496772ca8c9d55a3e41aeb60d7bebfe3920f3cc927ba6e3fd68da0f806a08"
+    },
+    {
+      "path": "api-source/batch-025.log",
+      "sha256": "25f9fd7262eadb0c0722066a7e8cdf9afd6e157a4d9216325b7efc1ae25c1ce4"
+    },
+    {
+      "path": "api-source/batch-026.log",
+      "sha256": "98732cdcd33e23a81d3e4df88ce04e2ef52949961b5818e4c08b5748cb529890"
+    },
+    {
+      "path": "api-source/batch-027.log",
+      "sha256": "00dc0f09d839d32bfac8a0943ef954801ff8a0aa6d7c3aff3c0d691376d9fd51"
+    },
+    {
+      "path": "api-source/batch-028.log",
+      "sha256": "05d677fafff36981ab7bc89e4490c68177b414f1f0c1ed94f18723cacbdaac26"
+    },
+    {
+      "path": "api-source/batch-029.log",
+      "sha256": "7e894a075ecadaf7d3eafe1b0bd74699455a35f562f1131ef7b2125c3fc8b418"
+    },
+    {
+      "path": "api-source/batch-030.log",
+      "sha256": "21df5da22f5fd5b0bf25034dfa669259f2a5a0b1f0b3b0b2788c4a7beb2a4509"
+    },
+    {
+      "path": "api-source/batch-031.log",
+      "sha256": "f8df396452f51b29366840c86f03aedbe8e925cc375b28c5fb16de65aa1ae4db"
+    },
+    {
+      "path": "api-source/batch-032.log",
+      "sha256": "f2a27bf2483db764939d7d5626fdf7126ef48abe83cd854abc0f422c6d6a7d9c"
+    },
+    {
+      "path": "api-source/batch-033.log",
+      "sha256": "2ca71df994dab5633cc292c3025db9ea50bd3a204b86e996327c55c82c468647"
+    },
+    {
+      "path": "api-source/build.log",
+      "sha256": "f40d2637b57d5007ee9058c832fb5dcae05420572f8fcc029121d818d02e945e"
+    },
+    {
+      "path": "api-source/discovery.json",
+      "sha256": "d5626251ccf104fab514518dbb38e633b5d5d50237fba9cce91b0502a594b20b"
+    },
+    {
+      "path": "api-source/inputs.json",
+      "sha256": "bc64e48283778580fb71927b170c9f994217ff8e8a11b170a7f9a122cb4709dd"
+    },
+    {
+      "path": "api-source/inventory.json",
+      "sha256": "528353177467cb750d17341d6dec791c02cdb6a9f93d519dfefaf89a5d25d8a9"
+    },
+    {
+      "path": "api-source/summary.json",
+      "sha256": "1c61cf57cb9272219beb99437fc13a6cce590cffb7ae954af25e9387547630f4"
+    },
+    {
+      "path": "api-source/xml/batch-000.xml",
+      "sha256": "fba8d6f7fbf9fa3eb80f5d51e245e31fd613159c025a4f24ba65bcd127bf1e61"
+    },
+    {
+      "path": "api-source/xml/batch-001.xml",
+      "sha256": "ba8ff12052b8263ec5502e2030033293e74dce4bebc750b1d7ce3132fc99cd54"
+    },
+    {
+      "path": "api-source/xml/batch-002.xml",
+      "sha256": "e42e43526a4814c07daa1cc21be5b3fc155ec03ba4bc4dfe2265be73d7c3c6da"
+    },
+    {
+      "path": "api-source/xml/batch-003.xml",
+      "sha256": "eb638c88b419788df798885e9fc8093744ab07ffeb06643900c43c84835ea459"
+    },
+    {
+      "path": "api-source/xml/batch-004.xml",
+      "sha256": "4ab94a7a8eacde515257ca5f033fe4b653637e36060de219208139dfb93100fd"
+    },
+    {
+      "path": "api-source/xml/batch-005.xml",
+      "sha256": "080089a25457a41d8c0474a0f82c356e4ac80ab5bf0a8ea2a70b41353f250af3"
+    },
+    {
+      "path": "api-source/xml/batch-006.xml",
+      "sha256": "f2cc3d1590c1ff89b8470afa07eeb0c64709c47153c32313ead44867046b8cdd"
+    },
+    {
+      "path": "api-source/xml/batch-007.xml",
+      "sha256": "1c0039e96d716617df0056ed81089c0d5cde0835c79c9c852ff9b4d05adecc52"
+    },
+    {
+      "path": "api-source/xml/batch-008.xml",
+      "sha256": "fdfcd755d8b63c4fddd4b85b0175740b0efbc2496e982924f4667ec7ff3e24dc"
+    },
+    {
+      "path": "api-source/xml/batch-009.xml",
+      "sha256": "53a1f3a94aac451501fa822840ee910a94b4ea19eb7151c9bd9a8f242323dbb2"
+    },
+    {
+      "path": "api-source/xml/batch-010.xml",
+      "sha256": "b9ad7f0796f935cb9a4770772cf578c9076f4717371de1745634d47551694de9"
+    },
+    {
+      "path": "api-source/xml/batch-011.xml",
+      "sha256": "762b24b560d729e4de66f25852ce79a3d5e39ab5022f73e89ee2bdeabf11d1bf"
+    },
+    {
+      "path": "api-source/xml/batch-012.xml",
+      "sha256": "7ea5a4c1751cccc5a9dd3fa8e046d0b122e4bae53ab1e5c2609226a9c3b58246"
+    },
+    {
+      "path": "api-source/xml/batch-013.xml",
+      "sha256": "0c94cecff4e66f66d639373084075fadb60a00e8ce59ca84dee3ffe7ee6e4909"
+    },
+    {
+      "path": "api-source/xml/batch-014.xml",
+      "sha256": "1a895a7fce207b4e1430cb4ac2315dfc952ee08f59498f98fd595c90b638a861"
+    },
+    {
+      "path": "api-source/xml/batch-015.xml",
+      "sha256": "81f3e6d1e495108971fc30aab7c6e3e494e77f43d12934ae034ef333842ec706"
+    },
+    {
+      "path": "api-source/xml/batch-016.xml",
+      "sha256": "0d9707858b8087eb63d655f1a75b5838fdc0a676c85293fcc384edaf3d5e1dc5"
+    },
+    {
+      "path": "api-source/xml/batch-017.xml",
+      "sha256": "28ea5ea9a837cc158e3a3da124dff917bb3dc24ea99b678933c6dbdc0f741ee4"
+    },
+    {
+      "path": "api-source/xml/batch-018.xml",
+      "sha256": "957f36737104e6dacd2c2de5c277d4b2272677ecaad65965348838d35c592562"
+    },
+    {
+      "path": "api-source/xml/batch-019.xml",
+      "sha256": "337f744e90dbbceb2a9dedb9634e482fa0e8ed72c35805aad76d5e75bafcb810"
+    },
+    {
+      "path": "api-source/xml/batch-020.xml",
+      "sha256": "5559a7921ccf8020dbb41e57ffa9efd7a025bc6123f1005d552bb573269429f6"
+    },
+    {
+      "path": "api-source/xml/batch-021.xml",
+      "sha256": "9e25f9f4e166245c4f94fe5bb1d379166f421902a68fd37c8a9a20ec97ad0ba1"
+    },
+    {
+      "path": "api-source/xml/batch-022.xml",
+      "sha256": "9e386be4b11b6fdd9033ad3207b90199e87b7499084060225475810414f9066a"
+    },
+    {
+      "path": "api-source/xml/batch-023.xml",
+      "sha256": "4d99675796a7d99a5bd963548ffb2050424b54c496a985ca19db88ef6f71689f"
+    },
+    {
+      "path": "api-source/xml/batch-024.xml",
+      "sha256": "b3305fe7df503be1387aa0da84c9665021e10a32c48ac61ba4ac6ac4fc2ddf33"
+    },
+    {
+      "path": "api-source/xml/batch-025.xml",
+      "sha256": "db97198a214bce0d872e2bcd023754a4e99fd365e9c66fda6143cf74d66d411f"
+    },
+    {
+      "path": "api-source/xml/batch-026.xml",
+      "sha256": "4e182f9f51238abed860f92565ded80998e75477d09dd903f6a0614ad2be6603"
+    },
+    {
+      "path": "api-source/xml/batch-027.xml",
+      "sha256": "5254349072ae488fadab6d773ada047cfd2a204b9acced9f550932cba0c8aa0d"
+    },
+    {
+      "path": "api-source/xml/batch-028.xml",
+      "sha256": "b24a440809866acbc38bf556c891485138c10715ee7231c108dad76f1361c4d3"
+    },
+    {
+      "path": "api-source/xml/batch-029.xml",
+      "sha256": "7d52e331e6298b89762ccbcd37bc6c350cb23357131ad1322c1a6b12b6afa928"
+    },
+    {
+      "path": "api-source/xml/batch-030.xml",
+      "sha256": "f2583782330127b8da1e5f8580e2b7ecd94a7855358ffa092dc35a1535b6ee48"
+    },
+    {
+      "path": "api-source/xml/batch-031.xml",
+      "sha256": "8172900b38557da298e25e22e6c911c3350008e48b21c56da726137140678197"
+    },
+    {
+      "path": "api-source/xml/batch-032.xml",
+      "sha256": "7ecc5be4ed92d67bba28767fcd25bfd3f170aa36019e4aff6461d9ff575dcbcc"
+    },
+    {
+      "path": "api-source/xml/batch-033.xml",
+      "sha256": "e22f3594380e2371e6236b032fd729dc182817a8f213ba79d167a96db72ce6dc"
+    },
+    {
+      "path": "board-invitation-link-fixtures.json",
+      "sha256": "1b3910d1d078de704b77f070d35d348ab07b188e826c4b6d24d9a8949a0ee1d0"
+    },
+    {
+      "path": "board-member-directory-fixture.json",
+      "sha256": "4218c5bad4097c447fc73b45bb34234d13be589092800a189b679a6832749ea9"
+    },
+    {
+      "path": "browser-evidence/artifacts/browser-performance/kanban.json",
+      "sha256": "ba1a4cf72a578a2bfe11a5b8c91113db327a049b50c61f701d6d5875420045c0"
+    },
+    {
+      "path": "browser-evidence/playwright-report/index.html",
+      "sha256": "1a5ba88b26bb7387272be6dd861f2afe8fa44ba6301ba75463d845e410835854"
+    },
+    {
+      "path": "browser-evidence/test-results/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+      "sha256": "f76eab4572c7ac4767034e1c531f55f680eb190de962f688b79c43ca977985e2"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+      "sha256": "819fea29d78f1244c9a96361b6b03abc21072e768d78217ab48956b7772639a7"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+      "sha256": "9152a161029a8a5d79c9959be3a6419838053f4194e70e41a30b0b4f671153af"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+      "sha256": "aacee9fd88d22554c14c841d63becb75687c988117fba9fd70f461fc6e3538b4"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+      "sha256": "b507626c0e7f37d9d88ee32c5ced2e5d1650a5240456d2a229108412931172f4"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+      "sha256": "a0ab5cdb2ce03ec15d01da024826be6435bc2bcee1fabad0b1684128e1c38887"
+    },
+    {
+      "path": "identity-provider.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "invitation-link-fixtures.json",
+      "sha256": "6e0a0376b17fe279797193ebaa2f851404f4082d328bf57c98b9ddf75a95e734"
+    },
+    {
+      "path": "invitation-signup-fixtures.json",
+      "sha256": "338f9fe1fa5b6e5c62cae84581b18e13874dbc0318926f0d6af1d9bd3a70be3b"
+    },
+    {
+      "path": "power-assertions.log",
+      "sha256": "5ef4f7034368ee28665f65100c123de527d30a59aa19434a54a7a1bcc78eac44"
+    },
+    {
+      "path": "power-history-start.log",
+      "sha256": "9329ecc517b18887c09d61558e047ebbc11d0bd1cbbbd48af6b4849865a7d390"
+    },
+    {
+      "path": "runtime-0.log",
+      "sha256": "bc613ed2dc1888fcd2b3b496b4a7202319f1784957791bb3b6faec0dd895445b"
+    },
+    {
+      "path": "runtime-1.log",
+      "sha256": "8dc60763da45e4459649ddbefab890612bf5941d22a278eae781b3faaa79962d"
+    },
+    {
+      "path": "runtime-10.log",
+      "sha256": "b78330166ffd996e6a423e22ae85ccc7ce416e8d61e2a0e4eb74d7e5c1b1c021"
+    },
+    {
+      "path": "runtime-11.log",
+      "sha256": "82ea932f86ad6519f407212a708b202c356e5fc71e43a7272c3902ab505fd897"
+    },
+    {
+      "path": "runtime-12.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime-13.log",
+      "sha256": "87660bc9860738ba4a7334b883e51f5716fbc58fbc11db11ac0f8e71e30b60c3"
+    },
+    {
+      "path": "runtime-14.log",
+      "sha256": "cc52f71f068242cf4d70bdc5627677d923457fb6aa23edba17f242133f853faf"
+    },
+    {
+      "path": "runtime-15.log",
+      "sha256": "3ba8e305c36da0c19c5a1005c945549f51f8679fb1e031d5c5ef1b162deff765"
+    },
+    {
+      "path": "runtime-16.log",
+      "sha256": "85d21d74667fcdbbf1c829e5e87ff18282085879b2e10d818db2a7458f2df920"
+    },
+    {
+      "path": "runtime-17.log",
+      "sha256": "f5cf46c5bd75e2d099acd0e85fe8b903553cf2daa2b214e6fb37d5644883ef88"
+    },
+    {
+      "path": "runtime-18.log",
+      "sha256": "2597a72e92aede7f900c0f6e2e01aff0577730450c1e15d07b24945805b072a1"
+    },
+    {
+      "path": "runtime-19.log",
+      "sha256": "56e1dc4dfee53f6859c0c8eb627fa8d426c3ce4b03adab7628cfcc739bf2bad5"
+    },
+    {
+      "path": "runtime-2.log",
+      "sha256": "e734c39b9311df9d0351f08a68fd91057ba67ec0a00df5fc09276be4188aaad3"
+    },
+    {
+      "path": "runtime-20.log",
+      "sha256": "d0891f71a4cfb5816cf9b18015bad6426e8be8b7a7b693adf586ded1306299cd"
+    },
+    {
+      "path": "runtime-21.log",
+      "sha256": "18469a82785f905a2c26d7ae213173279d1d0674c2f713dfd5e9863319b98d4e"
+    },
+    {
+      "path": "runtime-22.log",
+      "sha256": "53fd7cfa35e8150d01eb41113dadb015f6bf50f175465adab7bfe3f7b3da9a1b"
+    },
+    {
+      "path": "runtime-23.log",
+      "sha256": "6624b8e3d99efce92d0df8cbc38b686baf33e3b07ba7770188f2f54838e7b8af"
+    },
+    {
+      "path": "runtime-24.log",
+      "sha256": "eeb220b2f1ee47c8ac54981762d90d9e372e2f92473c27e60b86407037b13896"
+    },
+    {
+      "path": "runtime-25.log",
+      "sha256": "5a01acf2e7ea913402849698a004d99dcfdcbd6f9404c723b1f2e654d7927762"
+    },
+    {
+      "path": "runtime-26.log",
+      "sha256": "aa59265d1037c2e00cb50b18bb245a17e0a4d2e080aaee373c9f3efb6dd6aa5c"
+    },
+    {
+      "path": "runtime-27.log",
+      "sha256": "42f2183d7f767e9b5fa704de7d86b3639746b2ad829c4b0ac5541b8d6e8ba37e"
+    },
+    {
+      "path": "runtime-3.log",
+      "sha256": "95a656fe4237a0a14c5f83451da83f79ff9c4dc6e9d7ea55a978885f7d40bc01"
+    },
+    {
+      "path": "runtime-4.log",
+      "sha256": "1b2d1c758a2fdb920661c4c6ff7e80305c6a1e3175b109f161b3d9c379d4d120"
+    },
+    {
+      "path": "runtime-5.log",
+      "sha256": "4038ef4069552ad5d452b15890ec3ca8e4fd7f7fd7193d35f612ac1968f8501c"
+    },
+    {
+      "path": "runtime-6.log",
+      "sha256": "a661ca16221bb5a8f8865835d5a68bcdb240017b9d808b9a7101d79b0d347981"
+    },
+    {
+      "path": "runtime-7.log",
+      "sha256": "e1282c7ee74b3d0a49557c1d7235529d399f4b550f10afe2dd8badad64ca4266"
+    },
+    {
+      "path": "runtime-8.log",
+      "sha256": "cedd8054062e982a6e2316e4f56cee3d0814b4b48b6ce6bf0e67a0a364926047"
+    },
+    {
+      "path": "runtime-9.log",
+      "sha256": "e7fe50c9c60dbcc04fcea6a482dac3d6508fdc78737d63b6c579ec6c4bd76f4d"
+    }
+  ],
+  "retainedHistory": [
+    "Earlier failed source/toolchain/runtime checks and cancelled diagnostics remain distinct; see docs/development/local-first-evidence.md.",
+    "Native Mac API failures were retained. Linux API source tests are unchanged, in bounded fresh processes covering every discovered method; internal concurrency, deadlines and assertions remain unchanged."
+  ],
+  "limitations": [
+    "Existing skipped/deferred tests remain skipped; the web suite retains its existing 24 deferred large cases.",
+    "Local feature evidence does not qualify immutable release bundles, hosted required-ci/full-sanity, review, target-branch integration or product acceptance.",
+    "No two autonomous agents delivered product features; workflow contracts use two actual linked worktrees.",
+    "Earlier diagnostics included idle sleep; these measurements are not a controlled speed benchmark."
+  ]
+}

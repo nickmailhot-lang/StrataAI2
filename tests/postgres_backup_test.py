@@ -1,3 +1,4 @@
+from local_test_tools import test_bash
 import os
 import hashlib
 import json
@@ -21,7 +22,7 @@ class PostgresBackupTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.root = Path(tempfile.mkdtemp(prefix='strataai-backup-command-'))
-        cls.bash = 'C:/Program Files/Git/bin/bash.exe' if os.name == 'nt' else '/bin/bash'
+        cls.bash = test_bash()
         cls.repo = Path(__file__).resolve().parents[1]
         cls.script = cls.repo / 'scripts/backup-postgres.sh'
         command = 'MSYS_NO_PATHCONV=1 openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=backup-command-fixture -keyout fixture.key -out fixture.crt'

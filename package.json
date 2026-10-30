@@ -14,7 +14,12 @@
     "test": "npm --workspace @strataai/web run test --",
     "typecheck": "npm --workspace @strataai/web run typecheck",
     "typecheck:browser": "tsc -p tsconfig.browser.json",
-    "lint": "npm --workspace @strataai/web run lint"
+    "lint": "npm --workspace @strataai/web run lint",
+    "dev:doctor": "node scripts/local/doctor.mjs",
+    "dev:hooks": "node scripts/local/hooks.mjs install",
+    "dev:agents": "node scripts/local/agents.mjs",
+    "verify:local": "node scripts/local/verify.mjs",
+    "test:local": "node --test tests/local-workflow.test.mjs"
   },
   "engines": {
     "node": ">=24",

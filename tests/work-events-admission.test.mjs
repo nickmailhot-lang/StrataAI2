@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import test from 'node:test';
 
-const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+import { testBash as bash } from './local-test-tools.mjs';
 const source = readFileSync('scripts/ci/test-work-events.sh', 'utf8').replace(/\r\n/g, '\n');
 const end = source.indexOf('\nrequest() {');
 assert.ok(end > 0, 'Execute the actual driver through registration/login, before domain writes');

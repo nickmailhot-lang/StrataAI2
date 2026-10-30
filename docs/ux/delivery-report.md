@@ -2055,3 +2055,44 @@ Source 4a735fdcf00cb2e2ed964606a8bd9a9e637e7ec9 uses the existing request-observ
 Review found that a restored original refused with 409 could not bind its current source on refresh, leaving the preserved draft without a current comparison/revision. Counterfactuals retain 17 pass/1 fail on 9aa16602 and 18 pass/1 fail for the narrow existing-unit repair on 6161b3b5 (version-zero beyond-page record). Source 55ab8b571e25f01a7fcf550605b3ff91ad346b5b retains restored-version context and reads the stable ID only after definitive original refusal. Version-zero absence requires Owner/Admin and same-actor admission around the bounded 404; known existing-unit absence and other status/authority failures remain fail-closed. No pending original is overwritten, replayed automatically or acknowledged; only explicit Keep draft, new Review and Confirm issue a fresh key/current version.
 
 All 209 scoped source cases, application/browser types, lint, exact source web image and seven native built-web/Demo journeys pass. Native version-zero/one cases exercise a real concurrent writer and real 409, reload recovery, identical original key/body, preserved draft/current comparison and explicit fresh revision. Initial local browser type and short-revision build-input failures are retained separately from passing repairs. Historical run 40832081829 passed source/database/images/security, commands and corrected actual attachment foundation pipeline on superseded 9aa; no overall/new-source qualification inferred. Fresh complete hosted, release-bundle and local delivery qualification remain required. No parent or product acceptance is claimed; remaining Card relationships/filtering and Portal temporal work remain open.
+
+## Local-first developer workflow — 2026-10-29
+
+PRD-25-VS-02 gains three focused local-tooling tasks and linked tests. Native
+baseline source checks passed; the verifier, exact-tree hooks, atomic ownership
+registry, Linux persistence adapter and canonical feature-runtime adapter are
+implemented in the working tree. Final source identity/results come from the
+outside-tree verification receipt; hosted full qualification, independent review,
+integration and product acceptance remain separate and pending. This CLI-only
+change adds no product routes or schemas. See the implementation evidence record
+and local-first/multi-agent guides; no parent or MVP completion is claimed.
+
+### Local-first workflow: verified implementation (2026-10-30T03:11:40.882Z)
+
+Source 76b71472dcf24b907e7b1a9776159617b6041672, tested tree 89e102f29f7d77ef6ed8cf9bd9e2d591d2666739, passed the complete applicable local feature gate before commit. Evidence: [local-first result summary](../delivery/evidence/local-first-20261029.json). UXA-01–08 and UX-008 apply to the developer/reviewer pipeline: commands persist claims/receipts and return status and evidence. Product layout, responsive and visual UI gates are not applicable because this increment changes development tooling. Local workflow tasks/tests advance to Testing with append-only lifecycle history; acceptance criteria remain unverified pending hosted qualification, independent review and integration. Existing deferred tests remain separate from passing results. No parent PRD or MVP completion is claimed.
+
+For long runs on this Mac, use `caffeinate -isu npm run verify:local -- --base origin/main` to prevent idle sleep.
+
+### PR #132 review rework (2026-10-30T04:02:27.699Z)
+
+Linux CI failed because the UUID adapter was ignored by the .NET bin rule, while the local runtime referenced its live working-copy path. CodeQL also identified environment-derived paths reaching inline shell dispatch. The fix tracks only the adapter, uses its immutable snapshot copy, executes retained CI script files with argv paths, and adds clean-snapshot and metacharacter-path regression cases. Prior local results remain historical; the affected tasks/tests return to In Progress with failed CI evidence. Local/hosted reruns and review remain pending. Evidence: [PR #132 failure record](../delivery/evidence/pr132-ci-failures-20261030.json). No product UI, permission, retry or deadline change is introduced.
+
+### PR #132 corrected local qualification — 2026-10-30
+
+Implemented: corrected source b74366a1ccb73db5cba19ee81f3fec487d7125e5, exact tree 74cf85557cd59dd35f5b587d995707dd8f2b17ba; tracked UUID adapter and immutable runtime PATH, retained shell files passed as argv. Tested: all 17 final local stages passed in 50m24s: 747 repository contracts, 3074 web passes/24 existing skips, 1105 domain passes/3 existing skips, 1450 API passes/2 existing skips across all 676 methods, 306 Python contracts, full restricted persistence, runtime role/tenant/configuration/retention/abuse checks, and all 5 production Board browser cases. Original failures remain in the ledger. Accepted: hosted qualification and integration pending; no parent closure or product/MVP acceptance. User instructed that a separate reviewer should be deferred; source review continues in this chat. [Hashed sanitized evidence](../delivery/evidence/pr132-local-rerun-20261030.json).
+
+### PR #132 remaining CodeQL finding — 2026-10-30
+
+Hosted CodeQL at b74366a still reported alert 14 at generic process dispatch. The prior local full pass remains retained; it does not establish hosted security acceptance. Rework separates shell and tool execution and preserves closed child stdin using constant shell source text with a quoted positional script path. A diagnostic stdin alternative failed a child-consumption probe and was corrected before publication. Fresh local/hosted qualification remains pending; separate reviewer deferred at user request. [Retained finding and diagnosis](../delivery/evidence/pr132-codeql-rework-20261030.json).
+
+### PR #132 descriptor-dispatch qualification — 2026-10-30
+
+Implemented: 16e138c2bd6e578216fa7036cef7c8b7206587e9, tree d9e49094e61c4edb8b4548e1de196c661f1d07a5; dedicated fixed-argument Bash execution reads the retained script through read-only descriptor 3, preserves closed child stdin, and disables ambient startup files. Tested: all 17 final local stages passed in 50m13s; 747 repository contracts, 3074 web passes/24 existing skips, 1105 domain passes/3 existing skips, all 676 API methods with 1450 passes/2 existing skips, 306 Python contracts, restricted persistence and live role/tenant/invitation/configuration/retention/abuse checks, all 5 production Board browser cases. Local CodeQL 2.27.3/query pack 2.4.8 reports zero findings for the original query; an intermediate quoted-path version reported one, while an stdin alternative failed a child-consumption probe and was corrected before publication. All 16 workflow regressions pass on Linux. Reviewed: source and safety paths reviewed in this chat; user deferred a separate reviewer. Accepted: hosted full/security checks and integration remain pending; no parent or MVP acceptance claim. [Hashed local evidence](../delivery/evidence/pr132-local-stdin-20261030.json).
+
+### PR #132 test-fixture security rework — 2026-10-30
+
+Hosted CodeQL resolved the original shell-dispatch findings but reported improper code sanitization in the regression fixture’s generated JavaScript at tests/local-workflow.test.mjs:172. The fixture now imports the real module and passes ordinary values directly, preserving hostile inputs, overwrite refusal, child stdin, ambient startup refusal, timeout and failure assertions. All 16 targeted tests passed; complete local JavaScript CodeQL and final exact-tree verification are pending before publication. Prior functional passes remain historical evidence; no product/MVP acceptance. [Retained hosted finding](../delivery/evidence/pr132-test-codeql-20261030.json).
+
+### PR #132 direct-module fixture qualification — 2026-10-30
+
+Implemented: efa5f4b9d36205e3c7210d05740c97542c9db4ef, tree 6af87378da00ecab54c9f4d4f6347ad6103d258b; regression setup imports the actual module directly and preserves all security/refusal assertions. Tested: all 17 final local stages passed in 50m18s: 747 contracts, 3074 web passes/24 existing skips, 1105 domain passes/3 existing skips, all 676 API methods with 1450 passes/2 existing skips, 306 Python contracts, full restricted persistence and canonical runtime security/tenant/invitation/configuration/retention/abuse checks, and all 5 production browser cases. All 16 workflow regressions pass on clean Linux. Complete local JavaScript CodeQL ran 89 queries/87 rule records over all 689 JS/TS files with zero findings, including both reported rules. Reviewed: source review here; external reviewer deferred by user. Accepted: new-head hosted full/security checks and integration remain pending; no parent or product/MVP acceptance claim. [Hashed sanitized evidence](../delivery/evidence/pr132-local-fixture-20261030.json).

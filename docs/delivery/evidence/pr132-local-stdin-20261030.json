@@ -1,0 +1,955 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "16e138c2bd6e578216fa7036cef7c8b7206587e9",
+  "tree": "d9e49094e61c4edb8b4548e1de196c661f1d07a5",
+  "baseSha": "ff4c17121d3f66c43c7a3319914c7c6580ee1737",
+  "result": "Passed",
+  "mode": "final",
+  "runId": "1793337241783-2aa6c7b9",
+  "startedAt": "2026-10-30T05:14:01.784Z",
+  "completedAt": "2026-10-30T06:04:14.655Z",
+  "durationMs": 3012871,
+  "platform": "darwin",
+  "architecture": "arm64",
+  "runtimePlatform": "linux/amd64",
+  "stages": [
+    {
+      "name": "repository-contracts",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "tests/browser-performance.test.mjs",
+        "tests/browser-shards.test.mjs",
+        "tests/build-metadata.test.mjs",
+        "tests/delivery-progress.test.mjs",
+        "tests/feature-ci.test.mjs",
+        "tests/health-check.test.mjs",
+        "tests/https-certificate.test.mjs",
+        "tests/https-live-board.test.mjs",
+        "tests/https-recovery-cursor.test.mjs",
+        "tests/integration-suites.test.mjs",
+        "tests/local-workflow.test.mjs",
+        "tests/mail-outage-browser.test.mjs",
+        "tests/recipient-clock-browser.test.mjs",
+        "tests/release-bundle-startup.test.mjs",
+        "tests/release-database-outage.test.mjs",
+        "tests/release-demo-bundle-startup.test.mjs",
+        "tests/release-runtime.test.mjs",
+        "tests/ticket-dependencies.test.mjs",
+        "tests/web-architecture.test.mjs",
+        "tests/web-capacity-phase.test.mjs",
+        "tests/work-events-admission.test.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 120779,
+      "log": "0-repository-contracts.log",
+      "sha256": "7ad822229266c9c12f7ec48aaee0b89eb203cfc1a617b579569711907d30b88b"
+    },
+    {
+      "name": "ledger",
+      "command": [
+        "node",
+        "scripts/delivery-progress.mjs",
+        "validate",
+        "--base-ref",
+        "ff4c17121d3f66c43c7a3319914c7c6580ee1737"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 10176,
+      "log": "1-ledger.log",
+      "sha256": "335d1bbe9d24fbd0a27c0c69c603782fea32ff5f478ad0ffd2200dd6039f48cf"
+    },
+    {
+      "name": "integration-inventory",
+      "command": [
+        "node",
+        "scripts/ci/verify-integration-suites.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 87,
+      "log": "2-integration-inventory.log",
+      "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+    },
+    {
+      "name": "runtime-drift",
+      "command": [
+        "node",
+        "scripts/ci/generate-feature-runtime.mjs",
+        "--check"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 71,
+      "log": "3-runtime-drift.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "web-types",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 7223,
+      "log": "4-web-types.log",
+      "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+    },
+    {
+      "name": "browser-types",
+      "command": [
+        "npm",
+        "run",
+        "typecheck:browser"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 2067,
+      "log": "5-browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "name": "lint",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 4830,
+      "log": "6-lint.log",
+      "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+    },
+    {
+      "name": "web-unit",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "--maxWorkers=1"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 356419,
+      "log": "7-web-unit.log",
+      "sha256": "96de6ab99aa8b4b1681ce490584f4c57a8a53d0230fa5d8ca0828aead11ce89e"
+    },
+    {
+      "name": "web-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 8196,
+      "log": "8-web-build.log",
+      "sha256": "b5b1617bc68744dee9327fe6d5f6800d6ec803f1e9ab3d969d639813936ebdab"
+    },
+    {
+      "name": "dotnet-restore",
+      "command": [
+        "dotnet",
+        "restore",
+        "StrataAI2.slnx",
+        "--locked-mode"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 1223,
+      "log": "9-dotnet-restore.log",
+      "sha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce"
+    },
+    {
+      "name": "dotnet-build",
+      "command": [
+        "dotnet",
+        "build",
+        "StrataAI2.slnx",
+        "-c",
+        "Release",
+        "--no-restore",
+        "-warnaserror"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 22975,
+      "log": "10-dotnet-build.log",
+      "sha256": "55d0c8d1e53745a10fc5fed0905f5a487e441ed4e46a6f7a6acc07930c142895"
+    },
+    {
+      "name": "dotnet-Domain",
+      "command": [
+        "dotnet",
+        "test",
+        "--project",
+        "tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj",
+        "-c",
+        "Release",
+        "--no-build"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 2613,
+      "log": "11-dotnet-Domain.log",
+      "sha256": "51a0648326864993430543169629d8955d760a9a7b3bd46a7c1d08e4a1db7c6e"
+    },
+    {
+      "name": "dotnet-Api-linux",
+      "command": [
+        "node",
+        "scripts/local/source-tests.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 1121924,
+      "log": "12-dotnet-Api-linux.log",
+      "sha256": "78dd2a5b60b90a7ccdf7f408817687cee68ddd55e4841a865258f7e694c7c34b"
+    },
+    {
+      "name": "python-contracts",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "*_test.py"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 114467,
+      "log": "13-python-contracts.log",
+      "sha256": "99e4e3c4e04cd1ef0b6f461d079c7920e6157c3d3029e81e37df91e0ed0a6f1f"
+    },
+    {
+      "name": "secret-scan",
+      "command": [
+        "node",
+        "scripts/local/secret-scan.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 4824,
+      "log": "14-secret-scan.log",
+      "sha256": "6649287ac517f35a3f4fb11aa465d327aa47b81a4896d6e6d60abc22bec16294"
+    },
+    {
+      "name": "persistence",
+      "command": [
+        "node",
+        "scripts/local/persistence.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 168141,
+      "log": "15-persistence.log",
+      "sha256": "3277cf7d8801edfea2e8bd1ed82d341bea24fe51ae0371419482e062a1f73d28"
+    },
+    {
+      "name": "feature-runtime",
+      "command": [
+        "node",
+        "scripts/local/runtime.mjs"
+      ],
+      "passed": true,
+      "exitCode": 0,
+      "durationMs": 1065012,
+      "log": "16-feature-runtime.log",
+      "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "0-repository-contracts.log",
+      "sha256": "7ad822229266c9c12f7ec48aaee0b89eb203cfc1a617b579569711907d30b88b"
+    },
+    {
+      "path": "1-ledger.log",
+      "sha256": "335d1bbe9d24fbd0a27c0c69c603782fea32ff5f478ad0ffd2200dd6039f48cf"
+    },
+    {
+      "path": "10-dotnet-build.log",
+      "sha256": "55d0c8d1e53745a10fc5fed0905f5a487e441ed4e46a6f7a6acc07930c142895"
+    },
+    {
+      "path": "11-dotnet-Domain.log",
+      "sha256": "51a0648326864993430543169629d8955d760a9a7b3bd46a7c1d08e4a1db7c6e"
+    },
+    {
+      "path": "12-dotnet-Api-linux.log",
+      "sha256": "78dd2a5b60b90a7ccdf7f408817687cee68ddd55e4841a865258f7e694c7c34b"
+    },
+    {
+      "path": "13-python-contracts.log",
+      "sha256": "99e4e3c4e04cd1ef0b6f461d079c7920e6157c3d3029e81e37df91e0ed0a6f1f"
+    },
+    {
+      "path": "14-secret-scan.log",
+      "sha256": "6649287ac517f35a3f4fb11aa465d327aa47b81a4896d6e6d60abc22bec16294"
+    },
+    {
+      "path": "15-persistence.log",
+      "sha256": "3277cf7d8801edfea2e8bd1ed82d341bea24fe51ae0371419482e062a1f73d28"
+    },
+    {
+      "path": "16-feature-runtime.log",
+      "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+    },
+    {
+      "path": "2-integration-inventory.log",
+      "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+    },
+    {
+      "path": "3-runtime-drift.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "4-web-types.log",
+      "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+    },
+    {
+      "path": "5-browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "path": "6-lint.log",
+      "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+    },
+    {
+      "path": "7-web-unit.log",
+      "sha256": "96de6ab99aa8b4b1681ce490584f4c57a8a53d0230fa5d8ca0828aead11ce89e"
+    },
+    {
+      "path": "8-web-build.log",
+      "sha256": "b5b1617bc68744dee9327fe6d5f6800d6ec803f1e9ab3d969d639813936ebdab"
+    },
+    {
+      "path": "9-dotnet-restore.log",
+      "sha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce"
+    },
+    {
+      "path": "api-source/batch-000.log",
+      "sha256": "b862c8b96ee592f5159a298158ffb64af9710938ab268378c3af86ff83c1e0f0"
+    },
+    {
+      "path": "api-source/batch-001.log",
+      "sha256": "7c9f2383a6e7302f1ddee75fa3320cffbb218229d58fc00b972190aaa4e01ab5"
+    },
+    {
+      "path": "api-source/batch-002.log",
+      "sha256": "c672ed7d6cdabbded96f7677c8f612dbae4574bfd2efd3359a288d436fd13fc7"
+    },
+    {
+      "path": "api-source/batch-003.log",
+      "sha256": "6fe213b053b1a771652d4eb7f9282f98c442a2738ed26347f79c6821d90fae46"
+    },
+    {
+      "path": "api-source/batch-004.log",
+      "sha256": "7723994acc60fa8e2416db5c95197d3208757735a0752dacaab06346c5e8973e"
+    },
+    {
+      "path": "api-source/batch-005.log",
+      "sha256": "814e067dc1be1aedb8302c695fd89026a3bbd8890013da37a30433c4d3ee83ed"
+    },
+    {
+      "path": "api-source/batch-006.log",
+      "sha256": "337964b2f13ed517bd6618b0ed1ff19b63890c918d773d19bd8021104c72a40f"
+    },
+    {
+      "path": "api-source/batch-007.log",
+      "sha256": "11345d13a7543f383c38c0d0ab86f8d039e87bc42b149ff3ea3e40601a7329f8"
+    },
+    {
+      "path": "api-source/batch-008.log",
+      "sha256": "c8dabd1277f698e60d3b7221d0c9002313cc3ad9793636d62f0aba1d9c8ec3ee"
+    },
+    {
+      "path": "api-source/batch-009.log",
+      "sha256": "38acce5b480dee7b5cd5801e3bda5454f9b6ba58f388a45a405bd6e1a1d49688"
+    },
+    {
+      "path": "api-source/batch-010.log",
+      "sha256": "9422f4117837e66c9f1914daf0fc56fe597ebd2667611380e064ed660f4efd70"
+    },
+    {
+      "path": "api-source/batch-011.log",
+      "sha256": "cb25e2d6de9aa06d4e4faa9b6ed179a9be694fc44a385c6361ad93d443b8d94c"
+    },
+    {
+      "path": "api-source/batch-012.log",
+      "sha256": "d3b4114ce2a3b7ac92e358acd1494d6775cb93f2b478ff8323c0d884b5219198"
+    },
+    {
+      "path": "api-source/batch-013.log",
+      "sha256": "1cf9cb973a6071cdc0182636f823fc9c6984a5895a4b7b9b192cb4c9513bb9b0"
+    },
+    {
+      "path": "api-source/batch-014.log",
+      "sha256": "8abfb560087a61b7443ca54d0ae0d37d1598b08502494ea07dc42b933810afc9"
+    },
+    {
+      "path": "api-source/batch-015.log",
+      "sha256": "99ad0452dcf7fae95d7ab2fb954080bede1683e6b5250d93a1a1aa4c44443f86"
+    },
+    {
+      "path": "api-source/batch-016.log",
+      "sha256": "d32907a4aeea00d62906e8cc6625de2f1d4dce85027c95f27df0d2e1f442f858"
+    },
+    {
+      "path": "api-source/batch-017.log",
+      "sha256": "55f617c0b29f020f3cce9546aa5a9ea0abb28cab8c38efb815b92f5be72e5f11"
+    },
+    {
+      "path": "api-source/batch-018.log",
+      "sha256": "3fa31a79d9435be34780c372fcac9173c31c4e35966efce35f25908797f717cd"
+    },
+    {
+      "path": "api-source/batch-019.log",
+      "sha256": "d5ff62ef343300f2952bf77f126d385a5564e0ad9085a52336f73fb22b724034"
+    },
+    {
+      "path": "api-source/batch-020.log",
+      "sha256": "2ebe0e930ce95468e65ca0b9934d21d9bb186efd7271f723777757257018912a"
+    },
+    {
+      "path": "api-source/batch-021.log",
+      "sha256": "475971d4b643fe095e684826fbb23a0865a5f9a37c146edf642ca9cfdbb35312"
+    },
+    {
+      "path": "api-source/batch-022.log",
+      "sha256": "9bf60c0789fa290966db86299cf4dca073173f1e16934e7b24c59ade965f4180"
+    },
+    {
+      "path": "api-source/batch-023.log",
+      "sha256": "f8a43c7428202b6c80f562cee8940052e79062afed8ce6df0f4fbda7030fc510"
+    },
+    {
+      "path": "api-source/batch-024.log",
+      "sha256": "82256734a00063b0a3a2d045de73a8790878019edc7fd0b69e21b6a640f0ed53"
+    },
+    {
+      "path": "api-source/batch-025.log",
+      "sha256": "df0705929ffc204c5f1409811b3f43b9c03ddf33e22e0e29a9f2749efdd3712b"
+    },
+    {
+      "path": "api-source/batch-026.log",
+      "sha256": "b102b4ef4709059b75e4de95c04d6f68b38b5d7fc2f2c6a6bdc01f49ed24e886"
+    },
+    {
+      "path": "api-source/batch-027.log",
+      "sha256": "f61044f1bc57a9c004803b2e061cfeac83e22054b96080fc51af14dabc59b5f9"
+    },
+    {
+      "path": "api-source/batch-028.log",
+      "sha256": "81581cd7d4e02d88ad9a9f677c5ef7d6e2f81575bc4878d4ab7dc3ab2ca6ab27"
+    },
+    {
+      "path": "api-source/batch-029.log",
+      "sha256": "df8bafdeb1c3356787150bedd69e529274d1012815a1416cafa7b3c279146bda"
+    },
+    {
+      "path": "api-source/batch-030.log",
+      "sha256": "5d93d843850b008cedb310a8ffcaae918d2dc8c8e60d718cb9eb778fd254271e"
+    },
+    {
+      "path": "api-source/batch-031.log",
+      "sha256": "45a12008663bd5758c9cecf74a0958722db67edde35227b35a809a4ea77df123"
+    },
+    {
+      "path": "api-source/batch-032.log",
+      "sha256": "06e8afefd950b2f459f67135d307028f38b79cc068020a9022d5c2d12856f7b6"
+    },
+    {
+      "path": "api-source/batch-033.log",
+      "sha256": "4b16d4fd377966ca6f0c7ce7dc753c90e290ac21242f1bf01db4c5816f3a6c86"
+    },
+    {
+      "path": "api-source/build.log",
+      "sha256": "a3ecb4e1026e0760285fc3860a0b27fc5f004a6060de6a5300ee5849367ad698"
+    },
+    {
+      "path": "api-source/discovery.json",
+      "sha256": "d5626251ccf104fab514518dbb38e633b5d5d50237fba9cce91b0502a594b20b"
+    },
+    {
+      "path": "api-source/inputs.json",
+      "sha256": "b9add3866209daf0ed36732730a39ad2b2d14150a7134799361b79b4261458ad"
+    },
+    {
+      "path": "api-source/inventory.json",
+      "sha256": "528353177467cb750d17341d6dec791c02cdb6a9f93d519dfefaf89a5d25d8a9"
+    },
+    {
+      "path": "api-source/summary.json",
+      "sha256": "1c61cf57cb9272219beb99437fc13a6cce590cffb7ae954af25e9387547630f4"
+    },
+    {
+      "path": "api-source/xml/batch-000.xml",
+      "sha256": "e4c79bd976fddd9973e55adb7a6fdbaa33cb4394e929a60c6dc3f46226bc577f"
+    },
+    {
+      "path": "api-source/xml/batch-001.xml",
+      "sha256": "087f132bec8ee330498edc7dc3a3fb11f457ea0187a78122692a477a1eede8b1"
+    },
+    {
+      "path": "api-source/xml/batch-002.xml",
+      "sha256": "18619b7d6fc05861d798fa11f9129bc78cc794f4b2f9f7b9c116d6b87732cab9"
+    },
+    {
+      "path": "api-source/xml/batch-003.xml",
+      "sha256": "4260abb13cdcaf1fdcfffd0184bd9470bb208448a7be7490f0690ba26ea7c02f"
+    },
+    {
+      "path": "api-source/xml/batch-004.xml",
+      "sha256": "45c88dcfbb0f8451a9d21822809e5b7b332f0ae9416f6974eba599ec41daae4c"
+    },
+    {
+      "path": "api-source/xml/batch-005.xml",
+      "sha256": "fcc82f806430f869bf0c917b50973943159e1cb83e7f689c0cb7b0bb183a22d7"
+    },
+    {
+      "path": "api-source/xml/batch-006.xml",
+      "sha256": "89851f6291e5052a2f3e461fc9c3200d5b76806e2839a9636895e302fbec3c9b"
+    },
+    {
+      "path": "api-source/xml/batch-007.xml",
+      "sha256": "ae3d97ec3f1d1d3d498b7dc32ee9f74724d42b56384aaf69d1e2dd0a31cbda46"
+    },
+    {
+      "path": "api-source/xml/batch-008.xml",
+      "sha256": "11489d588cdf372a3df28b7545ea30b384a406140369e0fa17d14924cd16bf96"
+    },
+    {
+      "path": "api-source/xml/batch-009.xml",
+      "sha256": "9c312575c1fc60abb10d3ccff76f10a42abf2cf2e97f0a463f96cef60cf0557e"
+    },
+    {
+      "path": "api-source/xml/batch-010.xml",
+      "sha256": "1f9799efeb4214078c41f82fc54b5be40eadbde8d3b9efbee16ba2b38fa7aa7c"
+    },
+    {
+      "path": "api-source/xml/batch-011.xml",
+      "sha256": "17b0091e5f860a772a230e4086d8def65a6afe8fa8305afdb8950a09b763b249"
+    },
+    {
+      "path": "api-source/xml/batch-012.xml",
+      "sha256": "9b7a5cc016d74d4bc855c6523412b3b45835d4387dbb69b20324fd3a9ad56be6"
+    },
+    {
+      "path": "api-source/xml/batch-013.xml",
+      "sha256": "3fe4c28769a3740801cddd0671d8f23cfc6bbdcdb89a7edb94e2d5b71e1ed32f"
+    },
+    {
+      "path": "api-source/xml/batch-014.xml",
+      "sha256": "7212e99456b76c2ef6034a2e9f9b3db1cd0081c98207acdeadaa00ceb0dd2ca5"
+    },
+    {
+      "path": "api-source/xml/batch-015.xml",
+      "sha256": "ac50eccfc6f16cff87089a93e77f589bc919de627a8d8166535e31da3626e976"
+    },
+    {
+      "path": "api-source/xml/batch-016.xml",
+      "sha256": "576e9c29026248c722bceaf083de6dbb5c372162faf15eb138ca55c72bd324f8"
+    },
+    {
+      "path": "api-source/xml/batch-017.xml",
+      "sha256": "ab0e4f4dd6a12a3ad81c779893f8f984c3e72d9f05ebf5c0bb27bf525f957a5e"
+    },
+    {
+      "path": "api-source/xml/batch-018.xml",
+      "sha256": "6cf2b780eb7c59dd4e40feb1cf8e30fd74c210df56b1a1cdb9e6417a43ae4c36"
+    },
+    {
+      "path": "api-source/xml/batch-019.xml",
+      "sha256": "65bad48a552b862d7e01d6b6e4972a3208be9d28919266e107a5ed5717666eb0"
+    },
+    {
+      "path": "api-source/xml/batch-020.xml",
+      "sha256": "65a6b5027779ce82675879c625f89a31bce7c52e3d43118d57fe78ae494759c5"
+    },
+    {
+      "path": "api-source/xml/batch-021.xml",
+      "sha256": "592c80ec077bf902bab7aee681301491c66219a4ed3b1ab1dbbbf199b166600b"
+    },
+    {
+      "path": "api-source/xml/batch-022.xml",
+      "sha256": "0117da85706ff46ceb6297eb990b7b04281f86aefe8caa938791f0d4b575b04c"
+    },
+    {
+      "path": "api-source/xml/batch-023.xml",
+      "sha256": "7454ec7332a79616f4b7210d03225f1966c703c76c04467bad7da84b1c943f4a"
+    },
+    {
+      "path": "api-source/xml/batch-024.xml",
+      "sha256": "e29094c23af949df945ac5dc5cf56acaf64158053fc0975ca6a5930cf77faab9"
+    },
+    {
+      "path": "api-source/xml/batch-025.xml",
+      "sha256": "76017da825899b982a4b5749898236711ff7f1c761051becbf9b5188812ef802"
+    },
+    {
+      "path": "api-source/xml/batch-026.xml",
+      "sha256": "0999082ac74c6bbf953f2d668f4370e121c834a02968e2fc4ddab024b9de62fa"
+    },
+    {
+      "path": "api-source/xml/batch-027.xml",
+      "sha256": "68875d16fb66f03a5872fd25f1c588ef64d90428ae8a442bf7a97cf52ee40d19"
+    },
+    {
+      "path": "api-source/xml/batch-028.xml",
+      "sha256": "3a4d343b1ef8cafb1050cd92a0b51a635c8ace2f2ceaa2ee8d04db0c61d19113"
+    },
+    {
+      "path": "api-source/xml/batch-029.xml",
+      "sha256": "830d0157def135d22f36e074d58c083381b66a2afba00716f7871baee3e4ae0b"
+    },
+    {
+      "path": "api-source/xml/batch-030.xml",
+      "sha256": "63825c27c7d63f155232b8171314bf74372e3633e77f4024e8627bc2f7a9b9b0"
+    },
+    {
+      "path": "api-source/xml/batch-031.xml",
+      "sha256": "a5237af6f7db248f4a7387b5480fe0bb9100f143392b5739afc90c1cefd29261"
+    },
+    {
+      "path": "api-source/xml/batch-032.xml",
+      "sha256": "df918554a4a35beae84feff95d29a736aa96be642686ce46839e563600835ef0"
+    },
+    {
+      "path": "api-source/xml/batch-033.xml",
+      "sha256": "6ed77be7a894ab62f37f7b79f3a523cee36bf0e8037479174dfb10c90b63133f"
+    },
+    {
+      "path": "board-invitation-link-fixtures.json",
+      "sha256": "444f77594920cd143eb714baf7908af02c59273fbaf92f8bd605df711beb27d9"
+    },
+    {
+      "path": "board-member-directory-fixture.json",
+      "sha256": "e1ace2cf018cebea4315999c55700f207eb061309e9d610295774145cc30749e"
+    },
+    {
+      "path": "browser-evidence/artifacts/browser-performance/kanban.json",
+      "sha256": "8875c337496029146edea90138e106203448808d38ea9e8288c62fac53823a2b"
+    },
+    {
+      "path": "browser-evidence/playwright-report/index.html",
+      "sha256": "213473f1fdfebeffd4cdeee533a15032368ccae19988185e56789d709c634cdb"
+    },
+    {
+      "path": "browser-evidence/test-results/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+      "sha256": "0b755c652b4549ee46998589f32e2aa0c3eca738c7f32bff60a17359a81214c1"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+      "sha256": "819fea29d78f1244c9a96361b6b03abc21072e768d78217ab48956b7772639a7"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+      "sha256": "9112b710f1d0d568b98fd108ab97177fa6fd3e8e9b88a7d925882eddca9381a3"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+      "sha256": "2340462488512ba91aea8e561813168fa624c19ca8271d942420e1c19f2b1f2c"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+      "sha256": "b507626c0e7f37d9d88ee32c5ced2e5d1650a5240456d2a229108412931172f4"
+    },
+    {
+      "path": "browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+      "sha256": "a0ab5cdb2ce03ec15d01da024826be6435bc2bcee1fabad0b1684128e1c38887"
+    },
+    {
+      "path": "identity-provider.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "invitation-link-fixtures.json",
+      "sha256": "8c536d3b3a092db65879510f88f80057412a924c107bd63341fb37ec223e302a"
+    },
+    {
+      "path": "invitation-signup-fixtures.json",
+      "sha256": "13a24a60bf341299b7cf4df2d122e6332b97639da8b9697bce1dd18c081b5fbc"
+    },
+    {
+      "path": "runtime-0.log",
+      "sha256": "2f9fc6105219d9b5ec39de48a4851183ca313fa271218ee184c033e409fb9d76"
+    },
+    {
+      "path": "runtime-1.log",
+      "sha256": "86ef68d84f344de6542a584649226781a7a0721025f396e86c93a14a714b6a28"
+    },
+    {
+      "path": "runtime-10.log",
+      "sha256": "b78330166ffd996e6a423e22ae85ccc7ce416e8d61e2a0e4eb74d7e5c1b1c021"
+    },
+    {
+      "path": "runtime-10.sh",
+      "sha256": "b4d5838a477e57b0190012e969131056803c2b621b58465235403d7ee300f222"
+    },
+    {
+      "path": "runtime-11.log",
+      "sha256": "82ea932f86ad6519f407212a708b202c356e5fc71e43a7272c3902ab505fd897"
+    },
+    {
+      "path": "runtime-11.sh",
+      "sha256": "b5e290e2debe34b0943ae7b15e700d4d0d674bd66ca63a17b3172c22d0792bdd"
+    },
+    {
+      "path": "runtime-12.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime-12.sh",
+      "sha256": "256f5e71a8f66210943900c91a55f3c1715128f79df577a59de6cc3db163d1a0"
+    },
+    {
+      "path": "runtime-13.log",
+      "sha256": "5dff584398fe69876cadf41fe3bd3d5b35e5370a553fcfed458e126cd9a42124"
+    },
+    {
+      "path": "runtime-13.sh",
+      "sha256": "6d31c5ee014e79fff34b6d38c98a6cf4961375bb79aa33cb11429bf9eb9dc3db"
+    },
+    {
+      "path": "runtime-14.log",
+      "sha256": "b8003f83265fe8cc378482ec2e3845bcc12125c3414bfac043dc5dc7bf29d373"
+    },
+    {
+      "path": "runtime-14.sh",
+      "sha256": "578195dc202cfa64d8a11bbf87618c126aed50bcba286f90468b4f7ffb840232"
+    },
+    {
+      "path": "runtime-15.log",
+      "sha256": "3b2a3e0f8cd3fbd859437c5816e6dd7e663bbb8366c0fb7852aa645dbe8a5bf5"
+    },
+    {
+      "path": "runtime-15.sh",
+      "sha256": "5ffe23e318f597981e651c6a13ea75ce5245bc1b9322d2135ce39a1f647ef82d"
+    },
+    {
+      "path": "runtime-16.log",
+      "sha256": "85d21d74667fcdbbf1c829e5e87ff18282085879b2e10d818db2a7458f2df920"
+    },
+    {
+      "path": "runtime-16.sh",
+      "sha256": "6240bf6f1ffa778b6795316d9a1fc8184a4409636a5dd87494e723696accda87"
+    },
+    {
+      "path": "runtime-17.log",
+      "sha256": "f5cf46c5bd75e2d099acd0e85fe8b903553cf2daa2b214e6fb37d5644883ef88"
+    },
+    {
+      "path": "runtime-17.sh",
+      "sha256": "3f12c62c33ec3cc77097fc89f4782b7ad00bf52be4041d2308169cee8f10f578"
+    },
+    {
+      "path": "runtime-18.log",
+      "sha256": "2597a72e92aede7f900c0f6e2e01aff0577730450c1e15d07b24945805b072a1"
+    },
+    {
+      "path": "runtime-18.sh",
+      "sha256": "3b0d2629e4c84002bf60ba0f629c1c591b2d97893cee422b0804e77f9fcc3223"
+    },
+    {
+      "path": "runtime-19.log",
+      "sha256": "56e1dc4dfee53f6859c0c8eb627fa8d426c3ce4b03adab7628cfcc739bf2bad5"
+    },
+    {
+      "path": "runtime-19.sh",
+      "sha256": "a9edbf008cadab6b96900f77f1d9e029abad959a0f29b30df49307e7fd216cd4"
+    },
+    {
+      "path": "runtime-2.log",
+      "sha256": "fd2248237e4de06ad035d8b9b910a52995230a1fab70ac303bfa8048e0675cc2"
+    },
+    {
+      "path": "runtime-20.log",
+      "sha256": "d0891f71a4cfb5816cf9b18015bad6426e8be8b7a7b693adf586ded1306299cd"
+    },
+    {
+      "path": "runtime-20.sh",
+      "sha256": "a6dff798120c9ea5df54a0d2a4410c5aa0b58beba6840abbd13b8af1cfbccf55"
+    },
+    {
+      "path": "runtime-21.log",
+      "sha256": "3751a01d50f448e096a276c5f3e12e14220e53f2ae79b9f641a3ccffb5301540"
+    },
+    {
+      "path": "runtime-21.sh",
+      "sha256": "58b5183e631e64c10f89c37cd5b2c3705f9158386b417810e14867b74fc752d4"
+    },
+    {
+      "path": "runtime-22.log",
+      "sha256": "11957e6ab4fa0169e85a166e28f0ed9f15d174865b8885ac30e524ab52733efd"
+    },
+    {
+      "path": "runtime-22.sh",
+      "sha256": "7ac9027d72de2d780e510d7e0bb45319ccd2250948c2e361c911d6f3dc927fdd"
+    },
+    {
+      "path": "runtime-23.log",
+      "sha256": "291fcea705b5cc46ee79970284e44d60816ef4c76775dbe8037d8416b9d42666"
+    },
+    {
+      "path": "runtime-23.sh",
+      "sha256": "6d0a4ca466a53b91274601c5db385d92e843133b3dad79e43248f47cf1da6a3c"
+    },
+    {
+      "path": "runtime-24.log",
+      "sha256": "5a110f30392771c27797bf5193b7bdb31e374303bc122a809a0906c0755a412d"
+    },
+    {
+      "path": "runtime-24.sh",
+      "sha256": "af0293cfa6c6cc03fce06761bc47a8ecf154b43f36e01cf74469113dd48b74a9"
+    },
+    {
+      "path": "runtime-25.log",
+      "sha256": "5a01acf2e7ea913402849698a004d99dcfdcbd6f9404c723b1f2e654d7927762"
+    },
+    {
+      "path": "runtime-25.sh",
+      "sha256": "cedf95ad58535aff1edbad2e2bf505088761948e804b23e4252a0f13f64f4863"
+    },
+    {
+      "path": "runtime-26.log",
+      "sha256": "2466dbc90c7ba1fc70f921b6022a4ec46e6ddee9d2f211f2a787b8511bbbf3a9"
+    },
+    {
+      "path": "runtime-27.log",
+      "sha256": "b11a70a63b8c10afe53b7a478df4167a025a004de5d77314649ed1b487ced03e"
+    },
+    {
+      "path": "runtime-3.log",
+      "sha256": "95a656fe4237a0a14c5f83451da83f79ff9c4dc6e9d7ea55a978885f7d40bc01"
+    },
+    {
+      "path": "runtime-4.log",
+      "sha256": "b04d62096811fbc7b6ffacb22bf9bf4ce9a044cea1edafe256040166ae12e06a"
+    },
+    {
+      "path": "runtime-4.sh",
+      "sha256": "38b70d24fa5e686470a243112d5d72d9ddb11de6b311c44100116dcbbb0bc507"
+    },
+    {
+      "path": "runtime-5.log",
+      "sha256": "4038ef4069552ad5d452b15890ec3ca8e4fd7f7fd7193d35f612ac1968f8501c"
+    },
+    {
+      "path": "runtime-5.sh",
+      "sha256": "194df8b0951f9636b0a10ad9bc5706ed021066a81ca93dbcf26a73de22c5194c"
+    },
+    {
+      "path": "runtime-6.log",
+      "sha256": "a661ca16221bb5a8f8865835d5a68bcdb240017b9d808b9a7101d79b0d347981"
+    },
+    {
+      "path": "runtime-6.sh",
+      "sha256": "32078c14ac6aa40c10e4afeece6aadd4a47f874640aa34926d28370b8912dbf8"
+    },
+    {
+      "path": "runtime-7.log",
+      "sha256": "e1282c7ee74b3d0a49557c1d7235529d399f4b550f10afe2dd8badad64ca4266"
+    },
+    {
+      "path": "runtime-7.sh",
+      "sha256": "d4abbbaa1cf6c3551de2c71725fee9e36ab54214dabb17189ce8ecf48c1fca53"
+    },
+    {
+      "path": "runtime-8.log",
+      "sha256": "cedd8054062e982a6e2316e4f56cee3d0814b4b48b6ce6bf0e67a0a364926047"
+    },
+    {
+      "path": "runtime-8.sh",
+      "sha256": "9f772c2092618812430c686adda160ca85bc7ced7544863914f9ee19bb4a666e"
+    },
+    {
+      "path": "runtime-9.log",
+      "sha256": "e7fe50c9c60dbcc04fcea6a482dac3d6508fdc78737d63b6c579ec6c4bd76f4d"
+    },
+    {
+      "path": "runtime-9.sh",
+      "sha256": "140b1ecefb6d3f84e8f97f0db4c25d034b799feba2d9a8b64e2a48e10a843760"
+    }
+  ],
+  "counts": {
+    "repository": {
+      "passed": 747,
+      "failed": 0,
+      "skipped": 0
+    },
+    "localWorkflow": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    "web": {
+      "passed": 3074,
+      "skipped": 24
+    },
+    "domain": {
+      "passed": 1105,
+      "skipped": 3
+    },
+    "api": {
+      "methods": 676,
+      "batches": 34,
+      "passed": 1450,
+      "skipped": 2
+    },
+    "python": {
+      "passed": 306
+    },
+    "browser": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "localCodeQL": {
+    "cli": "2.27.3",
+    "queryPack": "codeql/javascript-queries@2.4.8",
+    "query": "js/shell-command-injection-from-environment",
+    "sourceTree": "fc0cf15fc3cd415f327fa1e6e3ff5825817bbad7",
+    "executableSourcesMatchFinalTree": true,
+    "findings": 0,
+    "sarifSha256": "9d2e3ed1eb98d5b54c00f6e3fc9c155e295eb8faf956566c368adab365ea3c9a",
+    "positiveDiagnostic": {
+      "findings": 1,
+      "sarifSha256": "781be289f07f9dd0ccba4530ba853925fdaca0b0b438d6c4fb515223e3917847"
+    },
+    "discardedStdinAlternative": {
+      "findings": 0,
+      "behavior": "A child cat consumed subsequent script text; corrected before publication.",
+      "sarifSha256": "c6518d0d1ea4ebebe25d06efb818c38dc35bfa984754bf05f0c69600d41eefbf"
+    },
+    "qualification": "Targeted local query evidence only; hosted full CodeQL remains required."
+  },
+  "linuxWorkflowContracts": {
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "scope": "Clean candidate, including hostile filename/env, child stdin, ambient shell startup refusal, timeout and failure propagation."
+  },
+  "correction": "Dedicated shell process receives only static arguments, reads retained script on read-only fd 3, keeps child stdin closed and disables ambient shell startup scripts. Generic tool dispatch never receives shell invocations.",
+  "review": "Source review completed in this chat; separate reviewer deferred at user request. Hosted qualification and target integration remain pending.",
+  "retainedFailureEvidence": [
+    "docs/delivery/evidence/pr132-ci-failures-20261030.json",
+    "docs/delivery/evidence/pr132-codeql-rework-20261030.json"
+  ],
+  "qualification": "Local feature evidence only; required-ci and exact-revision full release qualification remain required."
+}

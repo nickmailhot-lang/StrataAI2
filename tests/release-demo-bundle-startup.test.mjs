@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
 const script = resolve('scripts/ci/test-release-demo-bundle-startup.sh');
-const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+import { testBash as bash } from './local-test-tools.mjs';
 function fixture(check) {
   const root = mkdtempSync(join(tmpdir(), 'strataai-demo-bundle-test-'));
   try {
