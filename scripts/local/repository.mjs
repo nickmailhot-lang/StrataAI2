@@ -1,7 +1,7 @@
 import { tmpdir } from 'node:os';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, renameSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, renameSync, openSync, closeSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { selectImpact, policy } from '../ci/select-feature-tests.mjs';
 import { readdirSync } from 'node:fs';
@@ -61,6 +61,20 @@ export function writeShellStep(directory, name, body) {
   const path = join(directory, `${name}.sh`);
   writeFileSync(path, body, { mode: 0o600, flag: 'wx' });
   return path;
+}
+// The shell receives a static descriptor path, with the retained script opened
+// read-only on fd 3. Child stdin stays closed, and no environment-derived path or
+// body enters shell command arguments. Ignore ambient shell startup scripts.
+export function executeShellStep(script, options = {}) {
+  const stdio = options.stdio ?? ['ignore', 'pipe', 'pipe'];
+  if (!Array.isArray(stdio) || stdio.length !== 3 || stdio[0] !== 'ignore') throw new Error('Shell step requires closed child stdin');
+  const fd = openSync(script, 'r');
+  try {
+    return spawnSync('bash', ['--noprofile', '--norc', '-euo', 'pipefail', '/dev/fd/3'], {
+      ...options, shell: false, stdio: [...stdio, fd], input: undefined,
+      env: { ...process.env, ...options.env, BASH_ENV: '', ENV: '' },
+    });
+  } finally { closeSync(fd); }
 }
 export function withLock(path, action) {
   mkdirSync(path); // EEXIST refuses concurrent ownership; never steal stale locks.

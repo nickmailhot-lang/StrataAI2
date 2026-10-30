@@ -149,18 +149,28 @@ test('UUID adapter survives a clean snapshot while generated bin output stays ig
  }finally{if(copied)rmSync(copied,{recursive:true,force:true});f.cleanup();}
 });
 
-test('retained shell files keep hostile paths and environment values as data and propagate failure',()=>{
+test('dedicated shell dispatch keeps hostile paths and environment values as data and propagates failure',()=>{
  const f=fixture();try{
-  const directory=join(f.root,'steps ; touch marker ; #');mkdirSync(directory);
+  const directory=join(f.root,'steps ; touch marker ; # $(touch marker) `touch marker` "quoted"');mkdirSync(directory);
   const expression=`m.writeShellStep(${JSON.stringify(directory)},'step-0',${JSON.stringify('printf \'%s\' "$CASE_VALUE"\n')})`;
   const path=f.invoke('repository.mjs',expression);
   const value='literal $(touch marker) `touch marker`; "quotes"';
-  const r=spawnSync('bash',['-euo','pipefail',path],{cwd:f.root,encoding:'utf8',env:{...process.env,CASE_VALUE:value}});
+  const r=f.invoke('repository.mjs',`m.executeShellStep(${JSON.stringify(path)},{cwd:${JSON.stringify(f.root)},encoding:'utf8',env:{...process.env,CASE_VALUE:${JSON.stringify(value)}}})`);
   assert.equal(r.status,0,r.stderr);assert.equal(r.stdout,value);assert.equal(existsSync(join(f.root,'marker')),false);
+  const startup=join(f.root,'ambient.sh');writeFileSync(startup,'touch marker\n');
+  const ambient=f.invoke('repository.mjs',`m.executeShellStep(${JSON.stringify(path)},{cwd:${JSON.stringify(f.root)},encoding:'utf8',env:{...process.env,CASE_VALUE:${JSON.stringify(value)},BASH_ENV:${JSON.stringify(startup)}}})`);
+  assert.equal(ambient.status,0);assert.equal(ambient.stdout,value);assert.equal(existsSync(join(f.root,'marker')),false);
   const overwrite=f.script(`import * as m from ${JSON.stringify(pathToFileURL(join(source,'repository.mjs')).href)}; ${expression};`);
   assert.notEqual(overwrite.status,0);assert.match(overwrite.stderr,/EEXIST/);
   const failure=f.invoke('repository.mjs',`m.writeShellStep(${JSON.stringify(directory)},'step-1','exit 17\\n')`);
-  assert.equal(spawnSync('bash',['-euo','pipefail',failure],{cwd:f.root}).status,17);
+  assert.equal(f.invoke('repository.mjs',`m.executeShellStep(${JSON.stringify(failure)},{cwd:${JSON.stringify(f.root)}})`).status,17);
+  const invalid=f.script(`import * as m from ${JSON.stringify(pathToFileURL(join(source,'repository.mjs')).href)}; m.executeShellStep(${JSON.stringify(path)},{stdio:'ignore'});`);
+  assert.notEqual(invalid.status,0);assert.match(invalid.stderr,/requires closed child stdin/);
+  const consuming=f.invoke('repository.mjs',`m.writeShellStep(${JSON.stringify(directory)},'step-stdin',${JSON.stringify('cat >/dev/null\n'+'\n'.repeat(20000)+'printf finished\n')})`);
+  assert.equal(f.invoke('repository.mjs',`m.executeShellStep(${JSON.stringify(consuming)},{encoding:'utf8'})`).stdout,'finished');
+  const delayed=f.invoke('repository.mjs',`m.writeShellStep(${JSON.stringify(directory)},'step-2','sleep 5\\n')`);
+  const timeout=f.invoke('repository.mjs',`(()=>{const r=m.executeShellStep(${JSON.stringify(delayed)},{timeout:50});return {status:r.status,error:r.error?.code};})()`);
+  assert.equal(timeout.status,null);assert.equal(timeout.error,'ETIMEDOUT');
  }finally{f.cleanup();}
 });
 

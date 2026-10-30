@@ -122,3 +122,15 @@ values, refuses script overwrites and propagates nonzero shell status. Original
 CI failure details are preserved in
 `docs/delivery/evidence/pr132-ci-failures-20261030.json`. Fresh exact-tree local,
 hosted security/full checks and review are required before integration.
+
+The next hosted CodeQL run still flagged generic dispatch after the first script-file correction. Shell execution is now separate from ordinary tool dispatch, with constant `source "$1"` text and a quoted positional script path. Child stdin stays closed: a local probe showed that piping whole scripts through stdin can let a child consume later commands. Regression coverage preserves EOF for child input, literal hostile paths/values, timeout and failure status. Prior full passing evidence remains bound to its original tree; new code requires fresh local and hosted qualification.
+
+Local CodeQL also flagged the quoted positional-path version. The final dedicated
+runner passes only static Bash arguments and opens the retained script read-only
+on descriptor 3 (`/dev/fd/3`). Child stdin remains closed; ambient BASH_ENV/ENV
+startup files are disabled. The regression includes literal shell metacharacters
+in the path, hostile startup configuration, child stdin consumption, timeouts and
+nonzero exit status. Intermediate local analyses and failed alternatives remain
+separate diagnostics; no suppression or security-query change was introduced.
+
+Local CodeQL CLI 2.27.3 with codeql/javascript-queries 2.4.8 ran the unchanged js/shell-command-injection-from-environment query: the quoted-path diagnostic reported 1 finding; descriptor dispatch reported 0. Descriptor source snapshot: fc0cf15fc3cd415f327fa1e6e3ff5825817bbad7; SARIF SHA-256 9d2e3ed1eb98d5b54c00f6e3fc9c155e295eb8faf956566c368adab365ea3c9a. The 16 workflow contracts also passed on clean Linux in 3.3s, including ambient startup refusal and child stdin/timeout checks. This targeted security proof precedes the final exact-tree gate and does not replace hosted CodeQL.

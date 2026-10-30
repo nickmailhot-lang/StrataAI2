@@ -5,7 +5,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { parse } from 'yaml';
-import { context, withLock, snapshot, materialize, localRuntimeEnvironment, writeShellStep } from './repository.mjs';
+import { context, withLock, snapshot, materialize, localRuntimeEnvironment, writeShellStep, executeShellStep } from './repository.mjs';
 const { root, state } = context();
 const tree = process.env.STRATAAI_LOCAL_TREE;
 if (!/^[a-f0-9]{40}$/.test(tree ?? '') || snapshot(root) !== tree) throw new Error('Runtime requires an exact current-tree identity.');
@@ -26,11 +26,12 @@ for (const [key, value] of Object.entries(workflow.jobs.runtime.env)) {
 for (const service of ['WEB', 'API', 'WORKER']) env[`STRATAAI_${service}_IMAGE`] = `strataai-${service.toLowerCase()}:local-${tree}-${run}`;
 writeFileSync(env.GITHUB_ENV, '', { mode: 0o600 });
 let provider; let passed = false; let stepIndex = 0; let workspace;
-function execute(name, executable, argv, extra = {}) {
+const processOptions = (fd, extra = {}) => ({ cwd: workspace, shell: false, env: { ...env, ...extra }, stdio: ['ignore', fd, fd], timeout: 30 * 60 * 1000 });
+function executeCommand(name, launch) {
   console.log(`Local runtime: ${name}`);
   const fd = openSync(join(directory, `runtime-${stepIndex++}.log`), 'w', 0o600);
   try {
-    const result = spawnSync(executable, argv, { cwd: workspace, shell: false, env: { ...env, ...extra }, stdio: ['ignore', fd, fd], timeout: 30 * 60 * 1000 });
+    const result = launch(fd);
     if (result.status !== 0 || result.error) throw new Error(`Runtime stage failed: ${name}; inspect ${directory}/runtime-${stepIndex - 1}.log`);
   } finally { closeSync(fd); }
   for (const line of readFileSync(env.GITHUB_ENV, 'utf8').split('\n').filter(Boolean)) {
@@ -38,6 +39,9 @@ function execute(name, executable, argv, extra = {}) {
     if (equal < 1 || !/^[A-Z][A-Z0-9_]*$/.test(key)) throw new Error('Unsupported canonical runtime environment output');
     env[key] = line.slice(equal + 1);
   }
+}
+function execute(name, executable, argv, extra) {
+  executeCommand(name, fd => spawnSync(executable, argv, processOptions(fd, extra)));
 }
 withLock(join(state, 'canonical-runtime.lock'), () => {
   // Canonical fixtures use fixed ports. Serialize their runtime across worktrees;
@@ -75,7 +79,9 @@ withLock(join(state, 'canonical-runtime.lock'), () => {
       }
       if (body.includes('${{')) throw new Error('Unresolved canonical runtime expression');
       const script = writeShellStep(directory, `runtime-${stepIndex}`, body);
-      execute(step.name, 'bash', ['-euo', 'pipefail', script], stepEnv);
+      executeCommand(step.name, fd => executeShellStep(script, {
+        ...processOptions(fd, stepEnv), stdio: ['ignore', fd, fd],
+      }));
     }
     passed = true;
   } finally {

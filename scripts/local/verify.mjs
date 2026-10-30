@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, openSync, closeSync, appendFileSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { context, localPlan, snapshot, git, hash, atomicJson, withLock, evidenceInventory, writeShellStep } from './repository.mjs';
+import { context, localPlan, snapshot, git, hash, atomicJson, withLock, evidenceInventory, writeShellStep, executeShellStep } from './repository.mjs';
 import { doctor } from './doctor.mjs';
 const args = process.argv.slice(2);
 const allowed = new Set(['--base', '--mode', '--plan', '--all-browser']);
@@ -27,23 +27,28 @@ withLock(lock, () => {
     startedAt, platform: process.platform, architecture: process.arch, runtimePlatform: 'linux/amd64', results, passed: false,
     qualification: 'Local feature evidence only; required-ci and exact-revision full release qualification remain required.' };
   const persist = () => atomicJson(join(directory, 'result.json'), receipt);
-  function run(name, executable, argv, options = {}) {
+  const processOptions = (fd, options = {}) => ({ cwd: root, shell: false, stdio: ['ignore', fd, fd],
+    timeout: 60 * 60 * 1000, env: { ...process.env, TMPDIR: realpathSync(tmpdir()), DOTNET_CLI_TELEMETRY_OPTOUT: '1', STRATAAI_LOCAL_RUN: runId, ...options.env } });
+  function record(name, command, launch, inputFile) {
     const at = Date.now(); const log = join(directory, `${results.length}-${name}.log`);
     console.log(`Running ${name} ...`);
     const fd = openSync(log, 'w', 0o600);
     let result;
-    try { result = spawnSync(executable, argv, { cwd: root, shell: false, stdio: ['ignore', fd, fd],
-      timeout: 60 * 60 * 1000, env: { ...process.env, TMPDIR: realpathSync(tmpdir()), DOTNET_CLI_TELEMETRY_OPTOUT: '1', STRATAAI_LOCAL_RUN: runId, ...options.env } });
-    } finally { closeSync(fd); }
+    try { result = launch(fd); } finally { closeSync(fd); }
     if (result.error) appendFileSync(log, `\n${result.error.message}`);
-    const record = { name, command: [executable, ...argv], passed: result.status === 0 && !result.error, exitCode: result.status,
+    const record = { name, command, ...(inputFile ? { inputFile, inputSha256: hash(readFileSync(inputFile)) } : {}), passed: result.status === 0 && !result.error, exitCode: result.status,
       durationMs: Date.now() - at, log, sha256: hash(readFileSync(log)) };
     results.push(record); persist(); console.log(`${record.passed ? 'PASS' : 'FAIL'} ${name} (${(record.durationMs / 1000).toFixed(1)}s): ${log}`);
     if (!record.passed) throw new Error(`${name} failed; retained original evidence at ${log}`);
   }
+  function run(name, executable, argv, options) {
+    record(name, [executable, ...argv], fd => spawnSync(executable, argv, processOptions(fd, options)));
+  }
   function runShellStep(name, body, options) {
     const script = writeShellStep(directory, `${results.length}-${name}`, body);
-    run(name, 'bash', ['-euo', 'pipefail', script], options);
+    record(name, ['bash', '--noprofile', '--norc', '-euo', 'pipefail', '/dev/fd/3'], fd => executeShellStep(script, {
+      ...processOptions(fd, options), stdio: ['ignore', fd, fd],
+    }), script);
   }
   try {
     receipt.task = assertOwnership(plan.changedPaths);
