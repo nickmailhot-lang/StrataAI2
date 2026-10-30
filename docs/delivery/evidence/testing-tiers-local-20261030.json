@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "revision": "4151f6cc657763e630d7205c6f39af9bcc5ca19d",
+  "parent": "122c72e37cee679547cc4ffcf24d70e94c4e15e4",
+  "testedTree": "385673721d625e78637846c0c25f4ff444aa78f4",
+  "originalLocalCommit": "9c1038944c229e08c3fdee2a5c8250ff8f7dd023",
+  "fullLocal": {
+    "runId": "1793385543907-8a6c544a",
+    "mode": "final",
+    "passed": true,
+    "durationMs": 2985906,
+    "receiptSha256": "b1f0bf0341315798f01ff1537417a5e569b841c49dc69ec35a850773feca56df",
+    "stages": [
+      {
+        "name": "repository-contracts",
+        "passed": true,
+        "durationMs": 122272,
+        "logSha256": "5aa78ee3168e57861532117bff1e3a9b6b96f76c7312e52024b6af31e6014733"
+      },
+      {
+        "name": "ledger",
+        "passed": true,
+        "durationMs": 10729,
+        "logSha256": "383e53490848a858a939e1c89ef9b81f419621cb3cc7cf772286cbb19ec4d8ff"
+      },
+      {
+        "name": "integration-inventory",
+        "passed": true,
+        "durationMs": 85,
+        "logSha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+      },
+      {
+        "name": "runtime-drift",
+        "passed": true,
+        "durationMs": 72,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "web-types",
+        "passed": true,
+        "durationMs": 7186,
+        "logSha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+      },
+      {
+        "name": "browser-types",
+        "passed": true,
+        "durationMs": 2080,
+        "logSha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+      },
+      {
+        "name": "lint",
+        "passed": true,
+        "durationMs": 4833,
+        "logSha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+      },
+      {
+        "name": "web-unit",
+        "passed": true,
+        "durationMs": 355646,
+        "logSha256": "8e64ccf4b41cf7e8e748f3b824d8981fcb14445a62fa7703ea275015e69a6b3c"
+      },
+      {
+        "name": "web-build",
+        "passed": true,
+        "durationMs": 8027,
+        "logSha256": "c92f03753e568e94c56caa2c82bfcdfeb022bdfa632a4484e8c0f2c90036f3a1"
+      },
+      {
+        "name": "dotnet-restore",
+        "passed": true,
+        "durationMs": 1208,
+        "logSha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce"
+      },
+      {
+        "name": "dotnet-build",
+        "passed": true,
+        "durationMs": 23273,
+        "logSha256": "0094a81d8b7684bcb65085833e0a4ec1d43a1278ca25c6c9143ef0bccc830c5c"
+      },
+      {
+        "name": "dotnet-Domain",
+        "passed": true,
+        "durationMs": 2391,
+        "logSha256": "568c7f8b3e42df01c48d163f592562e1893d5e58166200481aeb3c3a443fe38a"
+      },
+      {
+        "name": "dotnet-Api-linux",
+        "passed": true,
+        "durationMs": 1101075,
+        "logSha256": "b65e408036c81a08426ac12209e78d01838f195e010c84e7bf9a169af9496ff4"
+      },
+      {
+        "name": "python-contracts",
+        "passed": true,
+        "durationMs": 112578,
+        "logSha256": "a4dd33a0475a62ceb2419ff587664ec0ef8ed8ce4aa1f028ff490fff774ca1e2"
+      },
+      {
+        "name": "secret-scan",
+        "passed": true,
+        "durationMs": 4590,
+        "logSha256": "022a45711d8afd58cd3528d76eee2290a02d317cf627ddddf91ec9ae459c2260"
+      },
+      {
+        "name": "persistence",
+        "passed": true,
+        "durationMs": 165609,
+        "logSha256": "1b879d8abbc9038f5491cd8fdc3f338e5e47c55c9e7dd7c2044f57285eb95ad0"
+      },
+      {
+        "name": "feature-runtime",
+        "passed": true,
+        "durationMs": 1062806,
+        "logSha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+      }
+    ],
+    "scope": "Local feature evidence only; required-ci and exact-revision full release qualification remain required."
+  },
+  "repositoryContracts": {
+    "passed": 780,
+    "failed": 0,
+    "skipped": 0
+  },
+  "codeql": {
+    "language": "javascript-typescript",
+    "cli": "2.27.3",
+    "pack": "codeql/javascript-queries@2.4.8",
+    "suite": "javascript-code-scanning.qls",
+    "queries": 89,
+    "rules": 87,
+    "findings": 0,
+    "sarifSha256": "ef55d9afa4145831a968e241fa19cf7fd416df521e457409279e613008a2ea84",
+    "priorFailure": {
+      "result": "Failed",
+      "cause": "Java heap exhaustion before complete evaluation at2048MiB/two threads; retained original status/log; no pass inferred.",
+      "logSha256": "80426249247ad8c701da51e77ed6040f9c1d2d28acb1ce1286ee7291753c133f"
+    },
+    "resolution": "Unchanged database/source evaluated completely at3072MiB/one thread; no query/assertion changes."
+  },
+  "risk": "CI/tooling change selects full; no narrowing of backend/security/provider mappings.",
+  "ux": "PRD25/UX008 UXA-01–08 developer/reviewer CLI consumer; visual/route review not applicable to tooling. Gate completeness/refusals apply.",
+  "hosted": {
+    "result": "Not Run",
+    "required": "Full selected hosted pipeline, multi-language CodeQL and equivalent automatic request proof still pending."
+  },
+  "acceptance": "Local scopes only; not release/product/MVP or parent PRD acceptance. Follow-up PR remains open for review."
+}
