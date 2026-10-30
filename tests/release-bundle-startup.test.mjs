@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import test from 'node:test';
 
-const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+import { testBash as bash } from './local-test-tools.mjs';
 const httpsCleanup = readFileSync(resolve('scripts/ci/test-release-https-startup.sh'), 'utf8')
   .match(/cleanup\(\) \{[\s\S]*?\n\}/)?.[0];
 assert.ok(httpsCleanup, 'Maintained HTTPS cleanup must be present');

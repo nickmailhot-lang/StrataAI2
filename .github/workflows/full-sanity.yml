@@ -55,6 +55,7 @@ jobs:
         run: |
           node scripts/delivery-progress.mjs validate
           node --test tests/delivery-progress.test.mjs
+          node --test tests/local-workflow.test.mjs
       - name: Preserve delivery history against the target branch
         if: github.event_name == 'pull_request'
         env:

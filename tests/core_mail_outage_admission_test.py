@@ -1,3 +1,4 @@
+from local_test_tools import test_bash
 import json
 import os
 from pathlib import Path
@@ -9,7 +10,7 @@ import unittest
 
 class CoreMailOutageAdmissionTests(unittest.TestCase):
     repo = Path(__file__).resolve().parents[1]
-    bash = 'C:/Program Files/Git/bin/bash.exe' if os.name == 'nt' else '/bin/bash'
+    bash = test_bash()
 
     def check_refusal(self, *, ci='true', revision='a'*40, mode='production', provider='another-fixture', actor='11111111-1111-1111-1111-111111111111', conflict=False):
         with tempfile.TemporaryDirectory(prefix='strataai-core-mail-admission-') as temporary:

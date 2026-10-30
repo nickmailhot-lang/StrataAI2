@@ -32,3 +32,30 @@ Done requires every required child Done, verified acceptance, applicable passing
 Run `npm run delivery:validate` and `npm run delivery:test` with applicable existing gates; CI runs the same checks and preserves history against the PR base. The delivery check adds to ARCH-11. The user-approved 2026-10-24 split in `docs/architecture/feature-ci.md` governs when source, RLS, browser, security and immutable-release gates run; never claim deferred full checks passed from a feature-only run. Keep incomplete evidence visible in a draft PR. Continue independent slices without waiting for the parent PRD.
 
 After every cycle, append a `cycles` record and generate `npm run delivery:report` (or append `-- --json`). Report completed increments, implementation awaiting validation, work in progress, blockers/dependencies, next deliverable, PRD changes and evidence. Count each hierarchy kind separately. Report unclassified MVP scope and unverified acceptance explicitly. No percentages without a frozen denominator; weighted progress requires recorded estimates and a frozen weighted baseline.
+
+## Local-first development and agent coordination
+
+Read `docs/development/local-first.md` and `docs/development/multi-agent.md`.
+Install repository hooks with `npm run dev:hooks`; preserve existing custom hooks.
+Use `npm run verify:local -- --base origin/main --mode fast` while iterating and
+run final `npm run verify:local -- --base origin/main` before committing. Only a
+final pass on the exact staged/working tree authorizes commit and feature-branch
+push. New edits, partial staging or a changed base invalidate evidence. Never use
+`--no-verify`, force-push, alter evidence or weaken a check to obtain a pass.
+Local feature evidence does not replace impact-selected required-ci, full-sanity,
+review, product acceptance or exact-revision release qualification.
+
+Claim one task/branch/worktree and nonoverlapping paths through `dev:agents`.
+One integration owner controls shared contracts, shells/theme, manifests/locks,
+migrations, CI and canonical delivery records. Retain claims through reviewed
+handoff; never touch another checkout. Integrate one candidate at a time in a
+dedicated worktree, test the combined tree before its merge commit, then push a
+reviewable feature branch. The canonical fixed-port runtime slot is exclusive
+across worktrees; use unique projects/volumes/tags and never clean unrelated Docker
+resources. Reusable role prompts are under `docs/prompts/`.
+
+GitHub connector/API publication does not execute local Git hooks. Before such
+writes, explicitly validate the final local receipt and exact staged/working tree;
+publish only that tree and intended parent using a new branch or expected-head
+update. Fetch and compare the published tree afterward. Preserve the original
+local commit if connector commit metadata differs; never substitute untested source.

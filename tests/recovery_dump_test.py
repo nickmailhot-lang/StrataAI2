@@ -1,3 +1,4 @@
+from local_test_tools import test_bash
 import importlib.util
 import io
 import os
@@ -24,7 +25,7 @@ class RecoveryDumpTests(unittest.TestCase):
     def test_failed_fingerprint_is_neither_equality_nor_deliberate_corruption_evidence(self):
         source = (Path(__file__).resolve().parents[1] / 'scripts/ci/test-database-backup-restore.sh').read_text()
         function = re.search(r'^compare_fingerprint\(\) \{.*?^\}', source, re.M | re.S).group()
-        bash = 'C:/Program Files/Git/bin/bash.exe' if os.name == 'nt' else '/bin/bash'
+        bash = test_bash()
         for operator, value in (('=', 'expected'), ('!=', 'changed')):
             for status in (0, 19):
                 driver = f'''set -euo pipefail
@@ -42,7 +43,7 @@ compare_fingerprint '{operator}'
     def test_fingerprint_rejects_late_dump_or_catalog_failure_inside_command_substitution(self):
         source = (Path(__file__).resolve().parents[1] / 'scripts/ci/test-database-backup-restore.sh').read_text()
         function = re.search(r'^fingerprint\(\) \{.*?^\}', source, re.M | re.S).group()
-        bash = 'C:/Program Files/Git/bin/bash.exe' if os.name == 'nt' else '/bin/bash'
+        bash = test_bash()
         for dump_status, catalog_status in ((0, 0), (13, 0), (0, 14)):
             with self.subTest(dump_status=dump_status, catalog_status=catalog_status), tempfile.TemporaryDirectory(prefix='strataai-backup-fingerprint-') as folder:
                 driver = f'''set -euo pipefail
@@ -68,7 +69,7 @@ test -n "$result"
     def test_source_state_guards_reject_changed_data_credentials_and_late_query_failures(self):
         source = (Path(__file__).resolve().parents[1] / 'scripts/ci/test-database-backup-restore.sh').read_text()
         guard = source.split('unset api_password worker_password mail_password password\n', 1)[1].split("\necho 'Encrypted PostgreSQL", 1)[0]
-        bash = 'C:/Program Files/Git/bin/bash.exe' if os.name == 'nt' else '/bin/bash'
+        bash = test_bash()
         expected_dump, expected_roles = 'b' * 64, 'a' * 32
         for dump_value, role_value, dump_status, role_status in (
             (expected_dump, expected_roles, 0, 0),

@@ -283,3 +283,12 @@ API-host tests select an isolated Demo runtime without production database or pr
 To run the full restricted PostgreSQL persistence suite locally with Docker and PowerShell, use `./scripts/run-local-persistence-contracts.ps1`. It creates a disposable PostgreSQL 17/pgvector database, applies the migrations, provisions the restricted API/Worker roles, and executes the same persistence program required by CI. See [local PostgreSQL contracts](docs/architecture/api-host-testing.md#local-postgresql-contracts) for isolation, failure inspection, and cleanup. The suite includes actual deletion of 105,000 Cards and can take considerable time; follow its running process through completion.
 
 Development PRs use [impact-selected feature CI](docs/architecture/feature-ci.md); nightly/manual/release-tag runs provide full qualification. These source checks are only part of release validation. [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/full-sanity.yml) also verify real PostgreSQL/RLS behavior, restricted runtime capabilities, exact-image integration, native browser workflows, and security evidence. Deploy the tested artifacts using the [release bundle guide](docs/release/README.md).
+
+## Local-first development
+
+Use [local setup and verification](docs/development/local-first.md) before committing
+or pushing changes. `npm run dev:doctor` checks tools; `npm run dev:hooks` installs
+the exact-tree commit/push guard; `npm run verify:local -- --base origin/main`
+runs the final local feature gate. [Multi-agent coordination](docs/development/multi-agent.md)
+provides isolated worktrees, atomic path claims and reviewed integration.
+Local success remains separate from required-ci and release qualification.

@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { after, before, test } from 'node:test';
 
-const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+import { testBash as bash } from './local-test-tools.mjs';
 const script = resolve('scripts/verify-https-certificate.sh');
 let root;
 before(() => {

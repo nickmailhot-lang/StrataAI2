@@ -5,7 +5,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
-const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+import { testBash as bash } from './local-test-tools.mjs';
 const modulePath = resolve('scripts/ci/https-database-recovery.inc.sh').replaceAll('\\', '/');
 for (const mode of ['success', 'missing-cursor', 'short-first-page', 'empty-continuation',
   'overlap', 'changed-restored-page', 'wrong-target-accepted', 'wrong-error']) {

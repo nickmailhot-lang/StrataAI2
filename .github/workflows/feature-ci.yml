@@ -34,7 +34,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Validate CI contracts and immutable full-suite coverage
         run: |
-          node --test tests/feature-ci.test.mjs tests/integration-suites.test.mjs tests/build-metadata.test.mjs tests/delivery-progress.test.mjs tests/ticket-dependencies.test.mjs
+          node --test tests/local-workflow.test.mjs tests/feature-ci.test.mjs tests/integration-suites.test.mjs tests/build-metadata.test.mjs tests/delivery-progress.test.mjs tests/ticket-dependencies.test.mjs
           node scripts/ci/verify-integration-suites.mjs
           node scripts/ci/generate-feature-runtime.mjs --check
           python3 -m unittest discover -s tests -p 'release_artifacts_test.py'

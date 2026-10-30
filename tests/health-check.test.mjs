@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 import { resolve } from 'node:path';
 import test from 'node:test';
 
-const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+import { testBash as bash } from './local-test-tools.mjs';
 const script = resolve('scripts/health-check.sh');
 const endpoints = ['/api-surface/api/health', '/worker-surface/healthz',
   '/api-surface/readyz', '/worker-surface/readyz', '/web-surface/', '/web-surface/api/health'];

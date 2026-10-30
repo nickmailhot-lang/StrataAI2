@@ -2055,3 +2055,14 @@ Source 4a735fdcf00cb2e2ed964606a8bd9a9e637e7ec9 uses the existing request-observ
 Review found that a restored original refused with 409 could not bind its current source on refresh, leaving the preserved draft without a current comparison/revision. Counterfactuals retain 17 pass/1 fail on 9aa16602 and 18 pass/1 fail for the narrow existing-unit repair on 6161b3b5 (version-zero beyond-page record). Source 55ab8b571e25f01a7fcf550605b3ff91ad346b5b retains restored-version context and reads the stable ID only after definitive original refusal. Version-zero absence requires Owner/Admin and same-actor admission around the bounded 404; known existing-unit absence and other status/authority failures remain fail-closed. No pending original is overwritten, replayed automatically or acknowledged; only explicit Keep draft, new Review and Confirm issue a fresh key/current version.
 
 All 209 scoped source cases, application/browser types, lint, exact source web image and seven native built-web/Demo journeys pass. Native version-zero/one cases exercise a real concurrent writer and real 409, reload recovery, identical original key/body, preserved draft/current comparison and explicit fresh revision. Initial local browser type and short-revision build-input failures are retained separately from passing repairs. Historical run 40832081829 passed source/database/images/security, commands and corrected actual attachment foundation pipeline on superseded 9aa; no overall/new-source qualification inferred. Fresh complete hosted, release-bundle and local delivery qualification remain required. No parent or product acceptance is claimed; remaining Card relationships/filtering and Portal temporal work remain open.
+
+## Local-first developer workflow — 2026-10-29
+
+PRD-25-VS-02 gains three focused local-tooling tasks and linked tests. Native
+baseline source checks passed; the verifier, exact-tree hooks, atomic ownership
+registry, Linux persistence adapter and canonical feature-runtime adapter are
+implemented in the working tree. Final source identity/results come from the
+outside-tree verification receipt; hosted full qualification, independent review,
+integration and product acceptance remain separate and pending. This CLI-only
+change adds no product routes or schemas. See the implementation evidence record
+and local-first/multi-agent guides; no parent or MVP completion is claimed.
