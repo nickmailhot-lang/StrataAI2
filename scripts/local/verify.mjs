@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, openSync, closeSync, appendFileSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { context, localPlan, snapshot, git, hash, atomicJson, withLock, evidenceInventory } from './repository.mjs';
+import { context, localPlan, snapshot, git, hash, atomicJson, withLock, evidenceInventory, writeShellStep } from './repository.mjs';
 import { doctor } from './doctor.mjs';
 const args = process.argv.slice(2);
 const allowed = new Set(['--base', '--mode', '--plan', '--all-browser']);
@@ -32,7 +32,7 @@ withLock(lock, () => {
     console.log(`Running ${name} ...`);
     const fd = openSync(log, 'w', 0o600);
     let result;
-    try { result = spawnSync(executable, argv, { cwd: root, stdio: ['ignore', fd, fd],
+    try { result = spawnSync(executable, argv, { cwd: root, shell: false, stdio: ['ignore', fd, fd],
       timeout: 60 * 60 * 1000, env: { ...process.env, TMPDIR: realpathSync(tmpdir()), DOTNET_CLI_TELEMETRY_OPTOUT: '1', STRATAAI_LOCAL_RUN: runId, ...options.env } });
     } finally { closeSync(fd); }
     if (result.error) appendFileSync(log, `\n${result.error.message}`);
@@ -40,6 +40,10 @@ withLock(lock, () => {
       durationMs: Date.now() - at, log, sha256: hash(readFileSync(log)) };
     results.push(record); persist(); console.log(`${record.passed ? 'PASS' : 'FAIL'} ${name} (${(record.durationMs / 1000).toFixed(1)}s): ${log}`);
     if (!record.passed) throw new Error(`${name} failed; retained original evidence at ${log}`);
+  }
+  function runShellStep(name, body, options) {
+    const script = writeShellStep(directory, `${results.length}-${name}`, body);
+    run(name, 'bash', ['-euo', 'pipefail', script], options);
   }
   try {
     receipt.task = assertOwnership(plan.changedPaths);
@@ -51,7 +55,7 @@ withLock(lock, () => {
     if (mode === 'final' && plan.full) {
       const contracts = readdirSync(join(root, 'tests')).filter(p => p.endsWith('.test.mjs')).sort().map(p => `tests/${p}`);
       run('repository-contracts', process.execPath, ['--test', '--test-concurrency=1', ...contracts]);
-    } else run('repository-contracts', 'bash', ['-euo', 'pipefail', '-c', contractStep.run]);
+    } else runShellStep('repository-contracts', contractStep.run);
     run('ledger', process.execPath, ['scripts/delivery-progress.mjs', 'validate', '--base-ref', plan.baseSha]);
     run('integration-inventory', process.execPath, ['scripts/ci/verify-integration-suites.mjs']);
     run('runtime-drift', process.execPath, ['scripts/ci/generate-feature-runtime.mjs', '--check']);
@@ -62,7 +66,7 @@ withLock(lock, () => {
     else for (const name of ['Critical unit baseline', 'Affected unit and component tests']) {
       const step = feature.jobs.web.steps.find(s => s.name === name);
       if (!step?.run || step.run.includes('${{')) throw new Error('Review changed feature unit command before local execution.');
-      run(name === 'Critical unit baseline' ? 'web-unit-baseline' : 'web-unit-affected', 'bash', ['-euo', 'pipefail', '-c', step.run], { env: { PR_BASE: plan.mergeBase } });
+      runShellStep(name === 'Critical unit baseline' ? 'web-unit-baseline' : 'web-unit-affected', step.run, { env: { PR_BASE: plan.mergeBase } });
     }
     run('web-build', 'npm', ['run', 'build']);
     if (mode === 'final') {

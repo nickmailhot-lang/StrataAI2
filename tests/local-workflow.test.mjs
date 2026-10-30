@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, rmSync, chmodSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, rmSync, chmodSync, symlinkSync, existsSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -128,6 +128,39 @@ test('local UUID adapter supplies fresh CSPRNG IDs and forwards ordinary cat rea
    assert.equal(first.status,0);assert.match(first.stdout,/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\n$/);assert.notEqual(first.stdout,second.stdout);
    const ordinary=spawnSync('bash',[adapter,join(f.root,'README.md')],{encoding:'utf8',env});assert.equal(ordinary.status,0);assert.equal(ordinary.stdout,'baseline\n');
    assert.notEqual(spawnSync('bash',[adapter,'/proc/unsupported-local-fixture'],{env}).status,0);
+ }finally{f.cleanup();}
+});
+
+test('UUID adapter survives a clean snapshot while generated bin output stays ignored',()=>{
+ const f=fixture();let copied;try{
+  writeFileSync(join(f.root,'.gitignore'),readFileSync('.gitignore'));
+  mkdirSync(join(f.root,'scripts/local/bin'),{recursive:true});
+  const path=join(f.root,'scripts/local/bin/cat');
+  writeFileSync(path,readFileSync(join(source,'bin/cat')),{mode:0o755});
+  writeFileSync(join(f.root,'scripts/local/bin/generated.dll'),'generated output');
+  f.git('add','--all');
+  assert.equal(f.git('ls-files','--','scripts/local/bin/cat'),'scripts/local/bin/cat');
+  assert.equal(f.git('ls-files','--','scripts/local/bin/generated.dll'),'');
+  copied=f.invoke('repository.mjs','m.materialize(m.snapshot(process.cwd()))');
+  writeFileSync(path,'#!/bin/sh\nexit 99\n');
+  const run=spawnSync('bash',[join(copied,'scripts/local/bin/cat'),'/proc/sys/kernel/random/uuid'],{encoding:'utf8',env:{...process.env,STRATAAI_LOCAL_NODE:process.execPath}});
+  assert.equal(run.status,0,run.stderr);
+  assert.match(run.stdout,/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\n$/);
+ }finally{if(copied)rmSync(copied,{recursive:true,force:true});f.cleanup();}
+});
+
+test('retained shell files keep hostile paths and environment values as data and propagate failure',()=>{
+ const f=fixture();try{
+  const directory=join(f.root,'steps ; touch marker ; #');mkdirSync(directory);
+  const expression=`m.writeShellStep(${JSON.stringify(directory)},'step-0',${JSON.stringify('printf \'%s\' "$CASE_VALUE"\n')})`;
+  const path=f.invoke('repository.mjs',expression);
+  const value='literal $(touch marker) `touch marker`; "quotes"';
+  const r=spawnSync('bash',['-euo','pipefail',path],{cwd:f.root,encoding:'utf8',env:{...process.env,CASE_VALUE:value}});
+  assert.equal(r.status,0,r.stderr);assert.equal(r.stdout,value);assert.equal(existsSync(join(f.root,'marker')),false);
+  const overwrite=f.script(`import * as m from ${JSON.stringify(pathToFileURL(join(source,'repository.mjs')).href)}; ${expression};`);
+  assert.notEqual(overwrite.status,0);assert.match(overwrite.stderr,/EEXIST/);
+  const failure=f.invoke('repository.mjs',`m.writeShellStep(${JSON.stringify(directory)},'step-1','exit 17\\n')`);
+  assert.equal(spawnSync('bash',['-euo','pipefail',failure],{cwd:f.root}).status,17);
  }finally{f.cleanup();}
 });
 

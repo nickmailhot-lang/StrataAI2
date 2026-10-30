@@ -54,6 +54,14 @@ export function atomicJson(path, value) {
   writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
   renameSync(temporary, path);
 }
+// Keep environment-derived paths as argv data, never part of a bash -c string.
+// Each retained script belongs to one command in a unique verification run.
+export function writeShellStep(directory, name, body) {
+  if (!/^[a-z0-9-]+$/.test(name) || typeof body !== 'string') throw new Error('Invalid shell step');
+  const path = join(directory, `${name}.sh`);
+  writeFileSync(path, body, { mode: 0o600, flag: 'wx' });
+  return path;
+}
 export function withLock(path, action) {
   mkdirSync(path); // EEXIST refuses concurrent ownership; never steal stale locks.
   try {

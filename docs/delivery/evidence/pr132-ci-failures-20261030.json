@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "cebf65807ab09956024b236cf82edf6fb056ff7d",
+  "testedMergeRevision": "c4940b39f62e052f015eae2ad495420d504a9f45",
+  "result": "Failed",
+  "owner": "integrator",
+  "pr": "https://github.com/nickmailhot-lang/StrataAI2/pull/132",
+  "workflow": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/40996798075",
+  "failures": [
+    {
+      "check": "select / Validate CI contracts and immutable full-suite coverage",
+      "case": "local UUID adapter supplies fresh CSPRNG IDs and forwards ordinary cat reads unchanged",
+      "observed": "Expected exit 0; actual exit 127 at tests/local-workflow.test.mjs:128.",
+      "cause": "The .NET **/bin/ ignore rule excluded scripts/local/bin/cat from Git. Mac tests could read the ignored working-copy file; Linux CI could not.",
+      "impact": "Required-ci failed; full qualification did not run. Earlier local results remain observed history and do not establish a reproducible tracked runtime adapter.",
+      "correction": "Track only the cat adapter, preserve other bin ignores, load it from the immutable runtime snapshot, and test clean materialization after mutating the live copy."
+    },
+    {
+      "check": "CodeQL review",
+      "alert": "https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/14",
+      "severity": "medium",
+      "location": "scripts/local/verify.mjs:35-36",
+      "cause": "Generic command dispatch mixed environment-derived argument paths with inline bash -c execution.",
+      "impact": "Open security review finding despite the CodeQL job conclusion being success.",
+      "correction": "Write canonical CI bodies to unique retained script files, pass script paths as separate argv entries, explicitly disable implicit shells, and exercise metacharacter paths and failure propagation."
+    }
+  ],
+  "remaining": [
+    "Fresh exact-tree local feature gate",
+    "Hosted required-ci/full qualification and new CodeQL result",
+    "Review disposition and target-branch integration"
+  ]
+}

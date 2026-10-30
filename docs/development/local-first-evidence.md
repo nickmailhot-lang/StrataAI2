@@ -103,3 +103,22 @@ The first final candidate passed 745 repository contracts and 3,074 web tests (2
 The monolithic Linux API run exhausted the default 4GB Docker VM and made its daemon unresponsive. Its failed run and raw log are retained; no API pass was inferred. The local API adapter now discovers the complete method inventory and runs every method in fresh bounded batches, retains each original XML/log, and refuses missing/duplicated methods, invalid counts, failed/errored/not-run cases and missing/extra result files. Build servers are stopped before testing. Hosted single-process qualification remains independent.
 
 Linux xUnit discovery appended an ANSI reset after JSON; the strict parser refused it. Explicit no-colour output and a retained discovery payload corrected the adapter, with a real first-batch XML preflight. A later unchanged-tree candidate passed unit/source/persistence checks but failed during invitation runtime testing while power logs recorded maintenance sleeps at 18:30 and 18:46 local time. The final run uses `caffeinate -isu`: an initial FullWake plus AC system-sleep and idle-sleep assertions were confirmed. Earlier failed/cancelled runs remain distinct from the final passing receipt. Assertions, expiry checks and deadlines were preserved.
+
+## PR #132 clean-checkout review — 2026-10-30
+
+GitHub's selector contract failed because the broad `**/bin/` ignore rule omitted
+`scripts/local/bin/cat` from the published tree. Earlier Mac results remain
+observations of those runs; their ignored live adapter did not prove a clean
+checkout could reproduce the runtime. The adapter is now explicitly tracked,
+while generated binaries remain ignored, and runtime PATH resolves it only from
+the materialized candidate. A regression executes the clean snapshot after
+replacing the live fixture adapter with a failing implementation.
+
+The same review found CodeQL alert 14 on generic shell dispatch. Canonical shell
+bodies are now retained as exclusive script files and invoked using separate
+arguments with `shell: false`; environment values and paths do not form an inline
+shell command. Regression coverage retains literal hostile path/environment
+values, refuses script overwrites and propagates nonzero shell status. Original
+CI failure details are preserved in
+`docs/delivery/evidence/pr132-ci-failures-20261030.json`. Fresh exact-tree local,
+hosted security/full checks and review are required before integration.

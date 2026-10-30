@@ -5,7 +5,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { parse } from 'yaml';
-import { context, withLock, snapshot, materialize, localRuntimeEnvironment } from './repository.mjs';
+import { context, withLock, snapshot, materialize, localRuntimeEnvironment, writeShellStep } from './repository.mjs';
 const { root, state } = context();
 const tree = process.env.STRATAAI_LOCAL_TREE;
 if (!/^[a-f0-9]{40}$/.test(tree ?? '') || snapshot(root) !== tree) throw new Error('Runtime requires an exact current-tree identity.');
@@ -14,7 +14,7 @@ const directory = process.env.STRATAAI_LOCAL_EVIDENCE ?? join(state, 'runtime', 
 mkdirSync(directory, { recursive: true, mode: 0o700 });
 const workflow = parse(readFileSync('.github/workflows/feature-runtime.yml', 'utf8'));
 const env = { ...localRuntimeEnvironment(process.env), CI: 'true', DOCKER_DEFAULT_PLATFORM: 'linux/amd64',
-  STRATAAI_LOCAL_NODE: process.execPath, PATH: `${join(root, 'scripts/local/bin')}:${process.env.PATH}`, COMPOSE_PROJECT_NAME: `strataai-local-${run}`.toLowerCase(),
+  STRATAAI_LOCAL_NODE: process.execPath, COMPOSE_PROJECT_NAME: `strataai-local-${run}`.toLowerCase(),
   GITHUB_SHA: tree, GITHUB_ENV: join(directory, 'runtime.env'), RUNNER_TEMP: directory,
   STRATAAI_BUILD_REVISION: tree, STRATAAI_BUILD_VERSION: `0.1.0-local.t${tree}`,
   STRATAAI_BUILD_SOURCE: 'https://github.com/nickmailhot-lang/StrataAI2', STRATAAI_BUILD_CREATED: new Date().toISOString(),
@@ -30,7 +30,7 @@ function execute(name, executable, argv, extra = {}) {
   console.log(`Local runtime: ${name}`);
   const fd = openSync(join(directory, `runtime-${stepIndex++}.log`), 'w', 0o600);
   try {
-    const result = spawnSync(executable, argv, { cwd: workspace, env: { ...env, ...extra }, stdio: ['ignore', fd, fd], timeout: 30 * 60 * 1000 });
+    const result = spawnSync(executable, argv, { cwd: workspace, shell: false, env: { ...env, ...extra }, stdio: ['ignore', fd, fd], timeout: 30 * 60 * 1000 });
     if (result.status !== 0 || result.error) throw new Error(`Runtime stage failed: ${name}; inspect ${directory}/runtime-${stepIndex - 1}.log`);
   } finally { closeSync(fd); }
   for (const line of readFileSync(env.GITHUB_ENV, 'utf8').split('\n').filter(Boolean)) {
@@ -46,6 +46,7 @@ withLock(join(state, 'canonical-runtime.lock'), () => {
   if (preflight.status !== 0) throw new Error('Canonical fixture ports are occupied; stop your own conflicting runtime before verifying.');
   try {
     workspace = materialize(tree);
+    env.PATH = `${join(workspace, 'scripts/local/bin')}:${process.env.PATH}`;
     symlinkSync(join(root, 'node_modules'), join(workspace, 'node_modules'), 'dir');
     for (const service of ['web','api','worker']) execute(`build-${service}`, 'docker', ['build', '--platform', 'linux/amd64', '--file', `Dockerfile.${service}`,
       ...['REVISION','VERSION','SOURCE','CREATED'].flatMap(key => ['--build-arg', `STRATAAI_BUILD_${key}=${env[`STRATAAI_BUILD_${key}`]}`]),
@@ -73,7 +74,8 @@ withLock(join(state, 'canonical-runtime.lock'), () => {
         if (typeof stepEnv[key] !== 'string' || stepEnv[key].includes('${{')) throw new Error(`Unresolved runtime environment: ${key}`);
       }
       if (body.includes('${{')) throw new Error('Unresolved canonical runtime expression');
-      execute(step.name, 'bash', ['-euo', 'pipefail', '-c', body], stepEnv);
+      const script = writeShellStep(directory, `runtime-${stepIndex}`, body);
+      execute(step.name, 'bash', ['-euo', 'pipefail', script], stepEnv);
     }
     passed = true;
   } finally {
