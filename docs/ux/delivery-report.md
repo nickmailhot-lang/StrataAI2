@@ -2096,3 +2096,64 @@ Hosted CodeQL resolved the original shell-dispatch findings but reported imprope
 ### PR #132 direct-module fixture qualification — 2026-10-30
 
 Implemented: efa5f4b9d36205e3c7210d05740c97542c9db4ef, tree 6af87378da00ecab54c9f4d4f6347ad6103d258b; regression setup imports the actual module directly and preserves all security/refusal assertions. Tested: all 17 final local stages passed in 50m18s: 747 contracts, 3074 web passes/24 existing skips, 1105 domain passes/3 existing skips, all 676 API methods with 1450 passes/2 existing skips, 306 Python contracts, full restricted persistence and canonical runtime security/tenant/invitation/configuration/retention/abuse checks, and all 5 production browser cases. All 16 workflow regressions pass on clean Linux. Complete local JavaScript CodeQL ran 89 queries/87 rule records over all 689 JS/TS files with zero findings, including both reported rules. Reviewed: source review here; external reviewer deferred by user. Accepted: new-head hosted full/security checks and integration remain pending; no parent or product/MVP acceptance claim. [Hashed sanitized evidence](../delivery/evidence/pr132-local-fixture-20261030.json).
+
+
+---
+
+## Description-link polish cycle — 2026-10-30
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 84/1660 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2440. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 470 | 4 |
+| Task | 531 | 35 |
+| Test | 551 | 45 |
+
+Implemented but unvalidated: 90. Blocked: 0. Known MVP-critical outstanding: 96; unclassified records: 1331. Weighted progress: not measured.
+
+## 1. Work completed
+
+Bounded existing Card safe Markdown context hint implemented; all13 final local stages passed in27m40s, all15 whole production browser cases passed; complete JS CodeQL zero findings.
+Actual component/theme inspected at320/390/768/1280 and768200%text; no overflow/Axe violations. Original failures retained separately.
+
+## 2. Implemented, awaiting validation
+
+ARCH-11-VS-52, ARCH-11-VS-52-T-01, ARCH-11-VS-52-T-01-TEST-01, ARCH-11-VS-82, ARCH-11-VS-82-T-01, ARCH-11-VS-82-T-01-TEST-01, PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-06-VS-01-T-02, PRD-06-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02, PRD-03-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02-TEST-02, ARCH-11-VS-82-T-02, ARCH-11-VS-82-T-02-TEST-01, PRD-09-VS-01-T-04, PRD-09-VS-01-T-04-TEST-01, ARCH-11-VS-62-T-02, ARCH-11-VS-62-T-02-TEST-01, PRD-16-VS-01-T-03, PRD-16-VS-01-T-03-TEST-01, PRD-16-VS-01-T-04, PRD-16-VS-01-T-04-TEST-01, PRD-04-VS-02-T-02, PRD-04-VS-02-T-02-TEST-01, PRD-70-VS-01-T-02, PRD-70-VS-01-T-02-TEST-01, PRD-03-VS-01-T-03, PRD-03-VS-01-T-03-TEST-01, ARCH-11-VS-15-T-02, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-03, PRD-28-VS-01-T-03-TEST-01, PRD-28-VS-01-T-04, PRD-28-VS-01-T-04-TEST-01, PRD-28-VS-01-T-05, PRD-28-VS-01-T-05-TEST-01, PRD-25-VS-02-T-LOCAL-01, PRD-25-VS-02-T-LOCAL-01-TEST-01, PRD-25-VS-02-T-LOCAL-02, PRD-25-VS-02-T-LOCAL-02-TEST-01, PRD-25-VS-02-T-LOCAL-03, PRD-25-VS-02-T-LOCAL-03-TEST-01, PRD-09-VS-01-T-06, PRD-09-VS-01-T-06-TEST-01
+
+## 3. Current work in progress
+
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Publish tested polish with qualified evidence in separate open PR; keep testing-tier PR133 open and verify its hosted duplicate avoidance after full success.
+
+## 6. PRD progress changes
+
+Only focused PRD09 polish task/test added; no parent feature or MVP acceptance closure.
+
+## 7. Completion evidence
+
+EVID-DESCRIPTION-LINK-02FE26CA
+
+## Recent verified completed increments
+
+PRD-04-VS-05: Recover interrupted Board creation and return to canonical work (2026-10-20T05:35:11.131Z)
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
