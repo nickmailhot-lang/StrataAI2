@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { arch, platform } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
-export function doctor() {
+export function doctor({ tier = 'full', launch = spawnSync } = {}) {
   const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url)));
   const sdk = JSON.parse(readFileSync(new URL('../../global.json', import.meta.url))).sdk;
   const checks = [
@@ -23,8 +23,9 @@ export function doctor() {
     ['timeout', ['--version'], v => /GNU coreutils/.test(v)],
     ['wc', ['--version'], v => /GNU coreutils/.test(v)],
   ];
-  const results = checks.map(([tool, args, validate]) => {
-    const r = spawnSync(tool, args, { encoding: 'utf8', timeout: 20_000 });
+  const required = tier === 'docs' ? checks.filter(([tool, args]) => ['node', 'npm', 'git', 'python3', 'bash'].includes(tool) || (tool === 'docker' && args[0] !== 'compose')) : checks;
+  const results = required.map(([tool, args, validate]) => {
+    const r = launch(tool, args, { encoding: 'utf8', timeout: 20_000 });
     const version = (r.stdout ?? '').trim();
     return { tool, args, passed: r.status === 0 && validate(version), version: version.split('\n')[0], error: r.error?.message };
   });

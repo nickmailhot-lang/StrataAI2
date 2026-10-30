@@ -18,3 +18,11 @@ one candidate at a time in an integration worktree, rerun local verification on 
 combined tree, then commit/push a feature branch. Preserve independent GitHub CI
 and review. Report implemented, locally tested, CI verified, integrated and accepted
 separately. Never close a parent PRD from a partial slice or bypass a failed gate.
+
+Use the shared docs/feature/full impact tier from `verify:local -- --plan`.
+Do not narrow backend/shared/security/unknown changes by filename. Include all new
+and untracked tests. Feature evidence keeps whole Board/permission/tenant baseline
+and affected browser files; full risk requires full qualification. Automatic CI
+reuse requires completed successful exact integration/base/policy/scope proof;
+manual reruns and release qualification stay fresh. Record actual scope/duration
+and prior failures separately; a reused leaf pass cannot establish full acceptance.

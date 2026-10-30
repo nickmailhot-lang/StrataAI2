@@ -62,7 +62,13 @@ unstaged and untracked files, deletes and both rename paths. It reuses
 scripts/ci/feature-impact.json and selectImpact; invalid bases and missing critical
 browser inventory refuse selection. Unknown paths conservatively select full CI.
 
-Fast mode runs the contract tests declared by feature CI, history-preserving ledger validation,
+The shared impact policy emits `docs`, `feature` or `full`. Documentation/evidence
+changes retain contracts, ledger/history, inventory/drift, release contracts and
+secrets without unrelated web, .NET, database or browser builds. The docs doctor
+requires only the tools these checks consume, including Docker for secret scanning.
+AGENTS.md and CI/tooling changes are high risk and select full.
+
+For code, fast mode runs the contract tests declared by feature CI, history-preserving ledger validation,
 integration inventory/runtime drift checks, types, lint, the same critical unit
 baseline and changed/import-graph selection as feature CI, and a production web build. It never issues a commit receipt.
 

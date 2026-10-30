@@ -78,7 +78,7 @@ test('full suite remains separate; feature and main workflows expose stable gate
   assert.equal(feature.jobs.full.uses, './.github/workflows/full-sanity.yml');
   assert.equal(smoke.jobs['demo-ready'].if, 'always()');
   assert.deepEqual(smoke.jobs['demo-ready'].needs, 'smoke');
-  assert.equal(feature.concurrency['cancel-in-progress'], true);
+  assert.equal(feature.concurrency['cancel-in-progress'], "${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}");
   assert.equal(smoke.concurrency['cancel-in-progress'], false);
 });
 test('generated runtime retains baseline security, actual release fixtures and image provenance', () => {
