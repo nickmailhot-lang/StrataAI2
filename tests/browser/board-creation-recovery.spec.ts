@@ -82,7 +82,9 @@ for (const width of [1280, 768, 390, 320]) {
     await submit.press('Enter');
     await expect(dialog.getByRole('alert')).toContainText('Unable to confirm the save');
     await expect(dialog.getByLabel('Name', { exact: false })).toHaveValue('Recovered planning Board');
-    await submit.focus(); await expect(submit).toBeFocused(); await submit.press('Enter');
+    await submit.focus(); await expect(submit).toBeFocused();
+    await expect(submit).toBeInViewport();
+    await submit.press('Enter');
     await expect(page.getByRole('heading', { name: 'Recovered planning Board', exact: true })).toBeVisible();
     expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
     expect(attempts[0].key).toMatch(/^[0-9a-f-]{36}$/);
