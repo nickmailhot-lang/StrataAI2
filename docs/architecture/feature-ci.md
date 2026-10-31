@@ -14,6 +14,50 @@ The nightly schedule uses `0 1 * * *` with `timezone: America/Vancouver`, so it 
 
 ## Test selection and dependencies
 
+The 2026-10-30 testing follow-up names the same policy's three tiers explicitly:
+
+| Tier | Local and hosted obligations |
+| --- | --- |
+| `docs` | Documentation/evidence contracts, immutable inventory/drift, delivery/history and secrets; no web/.NET/database/browser compilation or execution |
+| `feature` | Mapped isolated feature: web/browser types, lint/build, critical and affected units, canonical restricted runtime/Board/permission/tenant baseline and whole affected browser files |
+| `full` | Backend/schema/auth/tenant, shared infrastructure/contracts/dependencies/deploy/CI/tooling, unknown/broad changes or explicit full request; complete qualification remains required |
+
+Both selectors use `feature-impact.json` and `selectImpact`; local untracked source
+additionally expands to full so Git-based changed-test selection cannot omit a new
+test. Renames consider both paths. The existing dependency/coverage review remains
+conservative: no backend or real-provider mapping has been narrowed. Instruction
+changes in AGENTS.md expand to full. Case-insensitive security patterns also cover
+lowercase permission/client/contract file names.
+
+## Equivalent automatic requests
+
+Marking ready changes review state without requesting another feature CI run.
+Opened/synchronize/reopened and label changes retain selection/contracts/secrets.
+Equivalent automatic requests serialize behind the current run; only synchronize
+may cancel an older active feature run. Manual workflow dispatch, deliberate run
+attempts, merge queue, nightly/tag/release and main smoke keep their own checks.
+
+`automatic-qualification.mjs` can reuse only an original completed successful
+feature CI run. Its hashed identity contains the actual tested integration commit
+and tree, source head, target base, repository, all workflow/script Git blob
+identities and exact tier/boolean/browser/command coverage. Exact equality prevents
+a feature result from qualifying full work. A new commit/base/policy or scope
+requires fresh work. No successful prior evidence means fresh selected jobs.
+
+The stable `required-ci` job downloads the current request, recomputes the identity
+against checkout, checks selection outputs and revalidates the original run and
+artifact SHA-256 through GitHub before accepting reuse. Expired, missing, failed,
+cancelled, pending, mismatched or chained reused evidence cannot produce success.
+API lookup failures select fresh work; aggregate revalidation failures fail closed.
+Reused passes are identified in the summary and never become reusable originals.
+Proof is emitted only after the strict selected-job aggregate, and usable only
+after the entire original workflow succeeds. Dependency caches are unrelated.
+
+Nightly/release full-qualification artifacts still certify their own exact SHA;
+this feature-CI reuse record is never a promotion or product acceptance record.
+Actual timings/coverage are recorded with validation evidence; no speedup is
+claimed before measurement. This workflow/policy change itself selects full.
+
 `scripts/ci/feature-impact.json` is the reviewed path/category policy. The selector uses a full local Git diff against the PR base, with merge-base semantics and no rename collapsing, pagination or changed-file API cap. Both sides of renames and deleted paths are considered. A missing/invalid diff or unknown path expands to full sanity. A `full-ci` PR label or manual full input can expand coverage, never reduce it. Merge queue events conservatively run full qualification.
 
 Documentation-only PRs retain CI/ledger/metadata contract checks and secret scanning. Code PRs retain the real persisted Board browser workflow and the existing permission matrix/discovery shell checks, including forbidden writes, cross-tenant isolation and withdrawal. The baseline case files run intact, including all viewports and assertions.

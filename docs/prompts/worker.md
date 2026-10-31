@@ -17,3 +17,11 @@ Hand off the exact tested tree/commit, changed paths, acceptance coverage, comma
 results and artifact hashes/locations, failures, limitations and dependencies.
 Preserve your claim through review. Propose delivery-ledger updates to its owner;
 do not mark Done before actual integration, review and acceptance requirements pass.
+
+Use the shared docs/feature/full impact tier from `verify:local -- --plan`.
+Do not narrow backend/shared/security/unknown changes by filename. Include all new
+and untracked tests. Feature evidence keeps whole Board/permission/tenant baseline
+and affected browser files; full risk requires full qualification. Automatic CI
+reuse requires completed successful exact integration/base/policy/scope proof;
+manual reruns and release qualification stay fresh. Record actual scope/duration
+and prior failures separately; a reused leaf pass cannot establish full acceptance.

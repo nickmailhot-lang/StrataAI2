@@ -4,7 +4,9 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const policy = JSON.parse(readFileSync(new URL('./feature-impact.json', import.meta.url)));
+export const isDocumentation = path => policy.documentationPatterns.some(pattern => new RegExp(pattern).test(path));
 export function selectImpact(paths, inventory, { forceFull = false, smoke = false } = {}) {
+  for (const file of policy.baselineBrowser) if (!inventory.includes(file)) throw new Error(`Missing baseline browser file: ${file}`);
   const reasons = [];
   let full = forceFull;
   let web = false;
@@ -13,10 +15,10 @@ export function selectImpact(paths, inventory, { forceFull = false, smoke = fals
   const features = new Set();
   for (const path of paths) {
     if (!path || path.startsWith('/') || path.split('/').includes('..')) throw new Error('Unsafe changed path');
-    if (/^(docs\/|README\.md$|AGENTS\.md$)/.test(path)) continue;
+    if (isDocumentation(path)) continue;
     runtime = true;
     web ||= path.startsWith('apps/web/') || path.startsWith('tests/browser/');
-    if (policy.fullPatterns.some(pattern => new RegExp(pattern).test(path))) {
+    if (policy.fullPatterns.some(pattern => new RegExp(pattern, 'i').test(path))) {
       full = true; reasons.push(`Shared/runtime/configuration change: ${path}`); continue;
     }
     if (path.startsWith('tests/browser/') && path.endsWith('.spec.ts')) {
@@ -42,7 +44,7 @@ export function selectImpact(paths, inventory, { forceFull = false, smoke = fals
   if (!paths.length && !smoke) { full = true; reasons.push('Empty or unavailable comparison'); }
   if (forceFull) reasons.push('Explicit full CI request');
   if (selected.size > policy.maxFeatureBrowserFiles) { full = true; reasons.push('Broad browser impact requires the parallel full matrix'); }
-  return { schemaVersion: 1, full, web: web || full, runtime: runtime && !full,
+  return { schemaVersion: 1, tier: full ? 'full' : runtime ? 'feature' : 'docs', full, web: web || full, runtime: runtime && !full,
     browser: [...selected].filter(file => inventory.includes(file)).sort(),
     commands: policy.baselineCommands, features: [...features].sort(), reasons,
     changedPaths: paths, omitted: full ? [] : ['full PostgreSQL/recovery matrix', 'unaffected browser files', 'image vulnerability/SBOM scans', 'release bundle qualification'] };
@@ -64,7 +66,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     smoke: process.env.CI_PROFILE === 'smoke',
   });
   // Every main push runs the bounded smoke; full coverage is owned by nightly/tag/manual runs.
-  if (process.env.CI_PROFILE === 'smoke') Object.assign(plan, { full: false, runtime: true, web: false, browser: policy.baselineBrowser, reasons: ['Main smoke; full qualification remains separate'] });
+  if (process.env.CI_PROFILE === 'smoke') Object.assign(plan, { tier: 'feature', full: false, runtime: true, web: false, browser: policy.baselineBrowser, reasons: ['Main smoke; full qualification remains separate'] });
   plan.revision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
   writeFileSync('feature-plan.json', JSON.stringify(plan, null, 2) + '\n');
   for (const key of ['full', 'web', 'runtime']) appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${plan[key]}\n`);

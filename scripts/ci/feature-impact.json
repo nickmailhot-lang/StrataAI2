@@ -1,4 +1,5 @@
 {
+  "documentationPatterns": ["^docs/", "^README\\.md$"],
   "baselineBrowser": [
     "tests/browser/board.spec.ts"
   ],
@@ -7,6 +8,7 @@
     "Private board discovery and revoked membership against restricted PostgreSQL runtime"
   ],
   "fullPatterns": [
+    "^AGENTS\\.md$",
     "^src/",
     "^apps/web/src/features/.*(Permission|Access|Http|Client|Sync|Live|Contract|Requests|Mutation|Store|Model|Telemetry|Provider|Link|Context|Boundary)",
     "^db/",
