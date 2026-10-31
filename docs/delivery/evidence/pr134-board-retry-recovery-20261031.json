@@ -1,0 +1,573 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-31T23:06:11.764Z",
+  "sourceRevision": "9231c766f8fbc2f96edde9ef6ae6af7b128a172d",
+  "testedTree": "d178b389eb81f5ba0d95ab5da1803f6c6db397f0",
+  "baseRevision": "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab",
+  "scope": "Bounded original Board retry keyboard admission; no application/helper/authority/deadline/result assertion change.",
+  "retainedHostedFailure": {
+    "at": "2026-10-31T21:33:47.798Z",
+    "run": 41231421115,
+    "job": 124638726014,
+    "head": "4c63d7cc9a998d386d325534255a2cc6bbf267ba",
+    "integrationCommit": "31187ed5761aae3c8a95a9e864fa2295b8f2a167",
+    "passed": 138,
+    "failed": 1,
+    "test": "tests/browser/board-creation-recovery.spec.ts:8:7 at390px",
+    "assertion": "line88 Recovered planning Board heading visible within5000ms after original Create retry; not found. Original focus and in-viewport assertions before retry passed.",
+    "artifact": 13057429992,
+    "artifactSha256": "a0197ae35c8ae752bfa9c7fa42c9c004ce05cd4e320784bd73f167cb0f5ee62e",
+    "privateDirectory": "strataai-local/ci-failures/pr134-browser1-41231421115",
+    "inspection": "Actual screenshot shows retained named draft and lost-ack alert; Create focused. Trace original POST committed201 then page receipt aborted. Only one page POST /boards; no second POST after retry Enter1341446ms. Organization GET1341489ms/directory1341507ms follows retry. Pre-request admission withdrawal suspected, deterministic cause/disposition not yet proved.",
+    "remaining": "Browser2/3/4 running; notifications/foundation/commands/security/source passed; fullsanity/required/release not final.",
+    "restarted": false,
+    "disposition": "Preserve original result/focus/count/key/body/5000ms/90000ms scenario/zero suite retries. Reconcile existing PRD04 tracking/source/UX and native deterministic actual-component counterfactual before any bounded fix.",
+    "failureLogSha256": "0ccae206790f1010627489241fd57939af05db8010d6e88bdc67bfae7f3247f0"
+  },
+  "previousHostedRun": {
+    "run": 41231421115,
+    "head": "4c63d7cc9a998d386d325534255a2cc6bbf267ba",
+    "base": "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab",
+    "status": "completed",
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "id": 124626250502,
+        "name": "select",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124626609120,
+        "name": "full / metadata",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124626610168,
+        "name": "runtime",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "id": 124626610316,
+        "name": "web",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "id": 124626734523,
+        "name": "full / postgres-integration",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124626734524,
+        "name": "full / dotnet-quality",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124626734735,
+        "name": "full / web-quality",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124637720138,
+        "name": "full / source-quality-gate",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124637736603,
+        "name": "full / build-images-once",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124638725954,
+        "name": "full / security",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124638725958,
+        "name": "full / container-integration (browser-full, 2/4)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124638725968,
+        "name": "full / container-integration (browser-full, 4/4)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124638725989,
+        "name": "full / container-integration (browser-foundation, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124638726007,
+        "name": "full / container-integration (commands, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124638726014,
+        "name": "full / container-integration (browser-full, 1/4)",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 124638726015,
+        "name": "full / container-integration (browser-notifications, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124638726114,
+        "name": "full / container-integration (browser-full, 3/4)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124682417992,
+        "name": "full / full-sanity-gate",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 124682437530,
+        "name": "required-ci",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 124682438100,
+        "name": "full / release-bundle",
+        "status": "completed",
+        "conclusion": "skipped"
+      }
+    ],
+    "browserCounts": {
+      "1": {
+        "passed": 138,
+        "failed": 1
+      },
+      "2": {
+        "passed": 137,
+        "failed": 0
+      },
+      "3": {
+        "passed": 137,
+        "failed": 0
+      },
+      "4": {
+        "passed": 138,
+        "failed": 0
+      }
+    },
+    "restarted": false,
+    "privateSummarySha256": "4546130d987ada6e434b5e8674ecf8c497674ff656924c4e24c5ba4fa6870b4c"
+  },
+  "requirements": "Live PRD04 issue5 BOARD-FR001/002,AC01,TC06/07/09/11/12 and UXA03/04/05/06/07 reconciled. Synchronous access withdrawal must refuse command until current admission; no application fix or queued replay warranted.",
+  "disposition": {
+    "requirements": "Live PRD04 issue5 BOARD-FR001/002,AC01,TC06/07/09/11/12 and UXA03/04/05/06/07 reconciled. Synchronous access withdrawal must refuse command until current admission; no application fix or queued replay warranted.",
+    "native": "Actual unchanged OrganizationHome/currentappTheme at390px with native keydown/source invalidation: original single retry emits1totalPOST and original heading assertion fails; existing pressObservedRequest admits exactly2samekey/bodyPOSTs, secondreply held600ms then original heading passes, no pageerrors. Actual red/pass captures inspected; destination heading is isolated mockedroute, not canonical production acceptance.",
+    "correction": "Only board-creation-recovery.spec.ts imports/reuses EXISTING pressObservedRequest for secondPOST; original focus/inviewport/heading/count2/identicalkey/body/canonicalpersist/return/fourwidths/90000ms/5000ms/zero suite retries remain unchanged. No app/helper/source authority change.",
+    "targeted": "72 existing protocol cases,83 OrganizationHome component/focus cases and browsertypes passed. Initial incorrect targeted filenames failed before tests and retained as protocol-attempt1.log; corrected command passed. Native startup optimizer emitted initial module resolution messages before successful warmup/counterfactuals; original log retained.",
+    "tracking": "Serial release/reclaim06->07 preserved allpaths/history; only existing original PRD04VS01T03/Test01 reopenedReview->InProgress viaCLI. No duplicate task/parentacceptance."
+  },
+  "privateArtifactHashes": [
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/components.log",
+      "sha256": "30e786d4bcf775045057286e0ff5066bb926d75e5b10e6786cb39182aef3bf31"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/failure-log-excerpt.log",
+      "sha256": "0ccae206790f1010627489241fd57939af05db8010d6e88bdc67bfae7f3247f0"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/native-probe/existing-request-observation.png",
+      "sha256": "ba9e5aaef1594c6dd3de6dfebceaf19b9b350aea921f38da5cb5269363264037"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/native-probe/original-single-activation.png",
+      "sha256": "c43df01dae302b1c46d79854db20c976b17ac792c37df9dc80de6b78624fa3a9"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/native-probe/package.json",
+      "sha256": "1239d4d885dcad42201a27ed9324f8f0f760b78700d8db9ced39a511cffe7eae"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/native-probe/probe.mjs",
+      "sha256": "b6b27d34bdb104de68228a12ddc8051aeadc66cada1d662347bc129d3617bfb9"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/native-probe/result.json",
+      "sha256": "791e6e7bf446e9df5cfd1c88947f233c3697dd8cea46b85870ba5bdddf74261c"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/native-probe/run-attempt1.log",
+      "sha256": "967b38d3930ec3b1dddfeb27c068c3a4cd8472bebb25cf12130a7f390cf62c0f"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/protocol-attempt1.log",
+      "sha256": "e54c25984ea8f5a586380d0e57b5e8ba928f8b14809d674f570cd5438cfbb3ec"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/protocol.log",
+      "sha256": "5e8860f4a4f924d8fc161012d3d3739aaf68bed8965a0efffb5fe432d16af789"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/test-results/board-creation-recovery-PR-3e317-original-key-retry-at-390px/recovered-board-draft-390.png",
+      "sha256": "ceb7f10b9946db7780fc5fc5ff4a2c721a0c397551213bd1a71ccba4cd4e36ac"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/test-results/board-creation-recovery-PR-3e317-original-key-retry-at-390px/recovered-board-return-390.png",
+      "sha256": "d6de2675743eff72aaae3f1606d8d037fe378f2dc40e31d405500e5e077b3fc9"
+    },
+    {
+      "path": "ci-failures/pr134-browser1-41231421115/test-results/board-creation-recovery-PR-3e317-original-key-retry-at-390px/test-failed-1.png",
+      "sha256": "1c6612b3c9c3c93680477021c3c3b155d8ee4a80c5df50424f8bc895be95d584"
+    }
+  ],
+  "local": {
+    "result": "Passed",
+    "runId": "1793483765148-09c0530b",
+    "sourceHead": "4c63d7cc9a998d386d325534255a2cc6bbf267ba",
+    "sourceRevision": "9231c766f8fbc2f96edde9ef6ae6af7b128a172d",
+    "testedTree": "d178b389eb81f5ba0d95ab5da1803f6c6db397f0",
+    "completedAt": "2026-10-31T23:01:50.691Z",
+    "durationMs": 3945543,
+    "receiptSha256": "f04e5ccb65b9dd49bf47e0bed87ae1f55d0dcb44472297eda0f294f3abc4b3d1",
+    "stages": [
+      {
+        "name": "repository-contracts",
+        "command": [
+          "/Users/nickmailhot/.local/share/strataai/node-v24.22.2-darwin-arm64/bin/node",
+          "--test",
+          "--test-concurrency=1",
+          "tests/automatic-qualification.test.mjs",
+          "tests/browser-performance.test.mjs",
+          "tests/browser-shards.test.mjs",
+          "tests/build-metadata.test.mjs",
+          "tests/delivery-progress.test.mjs",
+          "tests/feature-ci.test.mjs",
+          "tests/health-check.test.mjs",
+          "tests/https-certificate.test.mjs",
+          "tests/https-live-board.test.mjs",
+          "tests/https-recovery-cursor.test.mjs",
+          "tests/integration-suites.test.mjs",
+          "tests/local-workflow.test.mjs",
+          "tests/mail-outage-browser.test.mjs",
+          "tests/recipient-clock-browser.test.mjs",
+          "tests/release-bundle-startup.test.mjs",
+          "tests/release-database-outage.test.mjs",
+          "tests/release-demo-bundle-startup.test.mjs",
+          "tests/release-runtime.test.mjs",
+          "tests/ticket-dependencies.test.mjs",
+          "tests/web-architecture.test.mjs",
+          "tests/web-capacity-phase.test.mjs",
+          "tests/work-events-admission.test.mjs"
+        ],
+        "passed": true,
+        "sha256": "01806423f80bde1172e66a2e63f354cbaeaefc042fdd5cd27a984c0056db7800",
+        "durationMs": 128070
+      },
+      {
+        "name": "ledger",
+        "command": [
+          "/Users/nickmailhot/.local/share/strataai/node-v24.22.2-darwin-arm64/bin/node",
+          "scripts/delivery-progress.mjs",
+          "validate",
+          "--base-ref",
+          "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab"
+        ],
+        "passed": true,
+        "sha256": "a9d14af6e89e16649300c58ff10623fbecdee5cd94240b1c21e3142438643ba7",
+        "durationMs": 11100
+      },
+      {
+        "name": "integration-inventory",
+        "command": [
+          "/Users/nickmailhot/.local/share/strataai/node-v24.22.2-darwin-arm64/bin/node",
+          "scripts/ci/verify-integration-suites.mjs"
+        ],
+        "passed": true,
+        "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502",
+        "durationMs": 88
+      },
+      {
+        "name": "runtime-drift",
+        "command": [
+          "/Users/nickmailhot/.local/share/strataai/node-v24.22.2-darwin-arm64/bin/node",
+          "scripts/ci/generate-feature-runtime.mjs",
+          "--check"
+        ],
+        "passed": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "durationMs": 73
+      },
+      {
+        "name": "web-types",
+        "command": [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        "passed": true,
+        "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71",
+        "durationMs": 7220
+      },
+      {
+        "name": "browser-types",
+        "command": [
+          "npm",
+          "run",
+          "typecheck:browser"
+        ],
+        "passed": true,
+        "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34",
+        "durationMs": 2070
+      },
+      {
+        "name": "lint",
+        "command": [
+          "npm",
+          "run",
+          "lint"
+        ],
+        "passed": true,
+        "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1",
+        "durationMs": 5007
+      },
+      {
+        "name": "web-unit",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "--maxWorkers=1"
+        ],
+        "passed": true,
+        "sha256": "d5cf6ba8a725dc90d50c273d5fb6ff5bc3bbdb898d3a003957b28a1bf394ce58",
+        "durationMs": 362427
+      },
+      {
+        "name": "web-build",
+        "command": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "passed": true,
+        "sha256": "4d710dea88a2c8c536d345266174febc6496007633daa7da90ea20e629ac80f2",
+        "durationMs": 8058
+      },
+      {
+        "name": "dotnet-restore",
+        "command": [
+          "dotnet",
+          "restore",
+          "StrataAI2.slnx",
+          "--locked-mode"
+        ],
+        "passed": true,
+        "sha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce",
+        "durationMs": 1255
+      },
+      {
+        "name": "dotnet-build",
+        "command": [
+          "dotnet",
+          "build",
+          "StrataAI2.slnx",
+          "-c",
+          "Release",
+          "--no-restore",
+          "-warnaserror"
+        ],
+        "passed": true,
+        "sha256": "0a124c66502de646a30596b2e426cc427ad662c357fe5f8bf9aa8ccbba320432",
+        "durationMs": 22501
+      },
+      {
+        "name": "dotnet-Domain",
+        "command": [
+          "dotnet",
+          "test",
+          "--project",
+          "tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj",
+          "-c",
+          "Release",
+          "--no-build"
+        ],
+        "passed": true,
+        "sha256": "ea8f44f2f08c5478077acea37f42df4e94dcac23505e8e56156246e9d53b7d24",
+        "durationMs": 2614
+      },
+      {
+        "name": "dotnet-Api-linux",
+        "command": [
+          "/Users/nickmailhot/.local/share/strataai/node-v24.22.2-darwin-arm64/bin/node",
+          "scripts/local/source-tests.mjs"
+        ],
+        "passed": true,
+        "sha256": "5b4bb15113ec23db4eb5c9b77987fc8bc2458e6c2aa07545689760b3bed4b600",
+        "durationMs": 1083535
+      },
+      {
+        "name": "python-contracts",
+        "command": [
+          "python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "*_test.py"
+        ],
+        "passed": true,
+        "sha256": "0d01990587b9455b9e176dc3385d1670bc87232119c8ae9b170e8939cd6468c2",
+        "durationMs": 194111
+      },
+      {
+        "name": "secret-scan",
+        "command": [
+          "/Users/nickmailhot/.local/share/strataai/node-v24.22.2-darwin-arm64/bin/node",
+          "scripts/local/secret-scan.mjs"
+        ],
+        "passed": true,
+        "sha256": "306a319d31196a1c5f1c501fc16f369eb9f01538c0e02ed16ce3ab8e23a11fc4",
+        "durationMs": 4544
+      },
+      {
+        "name": "persistence",
+        "command": [
+          "/Users/nickmailhot/.local/share/strataai/node-v24.22.2-darwin-arm64/bin/node",
+          "scripts/local/persistence.mjs"
+        ],
+        "passed": true,
+        "sha256": "0eb6932b0a976a99083dc8936f3f080d077fb888a5f54a0d4be986e6ef76785f",
+        "durationMs": 193043
+      },
+      {
+        "name": "feature-runtime",
+        "command": [
+          "/Users/nickmailhot/.local/share/strataai/node-v24.22.2-darwin-arm64/bin/node",
+          "scripts/local/runtime.mjs"
+        ],
+        "passed": true,
+        "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5",
+        "durationMs": 1918271
+      }
+    ],
+    "web": {
+      "passed": 3101,
+      "existingDeferredCapacitySkips": 24
+    },
+    "productionBrowser": {
+      "passed": 27,
+      "files": [
+        "tests/browser/archived-cards.spec.ts",
+        "tests/browser/board-creation-recovery.spec.ts",
+        "tests/browser/board.spec.ts",
+        "tests/browser/card-description.spec.ts",
+        "tests/browser/organization-invitation-administration.spec.ts",
+        "tests/browser/work-usability.spec.ts"
+      ],
+      "zeroSuiteRetries": true,
+      "boardScenarioBudgetMs": 90000,
+      "resultBudgetMs": 5000,
+      "scope": "Whole original six files, original role/tenant/Portal/idempotency/canonical persistence/return/focus assertions and fixture restoration retained."
+    },
+    "targeted": {
+      "protocolPassed": 72,
+      "homeComponentsPassed": 83,
+      "browserTypes": "Passed"
+    },
+    "codeql": {
+      "result": "Passed",
+      "findings": 0,
+      "rules": 87,
+      "sarifSha256": "9bb7f474773972e59636f50286983a76ab474a5f2db55d1e453cbfd2816a64a9"
+    },
+    "visualReview": "Fresh actual390px recovered Board draft/Create focus and return launcher screenshots inspected. All four production retry widths passed their original canonical Board/return assertions. Isolated native Home counterfactual uses a mocked destination and cannot qualify product/canonical acceptance."
+  },
+  "qualificationSetupFailure": {
+    "result": "Failed before CodeQL scan",
+    "cause": "Docker daemon absent after machine restart; existing Docker.app opened and actual daemon29.9.2 readiness verified before controlled unchanged-candidate scan.",
+    "artifacts": [
+      {
+        "path": "codeql/pr134-board-retry-20261031/attempt1-daemon-unavailable/status.json",
+        "sha256": "a33d91d95442907bad2b981a5c96ce448710d16072f07492b81a3aa40792e387"
+      },
+      {
+        "path": "codeql/pr134-board-retry-20261031/attempt1-daemon-unavailable/launcher.log",
+        "sha256": "56a190dfa922e02d495a0083423bd762e5336edb9ac10b59cf5a6b9fb7b889e0"
+      },
+      {
+        "path": "codeql/pr134-board-retry-20261031/attempt1-daemon-unavailable/wrapper.log",
+        "sha256": "e0c3b67341c434da370953819aac4502852507cf04d6a7277028ab2eb77f2040"
+      }
+    ]
+  },
+  "preservedHistory": [
+    "docs/delivery/evidence/pr134-browser-recovery-20261031.json",
+    "docs/delivery/evidence/pr134-archive-invitation-recovery-20261031.json",
+    "docs/delivery/evidence/pr133-merged-20261031.json"
+  ],
+  "publication": {
+    "normalHookedCode": "42022878c3ec04cbafbd3b0b173cf03a93db231f",
+    "backup": "backup/pr134-qualified-board-retry",
+    "qualifiedApiCode": "9231c766f8fbc2f96edde9ef6ae6af7b128a172d",
+    "parent": "4c63d7cc9a998d386d325534255a2cc6bbf267ba",
+    "orderedInheritedMergeParents": [
+      "ab7f229877bbd3ed9ce1b7ae8abac3a79e90ae8f",
+      "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab"
+    ],
+    "status": "Unreferenced API code verified; final evidence/docs qualification and one expected-head nonforce publication required."
+  },
+  "acceptance": {
+    "implementation": "Bounded test correction implemented",
+    "localTesting": "Passed exact source tree",
+    "hostedTesting": "Fresh final published head full/security/release/CodeQL/reviews required",
+    "uxProductMvp": "Unverified; no parent issue or Done claim"
+  },
+  "docsPreparationRefusal": {
+    "result": "Failed before docs gate or lifecycle mutation",
+    "reason": "Current implementation paths included the new evidence document absent from the already-qualified code parent. Validator correctly refused source-path ancestry.",
+    "correction": "Keep implementation paths at actual qualified executable code; evidence artifact remains separately linked through evidence path/hash. Original preparation proof/ledger/log/helper bytes retained; no application/test/assertion/receipt change.",
+    "artifacts": [
+      {
+        "path": "ci-failures/pr134-board-retry-docs/attempt1-source-path-refusal/prepare.log",
+        "sha256": "5a14e82737957076bb1249f0328e31f5320cd1504cc19859e9a69f17271036cd"
+      },
+      {
+        "path": "ci-failures/pr134-board-retry-docs/attempt1-source-path-refusal/wrapper.log",
+        "sha256": "27cebac101255a42d5a6cc5ff23aeda2da52476201c53c065046aaf882127fa6"
+      },
+      {
+        "path": "ci-failures/pr134-board-retry-docs/attempt1-source-path-refusal/proof.json",
+        "sha256": "ca0fff620f352bf46b7e907ec4ed2e3b350ebc5530365c922e052f870586a5bb"
+      },
+      {
+        "path": "ci-failures/pr134-board-retry-docs/attempt1-source-path-refusal/ledger.json",
+        "sha256": "51e280d255126e8bdf47fec4c5a5a604926cb31cf8d79876e885e22cb414ec94"
+      },
+      {
+        "path": "ci-failures/pr134-board-retry-docs/attempt1-source-path-refusal/prepare.mjs",
+        "sha256": "341f5b68e344ce43ecad489713edfaf748eb5651a4faee764dda091f975b756a"
+      }
+    ]
+  }
+}
