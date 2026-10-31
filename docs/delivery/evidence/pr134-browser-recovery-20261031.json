@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "revision": "aeca19791647b937ff812dfd0a2f20ef1c92fe17",
+  "parent": "ac19a01a76189fef599c50c8375d69ab59fea17a",
+  "tree": "b551ff33cea416b5e992dd1526444e4d26737f4f",
+  "originalLocalCodeCommit": "87d34fa723fb315f3883f974b98ddb0ecafbcd19",
+  "qualifiedFocusCode": "ac19a01a76189fef599c50c8375d69ab59fea17a",
+  "originalLocalFocusCommit": "2294b4e5733979f992fa34335f14e72bdfd23bee",
+  "inheritedMerge": {
+    "revision": "8b7aae13b94e0f4b17edaff4d2a7d7558c0d66f1",
+    "orderedParents": [
+      "ab7f229877bbd3ed9ce1b7ae8abac3a79e90ae8f",
+      "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab"
+    ]
+  },
+  "acceptanceRefs": [
+    "PRD-04/BOARD-FR-001",
+    "PRD-04-TC-06",
+    "PRD-04-TC-07",
+    "PRD-04-TC-09",
+    "PRD-04-TC-11",
+    "PRD-04-TC-12",
+    "PRD-12/DATE-FR-001",
+    "PRD-12/DATE-FR-003",
+    "PRD-12/DATE-FR-006",
+    "UXA-03",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-08"
+  ],
+  "failures": [
+    {
+      "run": 41182033183,
+      "job": 124492113387,
+      "source": "f21b60f3f118c528c3eb046442acbe7a277435f8",
+      "passed": 138,
+      "failed": 1,
+      "case": "Board creation recovery320px line85 Create focus inactive",
+      "artifact": 13039671708,
+      "zipSha256": "3efc49932ca0eec83cfea7d475e4f1764de35abdd440a7815654f1a23d551d26",
+      "disposition": "Native Create activation disables submit; own MUI dialog fallback can replace its focused owner. A BOARD_CREATED invalidation withdraws the mounted draft while retry focus is attempted; old recovery captures paper instead of original control. Trace shows hidden container during focus call and admission re-read. Dedicated boards/metadata ordering tests reproduce2failed/2passed on unchanged application."
+    },
+    {
+      "run": 41182033183,
+      "job": 124492113361,
+      "source": "f21b60f3f118c528c3eb046442acbe7a277435f8",
+      "passed": 137,
+      "failed": 1,
+      "case": "Work usability320px line77 Dates saved missing",
+      "artifact": 13042021272,
+      "zipSha256": "51f3fbec8ffc6455c7c7f2fda60af6e80b599a5db7e9ef445b260955c3687e64",
+      "disposition": "Unchanged actual CardDateEditor + appTheme in native Chromium320px: inject one admission withdrawal at initial Save dates keydown. Original single activation emits0writes and Dates saved assertion fails; existing approved pressObservedRequest admits exactly1PATCH, waits600ms reply withoutduplicate, and original Dates saved assertion passes. No application source changed for dates. Component native captures inspected; isolated harness complements, does not replace full production browser."
+    }
+  ],
+  "corrections": {
+    "application": "Capture original command focus before disabling, park on its own MUI dialog, retain across command/admission, restore only after both finish and only while focus remains owned. Independent focus choices retained; no request/authority/retry/deadline changes.",
+    "browser": "Reuse existing approved request-observation helper for one date mutation, retain original notice/result/deadline/zero suite retries; strengthen with exactly1PATCH, key/body and fresh canonical date/timezone read. Helper source/limits unchanged. Whole work-usability file selected.",
+    "scope": "No date application change. Existing safe Markdown link-context polish retained; no API/schema/authority/role/tenant/fixture/deadline/suite-retry change. Original focus/result assertions retained and exact write/canonical date checks added."
+  },
+  "local": {
+    "runId": "1793450084694-50815de1",
+    "passed": true,
+    "durationMs": 3789331,
+    "qualification": "Local feature evidence only; required-ci and exact-revision full release qualification remain required.",
+    "receiptSha256": "035bf7bad326e1bf925d38bb8833308866cd1440a8ea4041738971ea8df832c0",
+    "stages": [
+      {
+        "name": "repository-contracts",
+        "passed": true,
+        "durationMs": 120729,
+        "logSha256": "a5cedac73a6239e0a08a3fb9c59eb2b6dc6fb9ad272fafb1583feb19f302dcb0"
+      },
+      {
+        "name": "ledger",
+        "passed": true,
+        "durationMs": 10395,
+        "logSha256": "a9d14af6e89e16649300c58ff10623fbecdee5cd94240b1c21e3142438643ba7"
+      },
+      {
+        "name": "integration-inventory",
+        "passed": true,
+        "durationMs": 85,
+        "logSha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+      },
+      {
+        "name": "runtime-drift",
+        "passed": true,
+        "durationMs": 73,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "web-types",
+        "passed": true,
+        "durationMs": 7201,
+        "logSha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+      },
+      {
+        "name": "browser-types",
+        "passed": true,
+        "durationMs": 2060,
+        "logSha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+      },
+      {
+        "name": "lint",
+        "passed": true,
+        "durationMs": 4820,
+        "logSha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+      },
+      {
+        "name": "web-unit",
+        "passed": true,
+        "durationMs": 363573,
+        "logSha256": "165ec04d583a8e7bdb9966578ac899ce8c58e239a0656ca68ddfa4bd322d3bd4"
+      },
+      {
+        "name": "web-build",
+        "passed": true,
+        "durationMs": 8025,
+        "logSha256": "324bf4e9cc2d80482b9b07b25f68da9a41af2812de2d72134c3fbe2c1d6e4b74"
+      },
+      {
+        "name": "dotnet-restore",
+        "passed": true,
+        "durationMs": 1189,
+        "logSha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce"
+      },
+      {
+        "name": "dotnet-build",
+        "passed": true,
+        "durationMs": 23134,
+        "logSha256": "0d92922ff656e7894214d4985ab05b04c992114b3f5ee9724febea5eb516f8f9"
+      },
+      {
+        "name": "dotnet-Domain",
+        "passed": true,
+        "durationMs": 2633,
+        "logSha256": "f81c2113d3b1aed9d83ed6d9d314f65690fac5b777237ede12e443c81f76439a"
+      },
+      {
+        "name": "dotnet-Api-linux",
+        "passed": true,
+        "durationMs": 1081954,
+        "logSha256": "ec3871e6de407742cd1d97759a3a611883fb768ae8cc3056a1964475a3db6216"
+      },
+      {
+        "name": "python-contracts",
+        "passed": true,
+        "durationMs": 194586,
+        "logSha256": "9eee95be42445a34616ba4953b5e3a278d1f7aae34bd4fa31c3e0bc0b18276bb"
+      },
+      {
+        "name": "secret-scan",
+        "passed": true,
+        "durationMs": 4281,
+        "logSha256": "17a57d75ce9238f94202fa9f5b21c66538cbcc9b3d45dfefdd431265264e5f19"
+      },
+      {
+        "name": "persistence",
+        "passed": true,
+        "durationMs": 191989,
+        "logSha256": "037d7ef318bc65bd86a3e2c647039d9ac0587711794aee5522c1469a2ad5e960"
+      },
+      {
+        "name": "feature-runtime",
+        "passed": true,
+        "durationMs": 1771130,
+        "logSha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+      }
+    ]
+  },
+  "browser": {
+    "passed": 23,
+    "failed": 0,
+    "retries": 0,
+    "wholeFiles": [
+      "tests/browser/board-creation-recovery.spec.ts",
+      "tests/browser/board.spec.ts",
+      "tests/browser/card-description.spec.ts",
+      "tests/browser/work-usability.spec.ts"
+    ],
+    "logSha256": "b5f4d0527bddfdd30152236f3283ef2858c1152a178fa4322192db7f2f5153e6",
+    "scope": "All whole production Board recovery/Board/description/work-usability cases, four widths and tablet200%text, original role/tenant/abuse runtime commands and scoped worker fixture."
+  },
+  "targeted": {
+    "organizationHome": 90,
+    "keyboardProtocol": 38,
+    "dateEditor": 6,
+    "nativeCounterfactual": "Unchanged actual CardDateEditor/current appTheme: old single key lost during admission =0writes/red; approved existing request-observation =1write/green,600ms reply,no duplicate/no page errors. Isolated harness is additional evidence, not production integration."
+  },
+  "security": {
+    "status": "passed",
+    "findings": 0,
+    "rules": 87,
+    "sarifSha256": "042ac364bf0fdf7dca50de8b106fc44d939a9ffb98a02de23108c41bd48c987e",
+    "statusSha256": "ae30b70916be684dba926d7992334bb2f653dac815f6a9c16f78a28bfcb58d73",
+    "scope": "Complete fresh JavaScript/TypeScript code-scanning suite on final combined candidate"
+  },
+  "visual": {
+    "review": "Actual final production320px recovered Board draft/focus and final work Card detail captures inspected. Original four-width/200%text/Axe browser assertions retained. Earlier five link-context component/appTheme renders remain historical evidence; no independent product acceptance claimed.",
+    "screenshots": [
+      {
+        "name": "board-creation-recovery-PR-aefaf-original-key-retry-at-320px/recovered-board-draft-320.png",
+        "sha256": "59586a3f790c7f9f49546c753e8e87b145bd7e8612ba623c3dbf9307a6f99e9e"
+      },
+      {
+        "name": "board-creation-recovery-PR-aefaf-original-key-retry-at-320px/recovered-board-return-320.png",
+        "sha256": "d63239157bfaf0bdae0f3552d9fcf283b6d7a0d10e97cda9f633e86f78cf9878"
+      },
+      {
+        "name": "work-usability-UXA-02-04-0-59ea8--filter-and-return-at-320px/board.png",
+        "sha256": "6ccea79b6bb227bd9805b1c7883311c1283f5a68c0e9fd76fbe434bd0821e979"
+      },
+      {
+        "name": "work-usability-UXA-02-04-0-59ea8--filter-and-return-at-320px/detail.png",
+        "sha256": "169c0e7a052cacaa3e4c8a4ab54498dc6f319c6c463273a61b4feb690e215783"
+      }
+    ]
+  },
+  "retainedLogHashes": [
+    {
+      "name": "creation-focus-red.log",
+      "sha256": "81085b154b9b94e67c1b50d164912e99051cbbee8d23858933c9583c2c978561"
+    },
+    {
+      "name": "creation-focus-targeted.log",
+      "sha256": "5cb85c62013685e136820622d2552f1cf8b665f23cb30a48e1d5c59f523ccf47"
+    },
+    {
+      "name": "creation-focus-expanded.log",
+      "sha256": "55c79f2f674fb11bc8c5c1dd156f90eaabf1a321a78c8651245574bfd871dd11"
+    },
+    {
+      "name": "creation-focus-types.log",
+      "sha256": "9547f866ae06dd291ef6878bff2527baba2b5218a677fe1a854620b1539c788e"
+    },
+    {
+      "name": "creation-focus-types-fixed.log",
+      "sha256": "fcc39c051dbcbdc2f04abe5cd45a835e6f3f68991ffb690d8adbb172df4370dc"
+    },
+    {
+      "name": "creation-focus-lint.log",
+      "sha256": "82438f41d0bf0cd89fd7825eb831585b87650deaa1bbb94a04d8af5fe866ed1e"
+    },
+    {
+      "name": "creation-focus-browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "name": "keyboard-protocol.log",
+      "sha256": "de21a5f22329264a488f0050398dc196040651a78898208d819db0f36f9b105b"
+    },
+    {
+      "name": "browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "name": "date-editor-baseline.log",
+      "sha256": "9d0dd838bc5aa1e8d68db6f1d6cff6c917ae12fc0f01751c0af29bef16895f41"
+    },
+    {
+      "name": "native-probe/result.json",
+      "sha256": "fbcdfc2dda0eb944e7af18bbeab62038f4eebbd1bcdb84def81be858ad673b4e"
+    },
+    {
+      "name": "native-probe/probe.mjs",
+      "sha256": "ba17f1fd4d3db1f08d726539efe3d7130bf8d6b01850e86db8baff73fbe6f9bf"
+    },
+    {
+      "name": "native-probe/attempt1.log",
+      "sha256": "e024cb8ced4912f0631ccce83f47ea855c13dfb15dee408164b50a8f5ab7cd00"
+    },
+    {
+      "name": "native-probe/attempt2.log",
+      "sha256": "5087fd0017b68b1caa6fc9afa086c50904db5c8a524d906e24101ae1ef62fde0"
+    },
+    {
+      "name": "native-probe/attempt3.log",
+      "sha256": "a32d2e06d044bac6c09f73879b689e41fa21c6954ba4accf97df92279fce2c66"
+    },
+    {
+      "name": "native-probe/attempt4.log",
+      "sha256": "ba1720a223414292e5d9c604b0342e9252bf3a6c1d7fa3be7784ac8dbefda9ac"
+    },
+    {
+      "name": "native-probe/attempt5.log",
+      "sha256": "ef327f8298be626ec4b14b5cc5fa04501d65bd7e3707e5a413d7cd0ca2f24497"
+    },
+    {
+      "name": "native-probe/attempt6.log",
+      "sha256": "1a6e1710277dcf6d83b59cae745e0b2f1e445716cfc8cb9420fe0df44dc7db9c"
+    }
+  ],
+  "remaining": [
+    "Fresh final-head/base hosted full/required-ci/security/release and complete five-language CodeQL/review findings before authorized normal merge.",
+    "Historical acceptance/gates/integrations preserved separately on reopened records; no parent PRD/product/MVP acceptance or Done from local qualification."
+  ]
+}
