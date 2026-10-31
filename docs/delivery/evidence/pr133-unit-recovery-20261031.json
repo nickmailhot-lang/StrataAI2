@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "revision": "0c6b538f830db9d1fc20490d6c1f3ff385592e12",
+  "tree": "95062214a7e31b1efe0974f765312d91b1bc5231",
+  "base": "122c72e37cee679547cc4ffcf24d70e94c4e15e4",
+  "scope": "PR133 hosted unit recovery failure correction; PRD28 TC07/08/09/16; UXA03/04/07",
+  "failure": {
+    "at": "2026-10-31T00:18:34.485555+00:00",
+    "run": 41118195398,
+    "job": 124311273175,
+    "head": "a7c696722f81f299c69006f6d7c235206407cf70",
+    "integrationCommit": "423f823175bd7dcd74f3846d7b8948ce0a15fc7e",
+    "browserPassed": 137,
+    "browserFailed": 1,
+    "test": "tests/browser/strata-lot-directory.spec.ts:85:7 restored version0 compares current values before explicit fresh change",
+    "assertion": "line122 expected Your draft is preserved. Refresh current records visible within5000ms; element not found",
+    "downstream": {
+      "fullSanity": "failure",
+      "requiredCi": "failure",
+      "releaseBundle": "skipped"
+    },
+    "retainedArtifacts": {
+      "containerDiagnostics": 13022585944
+    },
+    "restarted": false,
+    "disposition": "Not evaluated yet; investigate retained screenshot/error-context/trace and actual retry behavior. No blind rerun or budget/assertion changes."
+  },
+  "cause": "Metadata read can acquire operation.current and set readyfalse before a native retry event from prior render dispatches. Old submit checked rendered busy only, overwrote operation.current, and superseded read could not restore ready after terminal409. Deterministic before-retry-commit ordering reproduces hidden preserved editor for both original versions.",
+  "correction": "Synchronous operation.current ownership refuses stale activation during read/command; foreground automatic read also refuses active operation. Current read completes, then explicit original retry preserves body/key. Existing keyboard browser helper retries only until request observation, with original count/result assertions unchanged.",
+  "negativeEvidence": "2fail/2pass original notice test; 2fail/2pass ownership assertion; retained.",
+  "targeted": {
+    "result": "Passed",
+    "cases": 27,
+    "focusedCases": 8,
+    "types": "Passed",
+    "lint": "Passed",
+    "logs": [
+      {
+        "path": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/ci-failures/pr133-browser4-41118195398/pr133-unit-admission-ordering-red.log",
+        "sha256": "1635293e1e76b515329dc48c7d5a57763645c7a8f29b3be0c3a323f937536e3d"
+      },
+      {
+        "path": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/ci-failures/pr133-browser4-41118195398/pr133-unit-admission-ownership-red.log",
+        "sha256": "4dcca1cd207d910f43b47b0d5a01a3a14e6282251278f0494f1333229102bc5b"
+      },
+      {
+        "path": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/ci-failures/pr133-browser4-41118195398/pr133-unit-admission-expanded.log",
+        "sha256": "0ea2cd91db927260863b57218608d23d1a606198fa469b9dd3423db5c28bad8c"
+      },
+      {
+        "path": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/ci-failures/pr133-browser4-41118195398/pr133-unit-recovery-types.log",
+        "sha256": "fcc39c051dbcbdc2f04abe5cd45a835e6f3f68991ffb690d8adbb172df4370dc"
+      },
+      {
+        "path": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/ci-failures/pr133-browser4-41118195398/pr133-unit-recovery-lint.log",
+        "sha256": "82438f41d0bf0cd89fd7825eb831585b87650deaa1bbb94a04d8af5fe866ed1e"
+      }
+    ]
+  },
+  "local": {
+    "result": "Passed",
+    "runId": "1793408282641-869f3d5c",
+    "stages": 17,
+    "durationMs": 3170881,
+    "receiptSha256": "d97d0b0fc3ed4dd2a2b2a313a893df15e722056dd88e8e54b40ec863112f31e4",
+    "results": [
+      {
+        "name": "repository-contracts",
+        "passed": true,
+        "durationMs": 122816,
+        "sha256": "d8f1f81aae685d131956a17068ea20a0593fb92ffa1626a90b2ffe44dff589a5"
+      },
+      {
+        "name": "ledger",
+        "passed": true,
+        "durationMs": 10932,
+        "sha256": "383e53490848a858a939e1c89ef9b81f419621cb3cc7cf772286cbb19ec4d8ff"
+      },
+      {
+        "name": "integration-inventory",
+        "passed": true,
+        "durationMs": 94,
+        "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+      },
+      {
+        "name": "runtime-drift",
+        "passed": true,
+        "durationMs": 74,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "web-types",
+        "passed": true,
+        "durationMs": 7231,
+        "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+      },
+      {
+        "name": "browser-types",
+        "passed": true,
+        "durationMs": 2174,
+        "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+      },
+      {
+        "name": "lint",
+        "passed": true,
+        "durationMs": 4929,
+        "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+      },
+      {
+        "name": "web-unit",
+        "passed": true,
+        "durationMs": 358386,
+        "sha256": "ed75fdea27790cd2c7be29d37ff082aea2867aa8ab0ed4a8365225792c92f97e"
+      },
+      {
+        "name": "web-build",
+        "passed": true,
+        "durationMs": 8147,
+        "sha256": "31b146c0943189531be7450f36239b85a4d81a38297ef44f5a4b0d8ea949aa8e"
+      },
+      {
+        "name": "dotnet-restore",
+        "passed": true,
+        "durationMs": 1295,
+        "sha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce"
+      },
+      {
+        "name": "dotnet-build",
+        "passed": true,
+        "durationMs": 23903,
+        "sha256": "bb78342092b31658196b127b538591931759f449b4ed90899686acf218780e99"
+      },
+      {
+        "name": "dotnet-Domain",
+        "passed": true,
+        "durationMs": 2732,
+        "sha256": "768afff304edb422f34f3631aa96e15ce2e2e0420c5f5ea9b87ea38f1ed46c0c"
+      },
+      {
+        "name": "dotnet-Api-linux",
+        "passed": true,
+        "durationMs": 1091956,
+        "sha256": "2330672cc36bcec75cd69b9f10f53df2392d5c033e93f6b00bd15614e98a18ed"
+      },
+      {
+        "name": "python-contracts",
+        "passed": true,
+        "durationMs": 110431,
+        "sha256": "64c602c9e47da9b359d73493d2c0b8d01038ca0468c9a169dffc1df8e7846d92"
+      },
+      {
+        "name": "secret-scan",
+        "passed": true,
+        "durationMs": 4517,
+        "sha256": "8412a8ca0bcda03f47a7179b6e399a089737f0f7500d8bf4d5f3d1925c6c5dcd"
+      },
+      {
+        "name": "persistence",
+        "passed": true,
+        "durationMs": 164313,
+        "sha256": "38ffeaf885c94c313e44158f352f0b0b5305b6f455f93697a048a50191be3c8d"
+      },
+      {
+        "name": "feature-runtime",
+        "passed": true,
+        "durationMs": 1255302,
+        "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+      }
+    ],
+    "browser": {
+      "result": "Passed",
+      "cases": 12,
+      "wholeFiles": [
+        "tests/browser/board.spec.ts",
+        "tests/browser/strata-lot-directory.spec.ts"
+      ],
+      "restoredVersions": [
+        0,
+        1
+      ],
+      "roleTenantAndAbuse": "Passed",
+      "logSha256": "c86cb781c5c0e6e8a62ebc35d2ee0bb386f6ff490ff4c773b1b136dfd85ba79f"
+    }
+  },
+  "codeql": {
+    "result": "passed",
+    "findings": 0,
+    "rules": 87,
+    "sourceFiles": 692,
+    "sarifSha256": "eb3fffdd785085008c7e7edd982dcf77d0014f09f605eec39cd3b1ce18c9b846"
+  },
+  "preserved": [
+    "Original hosted137pass/1failure and local red evidence retained separately.",
+    "Assertions, role/tenant rules, original request identity, zero retries and deadlines intact.",
+    "Prior implementation, cycles and parent acceptance remain separate."
+  ],
+  "pending": [
+    "Fresh hosted full qualification and complete hosted CodeQL.",
+    "Equivalent automatic-event reuse proof after fresh full success.",
+    "Integration and product/UX acceptance."
+  ],
+  "visualReview": {
+    "result": "Reviewed",
+    "scope": "Actual local production screenshots at320px and1280px inspected; readable fields/history, shared shell, no visible page overflow. Automated browser runs cover all320/390/768/1280px plus200%text/Axe. This is agent review, not product-owner acceptance."
+  }
+}

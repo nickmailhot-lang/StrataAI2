@@ -2,7 +2,7 @@ name: StrataAI2 feature CI
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   merge_group:
   workflow_dispatch:
     inputs:
@@ -12,9 +12,10 @@ on:
         default: false
 concurrency:
   group: feature-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}
 permissions:
   contents: read
+  actions: read
 jobs:
   select:
     runs-on: ubuntu-24.04
@@ -23,6 +24,7 @@ jobs:
       web: ${{ steps.plan.outputs.web }}
       runtime: ${{ steps.plan.outputs.runtime }}
       browser: ${{ steps.plan.outputs.browser }}
+      reused: ${{ steps.reuse.outputs.reused }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -34,7 +36,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Validate CI contracts and immutable full-suite coverage
         run: |
-          node --test tests/local-workflow.test.mjs tests/feature-ci.test.mjs tests/integration-suites.test.mjs tests/build-metadata.test.mjs tests/delivery-progress.test.mjs tests/ticket-dependencies.test.mjs
+          node --test tests/automatic-qualification.test.mjs tests/local-workflow.test.mjs tests/feature-ci.test.mjs tests/integration-suites.test.mjs tests/build-metadata.test.mjs tests/delivery-progress.test.mjs tests/ticket-dependencies.test.mjs
           node scripts/ci/verify-integration-suites.mjs
           node scripts/ci/generate-feature-runtime.mjs --check
           python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
@@ -51,17 +53,24 @@ jobs:
         env:
           FORCE_FULL: ${{ inputs.full || false }}
         run: node scripts/ci/select-feature-tests.mjs
+      - name: Find equivalent completed qualification
+        id: reuse
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci/automatic-qualification.mjs lookup
       - name: Retain selection evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: feature-selection-${{ github.sha }}
-          path: feature-plan.json
+          path: |
+            feature-plan.json
+            ci-request.json
           if-no-files-found: error
           retention-days: 14
   web:
     needs: select
-    if: needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
+    if: needs.select.outputs.reused == 'false' && needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -88,13 +97,13 @@ jobs:
       - run: npm run build
   runtime:
     needs: select
-    if: needs.select.outputs.runtime == 'true'
+    if: needs.select.outputs.reused == 'false' && needs.select.outputs.runtime == 'true'
     uses: ./.github/workflows/feature-runtime.yml
     with:
       browser: ${{ needs.select.outputs.browser }}
   full:
     needs: select
-    if: needs.select.outputs.full == 'true'
+    if: needs.select.outputs.reused == 'false' && needs.select.outputs.full == 'true'
     uses: ./.github/workflows/full-sanity.yml
   required-ci:
     name: required-ci
@@ -103,10 +112,16 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
+      - uses: actions/download-artifact@v8
+        with:
+          name: feature-selection-${{ github.sha }}
       - name: Require exactly the selected checks
+        id: qualified
         env:
           SELECTION_RESULT: ${{ needs.select.result }}
           WEB_SELECTED: ${{ needs.select.outputs.web }}
@@ -115,4 +130,14 @@ jobs:
           WEB_RESULT: ${{ needs.web.result }}
           RUNTIME_RESULT: ${{ needs.runtime.result }}
           FULL_RESULT: ${{ needs.full.result }}
-        run: node scripts/ci/require-feature-checks.mjs
+          REUSED: ${{ needs.select.outputs.reused }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci/automatic-qualification.mjs complete
+      - name: Retain successful qualification identity
+        if: needs.select.outputs.reused == 'false'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-qualification-${{ steps.qualified.outputs.key }}
+          path: ci-qualification.json
+          if-no-files-found: error
+          retention-days: 14

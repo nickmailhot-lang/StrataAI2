@@ -1,0 +1,133 @@
+{
+  "head": "ef43ef54ffd9155afb43a3f47e8ddcb43c8d9f99",
+  "base": "ff4c17121d3f66c43c7a3319914c7c6580ee1737",
+  "workflow": 41069022705,
+  "jobs": [
+    {
+      "id": 124107899355,
+      "name": "select",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124108340835,
+      "name": "full / metadata",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124108342616,
+      "name": "runtime",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 124108342655,
+      "name": "web",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 124108595806,
+      "name": "full / dotnet-quality",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124108595965,
+      "name": "full / web-quality",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124108596026,
+      "name": "full / postgres-integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124126212503,
+      "name": "full / source-quality-gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124126260898,
+      "name": "full / build-images-once",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124129114958,
+      "name": "full / security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124129115062,
+      "name": "full / container-integration (browser-full, 1/4)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124129115069,
+      "name": "full / container-integration (browser-full, 4/4)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124129115073,
+      "name": "full / container-integration (browser-foundation, 1/1)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124129115089,
+      "name": "full / container-integration (browser-notifications, 1/1)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124129115135,
+      "name": "full / container-integration (browser-full, 3/4)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124129115163,
+      "name": "full / container-integration (browser-full, 2/4)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124129115448,
+      "name": "full / container-integration (commands, 1/1)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124227804215,
+      "name": "full / full-sanity-gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124227850661,
+      "name": "full / release-bundle",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124230397812,
+      "name": "required-ci",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "merge": "122c72e37cee679547cc4ffcf24d70e94c4e15e4",
+  "integrated": true,
+  "codeql": "Complete five-language analyses passed; no new alerts at ef43ef54",
+  "actionableReviewThreads": "All three resolved automatically",
+  "originalFailure": "108ms feedback versus unchanged 100ms budget retained; one diagnosed rerun passed at64.2ms; no app/test/budget changes",
+  "acceptance": "Tooling source reviewed; target integration verified; no parent PRD or product/MVP acceptance claim"
+}

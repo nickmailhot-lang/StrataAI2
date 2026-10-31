@@ -3,7 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, renameSync, openSync, closeSync } from 'node:fs';
 import { resolve, join } from 'node:path';
-import { selectImpact, policy } from '../ci/select-feature-tests.mjs';
+import { selectImpact, policy, isDocumentation } from '../ci/select-feature-tests.mjs';
 import { readdirSync } from 'node:fs';
 export const git = (args, options = {}) => execFileSync('git', args, { encoding: 'utf8', ...options }).trim();
 export const hash = value => createHash('sha256').update(value).digest('hex');
@@ -38,15 +38,15 @@ export function localPlan(base = 'origin/main') {
   const inventory = readdirSync(join(root, 'tests/browser')).filter(p => p.endsWith('.spec.ts')).map(p => `tests/browser/${p}`);
   for (const p of policy.baselineBrowser) if (!inventory.includes(p)) throw new Error(`Missing baseline browser file: ${p}`);
   const selected = selectImpact(changedPaths, inventory);
-  if (untracked.some(p => !/^(docs\/|README\.md$|AGENTS\.md$)/.test(p))) {
-    Object.assign(selected, { full: true, web: true, runtime: false, omitted: [] });
+  if (untracked.some(p => !isDocumentation(p))) {
+    Object.assign(selected, { tier: 'full', full: true, web: true, runtime: false, omitted: [] });
     selected.reasons.push('Untracked source requires complete local coverage before commit');
   }
   return { ...selected, baseSha, mergeBase, inventory,
     head: git(['rev-parse', 'HEAD']), tree: snapshot(root),
     // Full CI remains selected for shared changes. This is a local feature gate,
     // never a claim that source checks replace hosted full qualification.
-    localRuntime: changedPaths.some(p => !/^(docs\/|README\.md$|AGENTS\.md$)/.test(p)),
+    localRuntime: selected.tier !== 'docs',
   };
 }
 export function atomicJson(path, value) {

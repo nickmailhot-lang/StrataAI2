@@ -52,7 +52,7 @@ withLock(lock, () => {
   }
   try {
     receipt.task = assertOwnership(plan.changedPaths);
-    const tools = doctor(); receipt.tools = tools; persist();
+    const tools = doctor({ tier: plan.tier }); receipt.tools = tools; persist();
     if (!tools.passed) throw new Error('Toolchain unavailable or mismatched. Run npm run dev:doctor.');
     const feature = parse(readFileSync(join(root, '.github/workflows/feature-ci.yml'), 'utf8'));
     const contractStep = feature.jobs.select.steps.find(s => s.name === 'Validate CI contracts and immutable full-suite coverage');
@@ -64,6 +64,7 @@ withLock(lock, () => {
     run('ledger', process.execPath, ['scripts/delivery-progress.mjs', 'validate', '--base-ref', plan.baseSha]);
     run('integration-inventory', process.execPath, ['scripts/ci/verify-integration-suites.mjs']);
     run('runtime-drift', process.execPath, ['scripts/ci/generate-feature-runtime.mjs', '--check']);
+    if (plan.tier !== 'docs') {
     run('web-types', 'npm', ['run', 'typecheck']);
     run('browser-types', 'npm', ['run', 'typecheck:browser']);
     run('lint', 'npm', ['run', 'lint']);
@@ -74,6 +75,7 @@ withLock(lock, () => {
       runShellStep(name === 'Critical unit baseline' ? 'web-unit-baseline' : 'web-unit-affected', step.run, { env: { PR_BASE: plan.mergeBase } });
     }
     run('web-build', 'npm', ['run', 'build']);
+    }
     if (mode === 'final') {
       if (plan.full) {
       run('dotnet-restore', 'dotnet', ['restore', 'StrataAI2.slnx', '--locked-mode']);

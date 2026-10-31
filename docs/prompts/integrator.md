@@ -22,3 +22,11 @@ checks before writing; hooks do not run on API calls. Publish only the verified
 tree and intended parent under a new branch or expected-head update, then fetch
 and compare the resulting tree. Preserve the original local commit if metadata
 differs. Connector access never waives local or hosted verification.
+
+Use the shared docs/feature/full impact tier from `verify:local -- --plan`.
+Do not narrow backend/shared/security/unknown changes by filename. Include all new
+and untracked tests. Feature evidence keeps whole Board/permission/tenant baseline
+and affected browser files; full risk requires full qualification. Automatic CI
+reuse requires completed successful exact integration/base/policy/scope proof;
+manual reruns and release qualification stay fresh. Record actual scope/duration
+and prior failures separately; a reused leaf pass cannot establish full acceptance.

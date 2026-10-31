@@ -70,7 +70,7 @@ function Directory({ organization }: { organization: string }) {
     else { setFailure(message(reason)); if (reason instanceof WorkRequestError && reason.correlationId) setNotice(`Support reference: ${reason.correlationId}`); }
   }
   const load = useCallback(async (after?: string, automatic = false) => {
-    if (automatic && latest.current.busy) return;
+    if (automatic && (operation.current || latest.current.busy)) return;
     operation.current?.abort(); const controller = new AbortController(); operation.current = controller;
     setBusy(true); if (!automatic) { rememberFocus(); setReady(false); }
     try {
@@ -157,7 +157,10 @@ function Directory({ organization }: { organization: string }) {
     const target = owner.current; requestAnimationFrame(() => { if (target?.isConnected) target.focus(); else heading.current?.focus(); });
   }
   async function submit() {
-    if (!ready || busy || !editor || !actorRef.current) return;
+    // A native activation can retain the previous render while a metadata
+    // recheck already owns admission. Do not supersede that read (or another
+    // command); wait for readmission and an explicit activation of the original.
+    if (operation.current || !ready || busy || !editor || !actorRef.current) return;
     let intent = original;
     try {
       intent ??= new LotIntent(organization, actorRef.current, editor.id, editor.source?.version ?? 0, editor.draft);
