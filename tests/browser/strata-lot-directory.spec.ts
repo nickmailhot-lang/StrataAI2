@@ -120,6 +120,7 @@ for (const originalVersion of [0, 1]) {
     await expect(page.getByLabel('Unit identifier', { exact: false })).toBeDisabled(); expect(attempts).toHaveLength(1);
     await pressObservedRequest(page.getByRole('button', { name: 'Retry original unit change' }), () => attempts.length, 2);
     await expect(page.getByText(/Your draft is preserved. Refresh current records/)).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Unit editor', exact: true })).toBeVisible();
     expect(attempts[1]).toEqual(attempts[0]);
     await page.getByRole('button', { name: 'Refresh current records', exact: true }).click();
     await expect(page.getByRole('heading', { name: `Unit 101B · revision ${originalVersion + 1}`, exact: true })).toBeVisible();
