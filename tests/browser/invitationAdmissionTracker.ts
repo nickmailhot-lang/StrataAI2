@@ -5,13 +5,13 @@ import type { Page, Request } from '@playwright/test';
 // Optional issuance admission observes new delivery, not historical replay.
 // Organization metadata names the invitation; Board invalidations deliberately
 // name only the Board. The caller can bind the acknowledgment after its frame.
-export function trackInvitationAdmission(page: Page, organization: string, actor: string, board: string | undefined, pagePath: string, protectedReadPath?: string, issuedInvitation?: { id?: string }) {
+export function trackInvitationAdmission(page: Page, organization: string, actor: string, board: string | undefined, pagePath: string, protectedReadPath?: string, issuedInvitation?: { id?: string }, requiredSource?: { eventType: string; actorId: string }) {
   const socketPath = board ? '/boards/live' : '/organizations/live/metadata';
   const scope = board ?? organization;
   const readPath = protectedReadPath ?? (board ? `/boards/${board}` : `/organizations/${organization}/members/${actor}`);
   let heads = 0, generation = 0, readGeneration = -1, reads = 0;
   let documentGeneration = 0;
-  type Stream = { generation: number; readGeneration: number };
+  type Stream = { generation: number; readGeneration: number; sourceSeen: boolean; seen: Set<string> };
   const streams = new Set<Stream>();
   const issued = new Set<string>();
   const seen = new Set<string>();
@@ -24,7 +24,7 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
   page.on('websocket', socket => {
     if (new URL(socket.url()).pathname !== socketPath) return;
     const document = documentGeneration;
-    const stream: Stream = { generation: 0, readGeneration: -1 };
+    const stream: Stream = { generation: 0, readGeneration: -1, sourceSeen: false, seen: new Set() };
     let closed = false;
     const watches = new Set<string>(), observed = new Set<string>();
     socket.on('close', () => { closed = true; streams.delete(stream); });
@@ -52,7 +52,15 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
             || event.organizationId !== organization || event.boardId !== (board ?? null) || typeof event.entityId !== 'string'))) continue;
           if (!observed.has(value.invocationId)) {
             observed.add(value.invocationId); heads++; generation++;
-            stream.generation++; stream.readGeneration = -1; streams.add(stream);
+            stream.generation++; stream.readGeneration = -1; stream.sourceSeen = false; stream.seen.clear(); streams.add(stream);
+          }
+          if (requiredSource) {
+            if (item.resetRequired) { stream.generation++; stream.sourceSeen = false; stream.seen.clear(); }
+            for (const event of item.events) {
+              if (typeof event.eventId !== 'string' || typeof event.eventType !== 'string' || event.organizationId !== organization) continue;
+              if (!stream.seen.has(event.eventId)) { stream.seen.add(event.eventId); stream.generation++; }
+              if (event.eventType === requiredSource.eventType && event.actorId === requiredSource.actorId) stream.sourceSeen = true;
+            }
           }
           if (issuedInvitation) {
             if (item.resetRequired) { generation++; seen.clear(); }
@@ -89,7 +97,12 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
     // The caption and invitation form own independent connections. A new head
     // fences its own earlier read, not another live connection's proof. Issued
     // source/event admission keeps its existing aggregate generation fence.
-    ready: () => streams.size > 0 && (issuedInvitation
+    // A new invitation after membership change must follow that actual source
+    // and a successful protected read in every current stream generation.
+    // An old caption/read counter cannot authorize drafting on a retired form.
+    ready: () => streams.size > 0 && (requiredSource
+      ? [...streams].every(stream => stream.sourceSeen && stream.readGeneration === stream.generation)
+      : issuedInvitation
       ? readGeneration === generation && !!issuedInvitation.id && issued.has(board ?? issuedInvitation.id)
       : [...streams].some(stream => stream.readGeneration === stream.generation)) };
 }

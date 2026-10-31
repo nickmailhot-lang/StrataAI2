@@ -47,7 +47,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Retry this Card archive', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
       await expect(other.getByRole('link', { name: 'Archived work', exact: true })).toHaveCount(0);
-      await page.getByRole('button', { name: 'Retry this Card archive', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressObservedRequest(page.getByRole('button', { name: 'Retry this Card archive', exact: true }), () => archives.length, 2);
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       expect(archives).toHaveLength(2); expect(archives[1]).toEqual(archives[0]); expect(JSON.parse(archives[0].body!)).toEqual({ version: 1 });
       expect(archives[0].key).toMatch(/^[0-9a-f-]{36}$/);
