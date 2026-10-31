@@ -34,6 +34,7 @@ import { SecondaryActions } from '../../app/SecondaryActions';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 import { workExperienceEnabled } from '../../app/workExperience';
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined';
+import { ownsRecoveryFocus, parkRecoveryFocus } from '../kanban/focusRecovery';
 
 type OrganizationSummary = {
   organization: {
@@ -124,6 +125,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const [creating, setCreating] = useState(false);
   const [creationContainer, setCreationContainer] = useState<HTMLDivElement | null>(null);
   const creationRecoveryFocus = useRef<HTMLElement | undefined>(undefined);
+  const creationCommandFocus = useRef<HTMLElement | null>(null);
   const creationRetirementFocus = useRef<HTMLElement | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
@@ -263,6 +265,12 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       && (document.activeElement === document.body || document.activeElement === owner)) owner.focus({ preventScroll: true });
   }, [data]);
   useLayoutEffect(() => {
+    if (!data || busy) return;
+    const owner = creationCommandFocus.current; creationCommandFocus.current = null;
+    if (owner?.isConnected && !owner.matches(':disabled') && ownsRecoveryFocus(document.activeElement, owner))
+      owner.focus({ preventScroll: true });
+  }, [data, busy]);
+  useLayoutEffect(() => {
     if (!data || !pageFocus.current) return;
     pageFocus.current = false;
     (cursor ? firstPage.current : nextPage.current ?? heading.current)?.focus();
@@ -285,6 +293,13 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       setError(new WorkInputError("Enter a name."));
       return;
     }
+    // Disabling a native submitter lets MUI park focus on its dialog paper.
+    // Keep the original owner through both the command and any admission read;
+    // restore only after both settle, unless the user chose another control.
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const owner = submitter instanceof HTMLElement ? submitter : document.activeElement;
+    creationCommandFocus.current = owner instanceof HTMLElement && event.currentTarget.contains(owner) ? owner : null;
+    parkRecoveryFocus(creationCommandFocus.current);
     setBusy(true);
     setError(undefined);
     try {

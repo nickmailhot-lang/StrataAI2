@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "revision": "77d098737fbb02bc2b723d85b6b3b2c4e7b83d73",
+  "parent": "122c72e37cee679547cc4ffcf24d70e94c4e15e4",
+  "tree": "02fe26ca52ee8043a184a39a76226a1fafe97b77",
+  "originalLocalCommit": "58769ef63b17ba836fbd47f7a55126926f63f3f1",
+  "acceptanceRefs": [
+    "PRD-09/DETAIL-FR-008",
+    "PRD-09/DETAIL-FR-009",
+    "UXA-02",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-08"
+  ],
+  "change": "Native visible new-tab/email-app hints and accessible descriptions; exact link names, safe destinations/rel, keyboard, persisted-source/role/withdrawal behavior preserved.",
+  "local": {
+    "runId": "1793390049516-529b44d9",
+    "passed": true,
+    "durationMs": 1659677,
+    "qualification": "Local feature evidence only; required-ci and exact-revision full release qualification remain required.",
+    "receiptSha256": "9ad8f678997cbd5dc4e89c25a5d94bcc84e6c8d991baa87fe7fb3c638665a89b",
+    "stages": [
+      {
+        "name": "repository-contracts",
+        "passed": true,
+        "durationMs": 58024,
+        "logSha256": "8ddef28077be4b91320fd1e2d3fdb8c79b86cd14d2ff2314ed9e2e187d222216"
+      },
+      {
+        "name": "ledger",
+        "passed": true,
+        "durationMs": 10840,
+        "logSha256": "ebd9abbf104daa89a223c4d238aeb65f69582e3347a8f1103dbc03274f305d60"
+      },
+      {
+        "name": "integration-inventory",
+        "passed": true,
+        "durationMs": 73,
+        "logSha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+      },
+      {
+        "name": "runtime-drift",
+        "passed": true,
+        "durationMs": 71,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "web-types",
+        "passed": true,
+        "durationMs": 7286,
+        "logSha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+      },
+      {
+        "name": "browser-types",
+        "passed": true,
+        "durationMs": 2064,
+        "logSha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+      },
+      {
+        "name": "lint",
+        "passed": true,
+        "durationMs": 4782,
+        "logSha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+      },
+      {
+        "name": "web-unit-baseline",
+        "passed": true,
+        "durationMs": 2561,
+        "logSha256": "240ab01290a7f8a25fecbc81225e8a8059dd0cb4044f91878641649a11b082d7"
+      },
+      {
+        "name": "web-unit-affected",
+        "passed": true,
+        "durationMs": 21834,
+        "logSha256": "d94f719433199c6c744ab1009f6b0c7593b030d417c9ab083146f37b7cf1a1a1"
+      },
+      {
+        "name": "web-build",
+        "passed": true,
+        "durationMs": 8320,
+        "logSha256": "ad45d3b56bb5e918c410a19115e93a70a7e969e051025cd512246e96b161ab67"
+      },
+      {
+        "name": "python-contracts",
+        "passed": true,
+        "durationMs": 1093,
+        "logSha256": "e58208755d747ba5edd3d4d26bf376a2a7822bf0b3dfde71793ee9f11c75d1f7"
+      },
+      {
+        "name": "secret-scan",
+        "passed": true,
+        "durationMs": 4659,
+        "logSha256": "0939d66daa6926faa578a02fbee0bb1d572fe7bd4d8b9782fe1438d4a5645397"
+      },
+      {
+        "name": "feature-runtime",
+        "passed": true,
+        "durationMs": 1536486,
+        "logSha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+      }
+    ]
+  },
+  "browser": {
+    "passed": 15,
+    "failed": 0,
+    "retries": 0,
+    "wholeFiles": [
+      "tests/browser/board.spec.ts",
+      "tests/browser/card-description.spec.ts"
+    ],
+    "scope": "Five persisted Board scenarios and ten description cases covering contributor, member/admin, organization reader/anonymous, live revisions, role/session/visibility withdrawal, desktop/phone, keyboard and Axe. Actual restricted API/Worker/production browser fixtures and deadlines unchanged."
+  },
+  "component": {
+    "focusedAndOriginalPassed": 23,
+    "affectedUnitsPassed": 110,
+    "failed": 0
+  },
+  "codeql": {
+    "language": "javascript-typescript",
+    "suite": "javascript-code-scanning.qls",
+    "cli": "2.27.3",
+    "pack": "codeql/javascript-queries@2.4.8",
+    "queries": 89,
+    "rules": 87,
+    "findings": 0,
+    "sarifSha256": "932157038038efa2c39c3f3e0677d055a45ddf418e7cdaceb2449ed88d5d83e7"
+  },
+  "visual": {
+    "scope": "Actual description component + existing appTheme in isolated visual harness; complements production restricted API browser tests, does not replace them.",
+    "method": "Agent inspected all five rendered screenshots using actual component and existing appTheme; complements production workflow evidence, no product-owner acceptance claimed.",
+    "observations": "Context hints visible and legible; long references wrap within container; visible keyboard outline retained at320/390/768/1280px and768px200%text. No page overflow or Axe violations in harness.",
+    "results": [
+      {
+        "width": 320,
+        "textZoomPercent": 100,
+        "axeViolations": 0,
+        "noPageOverflow": true,
+        "screenshot": "320-100.png",
+        "sha256": "f632a5ea533e0fd26f333838d6b3eacd7f1d02f308ef3d996ba6384c55ce6767"
+      },
+      {
+        "width": 390,
+        "textZoomPercent": 100,
+        "axeViolations": 0,
+        "noPageOverflow": true,
+        "screenshot": "390-100.png",
+        "sha256": "a1dc75f4d7338e4f054fd52b5114addcdb56fff49ebf3f9ccd2af2f362f15ee3"
+      },
+      {
+        "width": 768,
+        "textZoomPercent": 100,
+        "axeViolations": 0,
+        "noPageOverflow": true,
+        "screenshot": "768-100.png",
+        "sha256": "525d59769d475836ecb80f5712981802ea59a56d70f6600c7a312ec75e3cd1ae"
+      },
+      {
+        "width": 1280,
+        "textZoomPercent": 100,
+        "axeViolations": 0,
+        "noPageOverflow": true,
+        "screenshot": "1280-100.png",
+        "sha256": "5ff0f8bbe16c8aa663ca4ce37e65f9f77aeda0038de0aabde9b966dfa7cad421"
+      },
+      {
+        "width": 768,
+        "textZoomPercent": 200,
+        "axeViolations": 0,
+        "noPageOverflow": true,
+        "screenshot": "768-200.png",
+        "sha256": "290fc57032c50fd13469b46450365357adb00b0764ba0e342f771d0897ec83da"
+      }
+    ],
+    "resultSha256": "f34f079c6050ecc60854bbc58aed1773399225c9698b5cb69875c419fead2a57"
+  },
+  "retainedFailures": [
+    {
+      "name": "red",
+      "result": "Failed",
+      "sha256": "081df7be599954dc03aabc6cc7bb2a068ad4259d969eb123935f068308b77983",
+      "disposition": "Missing link-context guidance reproduced before correction; original log retained."
+    },
+    {
+      "name": "types-attempt1",
+      "result": "Failed",
+      "sha256": "44c66e5fa9116e87d8982b2fa6bfa84a9675b63fbabfd964368136a07e1f1319",
+      "disposition": "Removed unsupported Testing Library ByRoleOptions exact property; string name matching remains exact by default. Original failure retained."
+    },
+    {
+      "name": "visual-harness-attempt1",
+      "result": "Failed",
+      "sha256": "bd5034449a0b5ff2fa6203126f322fae4956de66dd555ef85d3185603ae44897",
+      "disposition": "Harness required explicit browser.newContext for Axe. Corrected harness only; production source unchanged; all five captures then passed."
+    }
+  ],
+  "hosted": {
+    "result": "Not Run",
+    "required": "Impact-selected current-head required-ci and complete CodeQL plus review remain pending."
+  },
+  "acceptance": "Scoped implementation/local tests and agent visual review only. Parent PRD/product/MVP acceptance unverified. Separate PR must remain open for review."
+}

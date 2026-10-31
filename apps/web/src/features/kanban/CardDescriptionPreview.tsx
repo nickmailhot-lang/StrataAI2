@@ -23,9 +23,14 @@ const components: Components = {
   // Code can overflow independently of the Card. Make that scroll region
   // reachable with Tab and native arrow keys on every supported browser.
   pre: ({ children }) => <pre tabIndex={0}>{children}</pre>,
-  a: ({ href, children }) => href
-    ? <a href={href} target="_blank" rel="noopener noreferrer nofollow">{children}</a>
-    : <span>{children}</span>,
+  a: ({ href, children }) => {
+    if (!href) return <span>{children}</span>;
+    const email = /^mailto:/i.test(href);
+    return <a href={href} target="_blank" rel="noopener noreferrer nofollow"
+      title={email ? 'Opens your email app.' : 'Opens in a new tab.'}>
+      {children}<span aria-hidden="true" data-description-link-hint>{email ? ' (email app)' : ' (new tab)'}</span>
+    </a>;
+  },
   // Images are outside the supported subset: retain their textual alternative
   // without giving untrusted description text a network/attachment capability.
   img: ({ alt }) => <span>{alt}</span>,
@@ -61,6 +66,7 @@ export const CardDescriptionPreview = memo(function CardDescriptionPreview({ des
           '& pre:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 2 },
           '& code': { fontFamily: 'monospace' },
           '& a': { color: 'primary.main', textDecoration: 'underline', '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main' } },
+          '& [data-description-link-hint]': { typography: 'caption', color: 'text.secondary' },
         },
     }}>
     <h3>Description preview</h3>
