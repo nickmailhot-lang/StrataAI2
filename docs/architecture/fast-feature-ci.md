@@ -114,8 +114,12 @@ qualification reuse identity. The original ten-minute budget remains unchanged.
 A meaningful old-workflow contract failed for the absent parallel execution and
 report consumer before the recovery. Targeted execution of the shared runner used
 all 11 dependent Home/critical files split 4/4/3, preserving all 184 cases and both
-compiled UI cases. This scoped probe passed locally; full exact-source verification
-and fresh hosted cold/warm qualification are still required. Local final verification
+compiled UI cases. This scoped probe passed locally. The subsequent exact source tree `a30d60ea`
+passed all seven final local feature stages in 397.688 seconds, including all 225
+web files, 3,103 passing cases, the original 24 capacity deferrals, types/lint/build,
+both compiled UI scenarios and secrets. Complete fresh JavaScript CodeQL found
+zero findings across 87 rules. These results qualify code `ffce77d2` locally;
+fresh hosted checks and cold/warm qualification are still required. Local final verification
 continues to execute the complete selected web files on this machine, without
 simultaneous heavy processes. No original production test/configuration or full
 nightly/candidate workflow was changed.

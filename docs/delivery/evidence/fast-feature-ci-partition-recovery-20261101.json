@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-01T05:53:43.159287+00:00",
+  "sourceRevision": "ffce77d2644c8d58ba5c8d5fa566d119d7d3fc7f",
+  "sourceTree": "a30d60eafa59e4d49c490eeb153d18bdbc772e33",
+  "parent": "68d891bfcf276b257fd1ff5c5f12a02245aab1c0",
+  "productionQualified": false,
+  "retainedHostedFailures": [
+    {
+      "run": 41275468371,
+      "result": "Failed",
+      "head": "68d891bfcf276b257fd1ff5c5f12a02245aab1c0",
+      "webJob": 124756877505,
+      "webResult": "Passed:225files3103cases+24existingDeferred/build/UI2",
+      "webLaneMs": 494568,
+      "requiredCiJob": 124758745041,
+      "aggregateResult": "Failed: original600000ms interval exceeded. Web pass does not qualify aggregate."
+    },
+    {
+      "run": 41275507572,
+      "result": "Cancelled",
+      "head": "68d891bfcf276b257fd1ff5c5f12a02245aab1c0",
+      "coldInputs": {
+        "full": false,
+        "measure_backend": true,
+        "cold_cache": true
+      },
+      "webJob": 124757056190,
+      "webResult": "Original10minute job timeout during unit execution; partial zero-length JUnit, no passing lane/summary/UI.",
+      "backendJob": 124757056229,
+      "backendResult": "Passed17completeHTTPmethods47cases/Domain1105+3existingDeferred",
+      "backendLaneMs": 153644,
+      "requiredCiJob": 124759092441,
+      "aggregateResult": "Failed overbudget; never qualified."
+    }
+  ],
+  "originalArchiveVerification": [
+    {
+      "id": 13071342660,
+      "sha256": "a166573ceba52b414418bf86fb8f62e1fff4332055021bfc618658cfe58fd38f"
+    },
+    {
+      "id": 13070949541,
+      "sha256": "581d0b78761c7229502af03bc82e416bf722152bc8194064665733efd62e8f85"
+    },
+    {
+      "id": 13071615302,
+      "sha256": "1b6ba88c5e00cc7a1093b62cea06b11dea394027d52abd7c27be7992b29ff170"
+    }
+  ],
+  "actualCaptureInspection": "Actual PRweb390/1280 sign-in main-landmark synthetic refusal captures inspected: expected content and recovery error, no clipping/overflow/layout drift. Separate from canonical production acceptance.",
+  "cause": "Repeated isolated complete-file initialization for independent runtime collection and original unit execution exceeded the whole feature budget on hosted runners. Product assertions did not fail.",
+  "boundedCorrection": "Deterministic sorted roundrobin complete web files across three hosted jobs, fail-fastfalse; each retains independent runtime/JUnit validation. Partition1 owns types/lint/build/UIonce. Aggregate requires every complete source/scope/manifest/report/digest/case proof and actual Python revalidation before original600000ms aggregate. Full nightly/exact-candidate fixtures and original assertions/budgets remain unchanged. Partition manifest explicitly sealed and included in qualification reuse identity.",
+  "targeted": {
+    "originalWorkflowRed": "Missing matrix/strict partition consumer correctly failed before correction.",
+    "nodeRefusalsPassed": 165,
+    "pythonReportRefusalsPassed": 22,
+    "actualRunnerProbe": {
+      "result": "Passed",
+      "files": 11,
+      "cases": 184,
+      "partitionFileCounts": [
+        4,
+        4,
+        3
+      ],
+      "elapsedMs": [
+        35877,
+        10078,
+        6092
+      ],
+      "compiledUiCases": 2,
+      "scope": "Home dependent/critical original files; not whole qualification."
+    }
+  },
+  "finalLocal": {
+    "result": "Passed",
+    "run": "1793511955878-7794c35c",
+    "durationMs": 397688,
+    "stages": [
+      "repository-contracts",
+      "ledger",
+      "integration-inventory",
+      "runtime-drift",
+      "selected-web-feature",
+      "python-contracts",
+      "secret-scan"
+    ],
+    "webFiles": 225,
+    "webCasesPassed": 3103,
+    "originalCapacityDeferred": 24,
+    "compiledUiCases": 2,
+    "sourceTree": "a30d60eafa59e4d49c490eeb153d18bdbc772e33",
+    "javascriptCodeQL": {
+      "result": "Passed",
+      "findings": 0,
+      "rules": 87
+    }
+  },
+  "limitations": [
+    "Fresh final published source hosted required-ci/all5CodeQL/review and cold/warm measurements pending. No under10hosted claim.",
+    "UI remains synthetic HTTP refusal; canonical production UX/roles/tenant/Portal/persistence/full release/MVP acceptance unverified.",
+    "No parent completion or automatic PR135 merge authorized."
+  ],
+  "artifacts": [
+    {
+      "path": "strataai-local/ci-failures/pr135-initial-hosted-20261101/failure-proof.json",
+      "sha256": "361e62adedc56ea18396b692c8f1ddd531604ad76218d44c110ec7e8da09ab39"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-partition-original-red.log",
+      "sha256": "e8e77c011d58611db2fe6edc4353f146bbab7843383eb75f1a54ba9631c861c0"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-partition-final-contracts.log",
+      "sha256": "671a55df2a70ff19f668c1c283dcdd5a00b72bd4497706e325a74bdfc62cde10"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-partition-report-contracts.log",
+      "sha256": "ef62cef24a1a61ac0c289b64e8c26c0765b42a293e886fc451649aed41f4965d"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-partition-probe-attempt1/status.json",
+      "sha256": "1ba7ebc75eb419172c49d9dbadc66057c7b44e439b63d0efe95c4c60ea55115a"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-partition-probe-attempt1/summary.json",
+      "sha256": "586384268c1f6e11c0fe133fd065d5117ff430308f5ade25e1fb43fe8f67834d"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-partition-final-code-receipt.json",
+      "sha256": "01009e7eb5b78f736a37d71d9ee705c726dcb67c5f7502490153c9ebb7c9daf4"
+    },
+    {
+      "path": "strataai-local/codeql/fast-feature-ci-partition-20261101/status.json",
+      "sha256": "82d7bf3d30c406786fde8745adcd01145abcbe892fb1070c96c48a84e4d9acd1"
+    },
+    {
+      "path": "strataai-local/codeql/fast-feature-ci-partition-20261101/full.sarif",
+      "sha256": "14da6b6895baf8ed9aa42d71d466e513f3f14747bdc344c826549c2342363d9d"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/124756652795.log",
+      "sha256": "2b9f6780896370097521ae9436a9ac8794ff4dd3e910260af4cb6a1848f7cb78"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/124756772513.log",
+      "sha256": "fd5e2d2ca0a90676fe65b4b1f32c306d9118516da6107789b99b51fff120e14c"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/124756877505.log",
+      "sha256": "778ae2f83bc5b344e22fecf3b58264eea8368f363bbc8e6fd1308974861947ee"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/124757056190.log",
+      "sha256": "1a6cc1de9639ed5f426c77a7ab4a72f294ca399fbe9cc39c6e80d11130d3198c"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/124757056229.log",
+      "sha256": "e4be790bbd6b7cd5c8f6bf27e91582645cce0eb86779f7f22cab9a81546602b8"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/124758745041.log",
+      "sha256": "e462b6fdd82e752fd0fde67ff8929da0d95c06c4745d6aaf6784657d64d8e013"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/124759092441.log",
+      "sha256": "5b34cacd90fc7efe4f35ae5ebe028763c95cf7c2e3b58dfa8f4311b750f31e0a"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/13071615302/ui/ui.smoke-compiled-sign-in--b244e-ard-retry-identity-at-390px/sign-in-landmark.png",
+      "sha256": "29b311fd86067935dd358f2bec32aaa5a607d1cf38f01b3f2eec11a48a096fe8"
+    },
+    {
+      "path": "ci-failures/pr135-initial-hosted-20261101/13071615302/ui/ui.smoke-compiled-sign-in--f5a9d-rd-retry-identity-at-1280px/sign-in-landmark.png",
+      "sha256": "06ef9b826ff4f732a7e0bfed83862e62740344b5233385c45a93db4887a194ed"
+    }
+  ]
+}
