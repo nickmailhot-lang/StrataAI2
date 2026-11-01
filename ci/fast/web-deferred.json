@@ -1,0 +1,102 @@
+{
+  "scope": "Existing 24 post-MVP BoardWindow capacity cases; not a passing functional or capacity qualification.",
+  "cases": [
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "995749faa22cb356cf7895b431f5fd6d6f04de9c8d9f50405e6d841313b6ddf7"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "edd1f7ac073d79ee27aa72ca309e8e86990ae9d6da5052a783b30eea3427c79d"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "875b48ea92ef2b273fd3ea9b80821c52a3d47b656b0a663b5227b393b2dfc40e"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "8d2baa4b8f40c9bb7abc5a5d30ceba50b4c82f9aac4e3008d6ef7a93a56d4c98"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "6f30f3ec9bdcd1a4b4bf9301384a129489826093972bfcfdd1e443b2e17d828d"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "34c95022ad3633cf52269d950f722e638b970510a13fa6b9893502764cb1e05d"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "e86c5d1b1fbe68685611af65ccb14d3a5d9ce7d098c56277220c7a1e88b08b52"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "9601e92162d75a51aa2f0814dc5d17d4407d897660541db221b550e55ca55c3c"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "0a79f05bc54cb7501977011032d370572822b6d48ac6b7b033bc311d647a150a"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "73925ae6095e7f136f972b1c42888a54b6952da989e5d7bddb41bdb40c0e6dcd"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "48991a65b7f892fecda7c9b699497629572839416feaa7c9e3d6f4fffa1501ae"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "e3eb5889837682e1d15469ae6e76cf50fa3aa2418a88866ead7c0e3ff86a5cc2"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "e49e2a1a0eac4f37a0b4247f39b27a526643c166d50e4bca411c424208c039aa"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "700fdcaf6c16c669521767b32f10f9d609580633d9903397e087a1d8ddfa286d"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "a6498b4d68ac4211a472465090195db2c0844742b0d336397b0309de2d0ffa69"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "6ce794d271237346408d33ae2292ca1b029880b2663f03eb9f01bcb5f36c40b7"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "7522eb3ebd83726b657a14ad815ccf1a66a288343621bad3943adad88e03136c"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "04f5d87ac87ea9497de4c5ff69b87e6d2fd8074a866cc9a8a70800e01ae037f6"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "b7aa4e16edbafc29eeb517ecc5101bbc9b3f0c32210fdb3594439dd5600862f3"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "b44dcf9345984b742db00ee29de93fdce43b5aab6548a93f8ce9ca1d9ac3dde6"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "678504ebecae5a8ed20d669164d5a9395f5c81d80f2fc95ac9f72fa173c7d1cc"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "15cb5032d116c50c7efce5a044c7dcc11a7e8fc37f1d7c85bed8ed4d38de903f"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "490fee4213e2946aa798fac6a4a41ef13b042f675e4555e39ae3a393b844329c"
+    },
+    {
+      "source": "apps/web/src/features/kanban/BoardWindow.capacity.test.tsx",
+      "caseId": "afe5eb0283fc06f5721b97f80443488c3e82403d2e1267cf618f15231fde2169"
+    }
+  ],
+  "sourceSha256": "80356f63f10f0f1a28fff8bc2f746d55ef495da6044a79b6a87052994097316b"
+}

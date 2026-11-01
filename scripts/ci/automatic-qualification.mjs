@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requireFeatureChecks } from './require-feature-checks.mjs';
+import { requireGateResults } from '../../ci/fast/aggregate.mjs';
 
 const digest = value => createHash('sha256').update(value).digest('hex');
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
@@ -17,21 +18,27 @@ export function identity(plan, env, event) {
   if (!['docs', 'feature', 'full'].includes(plan.tier) || ['full', 'web', 'runtime'].some(k => typeof plan[k] !== 'boolean')) throw new Error('Invalid coverage policy');
   const commit = git('rev-parse', 'HEAD');
   if (commit !== env.GITHUB_SHA || plan.revision !== commit) throw new Error('Tested integration revision mismatch');
+  if (plan.profile) {
+    const {scopeFingerprint,...scope}=plan;
+    if (digest(JSON.stringify(scope))!==scopeFingerprint || plan.sourceTree!==git('rev-parse','HEAD^{tree}')) throw new Error('Changed fast source/scope');
+    if (!plan.full && (plan.web && !plan.webTests?.length || plan.api && !plan.apiSelection?.methods?.length)) throw new Error('Empty selected fast evidence');
+  }
   const base = event.pull_request?.base.sha ?? event.merge_group?.base_sha ?? git('rev-parse', 'HEAD^');
   if (!/^[a-f0-9]{40}$/.test(base)) throw new Error('Missing integration base');
   return {
     repository: env.GITHUB_REPOSITORY, commit, tree: git('rev-parse', 'HEAD^{tree}'), base,
     source: event.pull_request?.head.sha ?? commit,
     // Hash every checked-in workflow and selector/runtime script, not a mutable version label.
-    policy: digest(git('ls-tree', '-r', 'HEAD', '.github', 'scripts', 'package.json', 'package-lock.json')),
-    scope: { tier: plan.tier, full: plan.full, web: plan.web, runtime: plan.runtime, browser: plan.browser, commands: plan.commands },
+    policy: digest(git('ls-tree', '-r', 'HEAD', '.github', 'scripts', 'ci', 'package.json', 'package-lock.json')),
+    scope: plan.profile ? plan : { tier: plan.tier, full: plan.full, web: plan.web, runtime: plan.runtime, browser: plan.browser, commands: plan.commands },
   };
 }
 export const qualificationKey = request => digest(JSON.stringify(request));
 export function reusable(request, proof, run, current) {
   return run.id !== Number(current.runId) && run.status === 'completed' && run.conclusion === 'success'
     && run.event === 'pull_request' && run.workflow_id === current.workflowId && run.path === workflowPath
-    && run.head_sha === request.source && proof.schemaVersion === 1 && proof.result === 'success'
+    && run.head_sha === request.source && proof.schemaVersion === (request.scope.profile ? 2 : 1) && proof.result === 'success'
+    && (!request.scope.profile || Number.isFinite(proof.elapsedMs) && proof.elapsedMs >= 0 && (request.scope.full || proof.elapsedMs < 600_000))
     && proof.runId === run.id && proof.runAttempt === run.run_attempt
     && proof.reused === false && qualificationKey(proof.identity) === qualificationKey(request);
 }
@@ -54,6 +61,17 @@ export function completeChecks(env, request, proof, run, current) {
   const scope = request.scope;
   for (const [key, field] of [['web','WEB_SELECTED'], ['runtime','RUNTIME_SELECTED'], ['full','FULL_SELECTED']])
     if (String(scope[key]) !== env[field]) throw new Error('Coverage output mismatch');
+  if (scope.profile) {
+    if (env.BACKEND_SELECTED !== String(scope.dotnet)) throw new Error('Backend selection output mismatch');
+    const elapsedMs=Date.parse(env.FAST_CI_FINISHED_AT)-Date.parse(env.FAST_CI_STARTED_AT);
+    if (!Number.isFinite(elapsedMs) || elapsedMs<0 || !scope.full && elapsedMs>=600_000) throw new Error('Invalid or over-budget feature timing');
+    if (env.REUSED==='false') return requireGateResults({plan:scope,
+      results:{contracts:env.SELECTION_RESULT,web:env.WEB_RESULT,dotnet:env.BACKEND_RESULT,api:env.BACKEND_RESULT,full:env.FULL_RESULT},
+      expectedScopeFingerprint:scope.scopeFingerprint,expectedHead:request.commit,observedHead:request.commit,
+      startedAt:env.FAST_CI_STARTED_AT,finishedAt:env.FAST_CI_FINISHED_AT});
+    if(env.REUSED!=='true' || env.SELECTION_RESULT!=='success' || ['WEB_RESULT','BACKEND_RESULT','FULL_RESULT'].some(k=>env[k]!=='skipped') || !reusable(request,proof,run,current)) throw new Error('Missing or stale fast qualification');
+    return {elapsedMs,productionQualified:false};
+  }
   if (env.REUSED === 'false') { requireFeatureChecks(env); return; }
   if (env.REUSED !== 'true' || env.SELECTION_RESULT !== 'success'
     || ['WEB_RESULT','RUNTIME_RESULT','FULL_RESULT'].some(k => env[k] !== 'skipped')
@@ -81,7 +99,8 @@ async function main() {
     } finally { rmSync(directory, { recursive: true, force: true }); }
   }
   const event = JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, 'utf8'));
-  const plan = JSON.parse(readFileSync('feature-plan.json', 'utf8'));
+  const directory=env.FAST_CI_PLAN_DIR ?? '.';
+  const plan = JSON.parse(readFileSync(join(directory,'feature-plan.json'), 'utf8'));
   const request = identity(plan, env, event);
   const currentRun = await api(`/actions/runs/${env.GITHUB_RUN_ID}`);
   const current = { runId: env.GITHUB_RUN_ID, workflowId: currentRun.workflow_id };
@@ -92,12 +111,13 @@ async function main() {
       try { prior = await findReusable(request, current, api, readProof); }
       catch (error) { console.error(`Fresh checks required: ${error.message}`); }
     }
-    writeFileSync('ci-request.json', JSON.stringify({ identity: request, prior }, null, 2) + '\n');
+    if(plan.profile && !/^\d{4}-\d{2}-\d{2}T.*Z$/.test(env.FAST_CI_STARTED_AT??'')) throw new Error('Missing feature start time');
+    writeFileSync(join(directory,'ci-request.json'), JSON.stringify({ identity: request, prior, startedAt:env.FAST_CI_STARTED_AT }, null, 2) + '\n');
     appendFileSync(env.GITHUB_OUTPUT, `reused=${!!prior}\n`);
     return;
   }
   if (process.argv[2] !== 'complete') throw new Error('Use lookup or complete');
-  const saved = JSON.parse(readFileSync('ci-request.json', 'utf8'));
+  const saved = JSON.parse(readFileSync(join(directory,'ci-request.json'), 'utf8'));
   if (qualificationKey(saved.identity) !== qualificationKey(request)) throw new Error('Changed integration identity');
   let proof, run;
   if (env.REUSED === 'true') {
@@ -105,9 +125,11 @@ async function main() {
     const artifact = await api(`/actions/artifacts/${saved.prior.artifactId}`);
     run = await api(`/actions/runs/${saved.prior.runId}`); proof = await readProof(artifact);
   }
-  completeChecks(env, request, proof, run, current);
-  const result = { schemaVersion: 1, identity: request, result: 'success', reused: env.REUSED === 'true', runId: Number(env.GITHUB_RUN_ID), runAttempt: Number(env.GITHUB_RUN_ATTEMPT), prior: saved.prior };
-  writeFileSync('ci-qualification.json', JSON.stringify(result, null, 2) + '\n');
+  const timing=completeChecks({...env,FAST_CI_STARTED_AT:saved.startedAt,FAST_CI_FINISHED_AT:new Date().toISOString()}, request, proof, run, current);
+  const initialQueueAndSetupMs=Date.parse(saved.startedAt)-Date.parse(currentRun.created_at);
+  if(timing && !Number.isFinite(initialQueueAndSetupMs))throw new Error('Missing pipeline queue/setup timing');
+  const result = { schemaVersion: plan.profile ? 2 : 1, identity: request, result: 'success', reused: env.REUSED === 'true', runId: Number(env.GITHUB_RUN_ID), runAttempt: Number(env.GITHUB_RUN_ATTEMPT), prior: saved.prior, ...(timing?{elapsedMs:timing.elapsedMs,initialQueueAndSetupMs:Math.max(0,initialQueueAndSetupMs),startedAt:saved.startedAt,finishedAt:new Date().toISOString(),productionQualified:false}:{}) };
+  writeFileSync(join(directory,'ci-qualification.json'), JSON.stringify(result, null, 2) + '\n');
   appendFileSync(env.GITHUB_OUTPUT, `key=${qualificationKey(request)}\n`);
   appendFileSync(env.GITHUB_STEP_SUMMARY, `${request.scope.tier} qualification: ${result.reused ? `reused completed successful run ${saved.prior.runId}` : 'fresh selected checks passed'}. Integration commit ${request.commit}, tree ${request.tree}, base ${request.base}.\n`);
 }

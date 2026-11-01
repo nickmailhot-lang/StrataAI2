@@ -1,0 +1,13 @@
+{
+  "scope": "Existing post-MVP load deferrals only; never production capacity evidence",
+  "sources": [
+    {
+      "source": "tests/StrataAI.Domain.Tests/RankTokenTests.cs",
+      "sha256": "390b985cde07a76dd0b4f98700b41aeea1fe6e467779d06b393fcc601e84d428"
+    },
+    {
+      "source": "tests/StrataAI.Domain.Tests/CardLabelTransferPlanTests.cs",
+      "sha256": "bad34c894deb6b4816eed20acbb43e7280fb1e16141014c255b2fedc43cb30f8"
+    }
+  ]
+}

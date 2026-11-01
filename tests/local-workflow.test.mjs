@@ -33,12 +33,13 @@ test('local impact covers committed, staged, unstaged, untracked, removed and bo
     assert.fail(`Unexpected plan ${p}`);
   } catch(e) { assert.match(e.message,/Missing baseline browser file/); } finally {f.cleanup();}
   const g=fixture();try {
-    writeFileSync(join(g.root,'committed.txt'),'1');g.git('add','.');g.git('commit','-m','branch change');
-    writeFileSync(join(g.root,'staged.txt'),'2');g.git('add','.');
-    writeFileSync(join(g.root,'README.md'),'unstaged');writeFileSync(join(g.root,'untracked.ts'),'3');
+    mkdirSync(join(g.root,'docs'));
+    writeFileSync(join(g.root,'docs/committed.md'),'1');g.git('add','.');g.git('commit','-m','branch change');
+    writeFileSync(join(g.root,'docs/staged.md'),'2');g.git('add','.');
+    writeFileSync(join(g.root,'README.md'),'unstaged');writeFileSync(join(g.root,'docs/untracked.md'),'3');
     const p=g.invoke('repository.mjs','m.localPlan("origin/main")');
-    assert.deepEqual(p.changedPaths,['README.md','committed.txt','staged.txt','untracked.ts']); assert.equal(p.full,true);
-    assert.notEqual(p.tree,g.git('write-tree')); assert.equal(g.git('status','--porcelain').includes('untracked.ts'),true);
+    assert.deepEqual(p.changedPaths,['README.md','docs/committed.md','docs/staged.md','docs/untracked.md']); assert.equal(p.full,false); assert.equal(p.tier,'docs');
+    assert.notEqual(p.tree,g.git('write-tree')); assert.equal(g.git('status','--porcelain').includes('docs/untracked.md'),true);
   }finally{g.cleanup();}
 });
 test('snapshot preserves the real index and detects content and executable-mode changes',()=>{
@@ -54,7 +55,10 @@ test('snapshot preserves the real index and detects content and executable-mode 
   }finally{f.cleanup();}
 });
 test('deletion and rename selection retain both paths without collapsing',()=>{
-  const f=fixture();try{writeFileSync(join(f.root,'old.ts'),'same');f.git('add','.');f.git('commit','-m','old');f.git('branch','-f','origin/main','HEAD');f.git('mv','old.ts','new.ts');const p=f.invoke('repository.mjs','m.localPlan("origin/main")');assert.ok(p.changedPaths.includes('old.ts'));assert.ok(p.changedPaths.includes('new.ts'));assert.equal(p.full,true);}finally{f.cleanup();}
+  const f=fixture();try{mkdirSync(join(f.root,'docs'));writeFileSync(join(f.root,'docs/old.md'),'same');f.git('add','.');f.git('commit','-m','old');f.git('branch','-f','origin/main','HEAD');f.git('mv','docs/old.md','docs/new.md');const p=f.invoke('repository.mjs','m.localPlan("origin/main")');assert.ok(p.changedPaths.includes('docs/old.md'));assert.ok(p.changedPaths.includes('docs/new.md'));assert.equal(p.full,false);assert.equal(p.tier,'docs');}finally{f.cleanup();}
+});
+test('unmapped local source refuses selection rather than claiming successful empty feature evidence',()=>{
+ const f=fixture();try{writeFileSync(join(f.root,'unmapped.ts'),'source');assert.throws(()=>f.invoke('repository.mjs','m.localPlan("origin/main")'),/Unmapped changed path/);}finally{f.cleanup();}
 });
 test('invalid base refuses selection instead of a successful empty plan',()=>{
   const f=fixture();try{ const r=f.script(`import {localPlan} from ${JSON.stringify(pathToFileURL(join(source,'repository.mjs')).href)}; localPlan('missing-base');`);assert.notEqual(r.status,0); }finally{f.cleanup();}
@@ -180,11 +184,16 @@ test('evidence inventory hashes nested artifacts and refuses symbolic-link subst
  }finally{f.cleanup();}
 });
 
-test('untracked mapped leaf source expands coverage before Git-based changed-test selection',()=>{
+test('untracked mapped leaf source retains its actual new test and critical coverage without a full API rerun',async()=>{
  const f=fixture();try{
   writeFileSync(join(f.root,'tests/browser/card-labels.spec.ts'),'// label contract\n');f.git('add','.');f.git('commit','-m','mapped browser baseline');f.git('branch','-f','origin/main','HEAD');
   mkdirSync(join(f.root,'apps/web/src/features/kanban'),{recursive:true});writeFileSync(join(f.root,'apps/web/src/features/kanban/CardLabelsControl.tsx'),'// new source\n');
-  const p=f.invoke('repository.mjs','m.localPlan("origin/main")');assert.equal(p.full,true);assert.ok(p.reasons.some(x=>x.includes('Untracked source')));
+  const {criticalWebTests}=await import('../ci/fast/web-selection.mjs');
+  for(const path of criticalWebTests){mkdirSync(join(f.root,path,'..'),{recursive:true});writeFileSync(join(f.root,path),'// critical fixture\n');}
+  writeFileSync(join(f.root,'apps/web/tsconfig.json'),'{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler"},"include":["src"]}');
+  const added='apps/web/src/features/kanban/CardLabelsControl.test.tsx';writeFileSync(join(f.root,added),"import './CardLabelsControl';\n");
+  const p=f.invoke('repository.mjs','m.localPlan("origin/main")');assert.equal(p.full,false);assert.equal(p.web,true);assert.ok(p.webTests.includes(added));
+  for(const path of criticalWebTests)assert.ok(p.webTests.includes(path));
  }finally{f.cleanup();}
 });
 

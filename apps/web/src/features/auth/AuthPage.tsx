@@ -141,7 +141,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 8 } }}>
+    <Container component="main" maxWidth="sm" sx={{ py: { xs: 4, sm: 8 } }}>
       <Paper variant="outlined" sx={{ p: { xs: 3, sm: 4 } }}>
         <Stack spacing={3}>
           <Box>

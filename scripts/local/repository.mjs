@@ -3,7 +3,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, renameSync, openSync, closeSync } from 'node:fs';
 import { resolve, join } from 'node:path';
-import { selectImpact, policy, isDocumentation } from '../ci/select-feature-tests.mjs';
+import { policy } from '../ci/select-feature-tests.mjs';
+import { createPlan } from '../../ci/fast/plan.mjs';
 import { readdirSync } from 'node:fs';
 export const git = (args, options = {}) => execFileSync('git', args, { encoding: 'utf8', ...options }).trim();
 export const hash = value => createHash('sha256').update(value).digest('hex');
@@ -25,7 +26,7 @@ export function snapshot(root) {
   } finally { rmSync(index, { force: true }); rmSync(`${index}.lock`, { force: true }); }
 }
 const paths = (args, root) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
-export function localPlan(base = 'origin/main') {
+export function localPlan(base = 'origin/main', {forceFull = false} = {}) {
   const { root } = context();
   const baseSha = git(['rev-parse', '--verify', `${base}^{commit}`], { cwd: root });
   const mergeBase = git(['merge-base', baseSha, 'HEAD'], { cwd: root });
@@ -37,17 +38,13 @@ export function localPlan(base = 'origin/main') {
   ])].sort();
   const inventory = readdirSync(join(root, 'tests/browser')).filter(p => p.endsWith('.spec.ts')).map(p => `tests/browser/${p}`);
   for (const p of policy.baselineBrowser) if (!inventory.includes(p)) throw new Error(`Missing baseline browser file: ${p}`);
-  const selected = selectImpact(changedPaths, inventory);
-  if (untracked.some(p => !isDocumentation(p))) {
-    Object.assign(selected, { tier: 'full', full: true, web: true, runtime: false, omitted: [] });
-    selected.reasons.push('Untracked source requires complete local coverage before commit');
-  }
-  return { ...selected, baseSha, mergeBase, inventory,
-    head: git(['rev-parse', 'HEAD']), tree: snapshot(root),
-    // Full CI remains selected for shared changes. This is a local feature gate,
-    // never a claim that source checks replace hosted full qualification.
-    localRuntime: selected.tier !== 'docs',
-  };
+  const selected = createPlan(changedPaths, root, {forceFull});
+  const tree=snapshot(root);
+  const plan={...selected,baseSha,mergeBase,inventory,head:git(['rev-parse','HEAD']),tree,sourceTree:tree,
+    localRuntime: selected.full, reasons:selected.dependencyReview};
+  delete plan.scopeFingerprint;
+  plan.scopeFingerprint=hash(JSON.stringify(plan));
+  return plan;
 }
 export function atomicJson(path, value) {
   const temporary = `${path}.${randomUUID()}.tmp`;

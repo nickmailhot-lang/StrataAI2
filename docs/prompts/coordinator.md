@@ -19,10 +19,14 @@ combined tree, then commit/push a feature branch. Preserve independent GitHub CI
 and review. Report implemented, locally tested, CI verified, integrated and accepted
 separately. Never close a parent PRD from a partial slice or bypass a failed gate.
 
-Use the shared docs/feature/full impact tier from `verify:local -- --plan`.
-Do not narrow backend/shared/security/unknown changes by filename. Include all new
-and untracked tests. Feature evidence keeps whole Board/permission/tenant baseline
-and affected browser files; full risk requires full qualification. Automatic CI
-reuse requires completed successful exact integration/base/policy/scope proof;
-manual reruns and release qualification stay fresh. Record actual scope/duration
-and prior failures separately; a reused leaf pass cannot establish full acceptance.
+Use the current docs/feature/explicit-full profile from `verify:local -- --plan`.
+The 2026-10-31 user-approved development gate selects complete affected units,
+reviewed complete HTTP methods and focused compiled UI smoke; retain all new and
+untracked source/tests. Unknown comparisons/consumers refuse mapping review.
+Shared/CI changes do not automatically request full. Full original production,
+role/tenant/Portal, provider and browser matrices remain nightly and mandatory for
+an exact production candidate; `--full` requests complete local qualification.
+Automatic reuse requires original completed successful exact source/base/policy,
+profile/backend/method/file/smoke scope and timing proof. Manual requests stay
+fresh. Report deferred suites, existing skips and every failure separately; a
+feature pass never establishes full or product acceptance.

@@ -72,7 +72,9 @@ test('full suite remains separate; feature and main workflows expose stable gate
   assert.ok('workflow_call' in full.on && 'workflow_dispatch' in full.on);
   assert.equal(full.on.pull_request, undefined); assert.equal(full.on.push.branches, undefined);
   assert.equal(full.jobs['required-ci'].name, 'full-sanity-gate');
-  assert.deepEqual(feature.jobs['required-ci'].needs, ['select','web','runtime','full']);
+  assert.deepEqual(feature.jobs['required-ci'].needs, ['select','web','backend','full']);
+  assert.ok(feature.jobs.backend.steps.some(step => step.run === 'node ci/fast/run.mjs backend'));
+  assert.ok(feature.jobs.web.steps.some(step => step.run === 'node ci/fast/run.mjs web'));
   assert.equal(feature.jobs['required-ci'].if, 'always()');
   assert.ok(feature.on.merge_group !== undefined || Object.hasOwn(feature.on, 'merge_group'));
   assert.equal(feature.jobs.full.uses, './.github/workflows/full-sanity.yml');
@@ -127,6 +129,12 @@ test('qualification record rejects evidence from another revision or workflow ru
   const steps = full.jobs['release-bundle'].steps;
   assert.ok(steps.findIndex(step => step.name === 'Record exact revision and immutable images qualified by full sanity') > steps.findIndex(step => step.name === 'Verify bundle unchanged after startup smoke'));
   assert.equal(steps.find(step => step.name === 'Record exact revision and immutable images qualified by full sanity').if, undefined);
+});
+
+test('successful development proof cannot replace canonical full-release evidence', async()=>{
+  const {qualificationRecord}=await import('../scripts/ci/qualification-record.mjs');
+  const feature={schemaVersion:2,result:'success',productionQualified:false,elapsedMs:100_000,identity:{commit:'a'.repeat(40),scope:{profile:'feature',full:false}}};
+  assert.throws(()=>qualificationRecord(feature,{}, {GITHUB_SHA:'a'.repeat(40),GITHUB_RUN_ID:'123'},'c'.repeat(64)),/Qualification revision/);
 });
 
 test('root test command forwards CLI flags through the npm workspace to the installed Vitest runner', () => {
