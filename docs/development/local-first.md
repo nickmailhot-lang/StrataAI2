@@ -177,9 +177,11 @@ only after confirming the owning process has stopped. Locks are never stolen by 
 
 ## Rollout and measurement
 
-The developer-tooling workflow itself is selected for full CI under the existing
-policy. Local feature evidence is a prerequisite to its commit/push, with hosted
-qualification still pending afterward. Use [the implementation record](local-first-evidence.md)
+The 2026-10-31 user-approved feature policy applies to developer-tooling changes
+as well. The earlier automatic full escalation remains historical at `43c04462`.
+Local feature evidence is a prerequisite to commit/push, with independent hosted
+feature checks still pending afterward; nightly and exact production candidates
+retain complete qualification. Use [the implementation record](local-first-evidence.md)
 for observed results and limits. Measure cold setup separately from warm verification;
 record source snapshot, queue time, wall time and longest check before changing
 coverage or claiming a speedup.

@@ -70,8 +70,13 @@ The shared Linux backend runner separately built the complete solution, passed
 17 reviewed HTTP methods in 98.741 seconds. This is scoped local Linux source
 evidence, with source/tree and report guards, not production persistence acceptance.
 
-Final exact-source/security qualification and actual hosted frontend/backend/tooling
-timings remain required. Manual measurement can add backend coverage while retaining
+The exact executable tree `3188f6d5` subsequently passed the seven-stage final
+local feature gate in 398.629 seconds: all 3,103 web cases with the original 24
+capacity deferrals, compilation, types/lint, compiled two-width UI smoke, contracts,
+ledger/inventory/drift and secrets. A separate exact-tree Linux backend lane passed
+in 99.483 seconds with strict Domain and HTTP report consumers; complete JavaScript
+CodeQL found zero findings across 87 rules. Original failed attempts remain retained.
+Actual hosted frontend/backend/tooling timings and independent review remain required. Manual measurement can add backend coverage while retaining
 all actual changed-source checks; cold runs use fresh dependency caches. Record
 execution and queue/setup separately. No under-ten-minute hosted result is yet claimed.
 
