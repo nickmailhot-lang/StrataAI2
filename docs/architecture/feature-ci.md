@@ -1,102 +1,112 @@
 # Feature CI and full qualification — ARCH-11
 
-The 2026-10-24 user-approved CI change separates development feedback from release qualification. Existing functional assertions, authority boundaries, rate limits, zero-retry policy, browser deadlines and acceptance obligations are preserved. A feature check is scoped evidence; it is not full PRD/MVP acceptance or release qualification.
+The user-approved 2026-10-31 policy targets a development feature gate below ten
+minutes, retaining full testing nightly and for every exact production candidate.
+This supersedes automatic full expansion for ordinary shared/CI/backend changes.
+Original functional assertions, authority, retries, deadlines, fixtures and
+acceptance obligations remain intact. Feature evidence is not release or MVP acceptance.
 
-| Workflow | Trigger | Required result / purpose |
+| Workflow | Trigger | Purpose |
 | --- | --- | --- |
-| `feature-ci.yml` | PR updates to main, label changes, merge queue, manual | Stable `required-ci`: selector/contracts, affected web checks, critical security/persisted browser baseline and selected feature cases; conservative full expansion |
-| `main-smoke.yml` | Each main push, manual | `demo-ready`: real PostgreSQL/API/Worker/web startup, restricted runtime roles, permission/tenant checks and complete persisted Board workflow on desktop/tablet/phone |
-| `full-sanity.yml` | Nightly 01:00 America/Vancouver, manual, `v*` tag, risk-selected PR | All previous source/PostgreSQL/recovery/integration/browser/security/bundle checks, plus exact-revision qualification record |
-| `feature-runtime.yml` | Reusable by feature CI and main smoke | Generated bounded runtime; the same immutable images and production fixtures as full sanity |
-| `ci.yml` | Manual compatibility entrypoint | Calls full sanity; preserves historical delivery implementation paths and bookmarks |
+| `feature-ci.yml` | Main PR updates/labels, merge queue, manual | Stable `required-ci`: contracts/history/secrets, selected parallel web/backend lanes, strict exact-scope aggregate |
+| `full-sanity.yml` | Nightly 01:00 America/Vancouver, `v*` tag, manual, explicit `full-ci`/full input | Complete original source/PostgreSQL/recovery/browser/security/immutable bundle qualification |
+| `main-smoke.yml` | Main push, manual | Separate real persisted operational/demo evidence; never replaced by fixture UI smoke |
+| `feature-runtime.yml` | Main smoke and explicit full/local consumers | Retained generated real-service fixture/permission/tenant baseline |
 
-The nightly schedule uses `0 1 * * *` with `timezone: America/Vancouver`, so it follows Vancouver local time across daylight-saving changes. Scheduled runs qualify the checked-out default-branch revision. They do not qualify commits merged afterward. GitHub scheduling can be delayed; use a manual run for an urgent release candidate.
+The feature-gate budget excludes initial runner queue/setup, which is recorded
+separately. Its measured interval begins before dependency setup/contracts and
+includes subsequent lane waits and aggregate work. An interval at or above
+600,000ms fails; a timeout never proves a speedup. Full/nightly/production checks
+are intentionally outside this budget. Hosted cold/warm timings must actually be
+measured before claiming the target is met.
 
-## Test selection and dependencies
+## Selection and execution
 
-The 2026-10-30 testing follow-up names the same policy's three tiers explicitly:
+`ci/fast/plan.mjs` shares the existing dependency map but makes development scope
+explicit. Full Git comparisons include both rename paths, deleted files, and all
+local staged/unstaged/untracked files. Missing comparisons, unsafe paths, missing
+critical inventory and unreviewed backend consumers refuse instead of producing
+an empty pass. Ordinary CI changes validate their own refusal contracts; they do
+not automatically start the 45-minute complete API suite.
 
-| Tier | Local and hosted obligations |
-| --- | --- |
-| `docs` | Documentation/evidence contracts, immutable inventory/drift, delivery/history and secrets; no web/.NET/database/browser compilation or execution |
-| `feature` | Mapped isolated feature: web/browser types, lint/build, critical and affected units, canonical restricted runtime/Board/permission/tenant baseline and whole affected browser files |
-| `full` | Backend/schema/auth/tenant, shared infrastructure/contracts/dependencies/deploy/CI/tooling, unknown/broad changes or explicit full request; complete qualification remains required |
+| Profile/lane | Executed scope | Deferred scope |
+| --- | --- | --- |
+| Documentation | Contracts, ledger/history, immutable coverage/drift and secrets | Compilers/runtime suites |
+| Frontend | Web/browser types, lint, production build, complete TypeScript-dependency-selected unit files plus critical auth/admission/Problem tests, compiled UI smoke | Complete canonical production browser/role/provider matrix |
+| Backend | Locked whole-solution build with warnings as errors, complete Domain suite, complete reviewed HTTP methods and all theory rows | Complete API/PostgreSQL/Worker/provider/recovery matrix |
+| Explicit full | Original complete full-sanity workflow and qualification record | No new development-policy omissions |
 
-Both selectors use `feature-impact.json` and `selectImpact`; local untracked source
-additionally expands to full so Git-based changed-test selection cannot omit a new
-test. Renames consider both paths. The existing dependency/coverage review remains
-conservative: no backend or real-provider mapping has been narrowed. Instruction
-changes in AGENTS.md expand to full. Case-insensitive security patterns also cover
-lowercase permission/client/contract file names.
+Removed frontend sources, helper/config/dependency changes conservatively select
+all web units when the web lane is required. Critical files must exist. Hosted web files are divided deterministically into three complete-file partitions;
+types/lint/build/compiled UI run once in partition one. Every partition retains
+independent runtime discovery and strict reports. The aggregate verifies all three
+source/scope-bound reports, hashes and case inventories before success; missing,
+duplicate or failed partitions refuse. Local verification executes the complete
+selected files serially on this machine. Runtime
+Vitest discovery is compared with JUnit case multiplicities; repeated parameter
+display names preserve every row. XML attribute whitespace is normalized only for
+report identity. Empty reports, missing files/cases, failed cases and unreviewed
+skips refuse. The fixed 24 BoardWindow functional counterparts and 24 original
+source-bound capacity deferrals remain distinct; deferred is never passed.
 
-## Equivalent automatic requests
+API tests share partial classes. Selecting a class would accidentally rerun the
+whole suite, so `backend-selection.mjs` selects reviewed complete files/methods,
+retaining every original assertion and theory row. `run.mjs` shares commands with
+local verification. Strict TRX checks cover actual selected methods, outcomes and
+counters; the three original source-bound Domain load deferrals remain separate.
+These HTTP/Domain checks do not certify real persistence or Worker delivery.
 
-Marking ready changes review state without requesting another feature CI run.
-Opened/synchronize/reopened and label changes retain selection/contracts/secrets.
-Equivalent automatic requests serialize behind the current run; only synchronize
-may cancel an older active feature run. Manual workflow dispatch, deliberate run
-attempts, merge queue, nightly/tag/release and main smoke keep their own checks.
+The compiled UI smoke runs the actual production build/router/theme with synthetic
+HTTP refusals at phone and desktop widths. It preserves native keyboard retry,
+exact request count/key/body, original result deadlines, zero retries and Axe
+assertions. Canonical persisted journeys, all original viewports/roles/tenant and
+Portal boundaries remain in the complete production suite. No synthetic result
+substitutes for UX/product acceptance.
 
-`automatic-qualification.mjs` can reuse only an original completed successful
-feature CI run. Its hashed identity contains the actual tested integration commit
-and tree, source head, target base, repository, all workflow/script Git blob
-identities and exact tier/boolean/browser/command coverage. Exact equality prevents
-a feature result from qualifying full work. A new commit/base/policy or scope
-requires fresh work. No successful prior evidence means fresh selected jobs.
+## Strict aggregate and equivalent requests
 
-The stable `required-ci` job downloads the current request, recomputes the identity
-against checkout, checks selection outputs and revalidates the original run and
-artifact SHA-256 through GitHub before accepting reuse. Expired, missing, failed,
-cancelled, pending, mismatched or chained reused evidence cannot produce success.
-API lookup failures select fresh work; aggregate revalidation failures fail closed.
-Reused passes are identified in the summary and never become reusable originals.
-Proof is emitted only after the strict selected-job aggregate, and usable only
-after the entire original workflow succeeds. Dependency caches are unrelated.
+Only selected successful jobs can produce `required-ci`. Failed/cancelled/timed-out,
+missing or unexpectedly skipped jobs refuse; unselected jobs must be skipped.
+Manual backend measurement can only add a lane, retaining all actual changed-source
+checks. `cold_cache` disables dependency-cache restoration and uses fresh package
+folders. These inputs are explicit manual measurements, never PR overrides or
+production qualification.
 
-Nightly/release full-qualification artifacts still certify their own exact SHA;
-this feature-CI reuse record is never a promotion or product acceptance record.
-Actual timings/coverage are recorded with validation evidence; no speedup is
-claimed before measurement. This workflow/policy change itself selects full.
+Automatic reuse still requires an original completed successful same-workflow run
+and a digest-verified artifact. Schema 2 binds repository, tested integration
+commit/tree, source/base, every checked-in workflow/script/`ci` policy blob and the
+entire profile: selected web files, backend/API methods, smoke/deferred scope,
+measurement inputs and scope fingerprint. Old schema/scope, missing timings,
+over-budget feature proofs, changed policy/source/base and chained reuse refuse.
+The aggregate recomputes the request and revalidates original run/artifact identity.
+Missing lookup evidence means fresh checks; final revalidation fails closed.
 
-`scripts/ci/feature-impact.json` is the reviewed path/category policy. The selector uses a full local Git diff against the PR base, with merge-base semantics and no rename collapsing, pagination or changed-file API cap. Both sides of renames and deleted paths are considered. A missing/invalid diff or unknown path expands to full sanity. A `full-ci` PR label or manual full input can expand coverage, never reduce it. Merge queue events conservatively run full qualification.
+Ready/body edits do not request duplicate feature runs. Automatic label requests
+serialize; only synchronize can cancel an older feature run. Manual dispatch,
+retries, merge queue and nightly/candidate requests remain fresh. Dependency caches
+are independent of qualification reuse. Every feature proof explicitly records
+`productionQualified: false`.
 
-Documentation-only PRs retain CI/ledger/metadata contract checks and secret scanning. Code PRs retain the real persisted Board browser workflow and the existing permission matrix/discovery shell checks, including forbidden writes, cross-tenant isolation and withdrawal. The baseline case files run intact, including all viewports and assertions.
+## Full qualification and promotion
 
-Mapped leaf frontend changes run web/browser typechecking, lint, production compilation, a fixed unit baseline and Vitest's changed/import-graph selection. The policy selects whole relevant Playwright files, not grep-filtered individual assertions. Categories are ordered from specific to generic. Broad selections above twelve files escalate to the parallel full matrix instead of a long single-runtime job. Keep this cap conservative; do not reduce coverage to meet a time budget.
+The original nightly schedule follows America/Vancouver daylight saving time.
+Nightly evidence qualifies its own checked-out revision, not later commits. Tags,
+manual full requests and the `full-ci` label retain the full workflow. An exact
+production candidate must pass its complete real-service, security and immutable
+build-once bundle checks; feature receipts cannot replace that record or its
+exact-source/artifact verification. Failed nightlies retain their history and do
+not authorize promotion.
 
-Backend source, database/migration, auth/Organization, shared app/theme, frontend infrastructure, dependencies/locks, deployment, scripts, CI and browser fixture/helper changes run full qualification initially. Unknown feature files also expand. Real-provider features (attachments, notifications/reminders/watches, assignments, retention) expand to the full fixtures, including real Worker delivery. This deliberately conservative first map can be narrowed only after explicit dependency/coverage review and comparison against full runs. New backend feature mappings require equivalent real persistence/role/Worker evidence; filename matching alone is insufficient.
+Full test assertions, original command/authority recovery, least-privilege roles,
+Worker fixture restoration, capacity phases, privacy, browser retries/deadlines,
+provider/scanner/SBOM and source-free bundle tests are preserved. Main smoke remains
+separate post-integration operational evidence. No parent PRD/product acceptance
+follows merely from a feature pass or merge.
 
-The strict aggregate checks selector success, valid boolean outputs, success for each selected job, and `skipped` only for jobs explicitly unselected. Cancelled, failed, missing or unexpectedly skipped checks fail `required-ci`. Selection evidence records the source revision, changed paths, selected features/files, expansion reasons and suites deferred to full sanity.
-
-## Runtime, caches and release identity
-
-The critical smoke uses real images, so code PRs still build three images once with cached layers. It omits bundle assembly and the full recovery/scanning/browser matrices for eligible leaf changes. No production/runtime cache is substituted for current source compilation or test results. Node caches dependency downloads keyed by the lockfile; .NET full jobs cache NuGet downloads against all package locks. Docker BuildKit uses per-image caches and exact current build arguments; image metadata/provenance is checked before export. Compressed image archives use zero artifact recompression. Superseded feature PR runs cancel; main smoke and qualification evidence stay bound to each distinct SHA.
-
-Generate the runtime after editing full-sanity fixtures:
-
-```sh
-node scripts/ci/generate-feature-runtime.mjs
-node scripts/ci/generate-feature-runtime.mjs --check
-node --test tests/feature-ci.test.mjs tests/integration-suites.test.mjs
-node scripts/ci/verify-integration-suites.mjs
-```
-
-The generator copies metadata/image identity, common service setup, auth/provider routing, baseline security commands, diagnostics and cleanup. Full steps remain authoritative. Its drift guard runs in feature and full CI. The browser executor validates selected paths against the actual inventory and critical baseline, then uses fixed executable/argv without a shell. Browser pacing and no-retry configuration remain unchanged.
-
-Only full sanity assembles the runnable release bundle. The final `full-qualification-<sha>` artifact is emitted after source checks, full security/integration, bundle integrity and all three bundle startup modes pass. It records the exact revision, workflow run/attempt, image provenance and SHA-256 of the bundle checksum manifest. A failed/cancelled run cannot emit successful qualification evidence through that job. Main smoke artifacts have no qualification record and are not releases.
-
-## Promotion and nightly failure policy
-
-Before shared-demo deployment, require successful `demo-ready` for the exact main SHA. Before production/release promotion, require the successful full-sanity run and qualification record for the exact candidate SHA, and deploy that run's unchanged bundle/images. Never qualify a later SHA with an earlier nightly pass, rebuild images after qualification, or use a PR merge SHA as proof for a different main commit. Release tags rerun the complete qualification with their release version.
-
-A nightly failure blocks release promotion until a new full run qualifies the candidate. Retain the original failure/evidence and triage product versus fixture/infrastructure failure. Fix or revert critical main regressions promptly; independent feature branches can continue. GitHub Actions failure notifications provide the alert; no external messaging integration is installed by this change.
-
-There is currently no automated shared-demo or production deployment workflow in this repository. `demo-ready` and the qualification artifact expose the promotion requirements, but an external deployment must explicitly consume them. Do not describe a passing source/feature check as permission to promote.
-
-## Rollout and duration targets
-
-This CI-policy PR itself expands to full sanity. Keep `required-ci` as the PR branch-protection status name; the nested full suite reports `full-sanity-gate` to avoid collision. If repository rules require the old workflow path or individual full-job contexts, switch those settings to the feature aggregate after the comparison below. Preserve any unrelated protections. No admin settings are silently relaxed.
-
-Compare several representative leaf changes and a shared/security change against manually requested full sanity at the same revision. Record pass/fail parity, wall time, queue time and longest job. Only then narrow additional mappings. The initial PR target is 5–10 minutes for small leaf changes; main smoke has the same target. Broad/security changes deliberately remain slower. These are targets, not measured hosted results. A 30-minute bounded runtime timeout catches hung fixtures without changing test assertions or per-case budgets.
-
-Historical evidence remains historical. Feature-verified, full-qualified, product-accepted and MVP-ready remain distinct states.
+The accepted development tradeoff is later discovery of some cross-feature
+regressions. Report implementation, scoped tests, UX/product review and full/MVP
+acceptance separately. Evidence and current limitations live in
+`docs/architecture/fast-feature-ci.md` and the append-only delivery report. The
+previous conservative automatic-full policy remains historical in commit
+`43c0446212c7976f94d0d141e43abcd9e3313a2c`; its retained selector/runtime fixtures
+still support the unchanged full/main-smoke suites.

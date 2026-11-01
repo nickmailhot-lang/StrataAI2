@@ -1,0 +1,393 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-01T04:56:58.856444+00:00",
+  "sourceRevision": "5004bea0b030753d4be5e44ea054d3ea09d848df",
+  "normalHookedCommit": "b47b35560eeb0e5f53dc5a8e46adb582f4403ed3",
+  "sourceTree": "3188f6d5e27b308886c53a0a5fa1c88e13f725f9",
+  "parentRevision": "43c0446212c7976f94d0d141e43abcd9e3313a2c",
+  "profile": "feature",
+  "productionQualified": false,
+  "hostedTiming": "Not Run; cold/warm frontend/backend/tooling verification pending",
+  "localFinal": {
+    "result": "Passed",
+    "runId": "1793508475725-59ad55a6",
+    "durationMs": 398629,
+    "scope": "Seven stages: contracts, ledger, inventory, drift, complete selected web profile, Python contracts, secrets",
+    "web": {
+      "files": 225,
+      "passed": 3103,
+      "existingCapacityDeferred": 24,
+      "laneElapsedMs": 318864,
+      "compiledSyntheticUiCases": 2,
+      "widths": [
+        390,
+        1280
+      ]
+    },
+    "backendSeparateExactTree": {
+      "result": "Passed",
+      "laneElapsedMs": 99483,
+      "platform": "linux/arm64",
+      "sdk": "10.0.403",
+      "domainPassed": 1105,
+      "existingDomainDeferred": 3,
+      "completeHttpMethods": 17,
+      "httpCasesPassed": 47
+    },
+    "javascriptCodeQL": {
+      "result": "Passed",
+      "findings": 0,
+      "rules": 87
+    }
+  },
+  "retainedFailures": [
+    {
+      "attempt": "selection policy adapter red",
+      "result": "Failed",
+      "scope": "Original full escalation no longer matches explicit human-approved feature scheduling."
+    },
+    {
+      "attempt": "UI locator attempt1",
+      "result": "Failed",
+      "scope": "New exact MUI label locator failed before requests; corrected accessible role/password-name selection."
+    },
+    {
+      "attempt": "UI Axe attempt2",
+      "result": "Failed",
+      "scope": "Native same-key/body recovery reached unchanged Axe assertions; existing AuthPage missing main landmark/region."
+    },
+    {
+      "attempt": "landmark original-source regression",
+      "result": "Failed",
+      "scope": "Dedicated two-mode regression proved missing main before authorized one-line Container component=main correction."
+    },
+    {
+      "attempt": "first new-test build",
+      "result": "Failed",
+      "scope": "Unsupported redundant RTL exact option rejected by TypeScript; same exact string-name matcher retained after removing option."
+    },
+    {
+      "attempt": "legacy workflow/local contract expectations",
+      "result": "Failed",
+      "scope": "Evaluated and updated only approved scheduling/job expectations; product/fixture/safety assertions preserved."
+    },
+    {
+      "attempt": "whole web runner attempt1",
+      "result": "Failed",
+      "tree": "2e7c64960fa03aac733d23484d4fe0917735ac43",
+      "scope": "3103 units passed with24existing capacity deferrals; new report consumer falsely assumed parameter display-name uniqueness. Corrected strict independent runtime multiplicities/XML attribute whitespace; failed attempt remains failed."
+    }
+  ],
+  "ux": {
+    "authority": "Live PRD02 issue2 AUTH-FR003/009, accessibility section16, TC07/11/12, UXA06",
+    "change": "Existing MUI Container renders main; no auth/recovery/authority/layout behavior change.",
+    "localEvidence": "Dedicated original-source red/fixed pass,77 account-entry/invitation cases, compiled390/1280 keyboard same-key/body2POST/zeroAxe and inspected captures.",
+    "acceptance": "Synthetic HTTP refusal fixture; canonical authorization/persistence/tenant/Portal product acceptance remains unverified."
+  },
+  "preservedFullScope": "Full nightly and exact production candidate workflows, original test bodies/assertions/roles/fixtures/budgets/retries/capacity counterparts and immutable promotion bundle unchanged. Feature evidence cannot qualify promotion.",
+  "limitations": [
+    "Hosted timing/required-ci/review pending.",
+    "Full regression, real PostgreSQL/Worker/provider browsers/security/release bundle deferred to nightly/exact candidate.",
+    "No parent PRD, UX or MVP acceptance inferred."
+  ],
+  "artifacts": [
+    {
+      "path": "strataai-local/fast-feature-ci-selection-red.log",
+      "sha256": "a1c280ab2d8224b1cf23e52892bd2b0f9e3796a832c8b7e721462ba874aadc3e"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-selection-pass.log",
+      "sha256": "0c51fb0a0fba352021b48ccb9ab61b4b0e9321afe884837eb347c9b94093d236"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-contracts-pass.log",
+      "sha256": "bd2560598a81b65f1cf79c637796a575b926853ba2f92f35f31e02c3425662ad"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-contracts-api-pass.log",
+      "sha256": "513b3c49e25d535b02edc83ca39aa264805784b353ce7dc59660b9c4d4247586"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-contracts-33-pass.log",
+      "sha256": "545c968263b6fb40b8586d56008b3d0438afbcb6fcdcad9e9ec5fcf272541ad4"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-api-report-pass.log",
+      "sha256": "9ec9e3c52e7908b746c625587944c7e1eb71f90fc834fbb4527d510523684dd2"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-contracts-33-latest-pass.log",
+      "sha256": "e7e7b5a9f67c8309cbc1d175b6f4528726d37dc48dd1221c1604ac1cab3ed516"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-npm-install.log",
+      "sha256": "f2791c366a57401af1e548027f4a7b624dbcaec4c5687c02c28e87c370345c27"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-home-unit-selection.json",
+      "sha256": "5635a9f5499abe53d0eaf2dfa391015d672795d762c5f95740f297aa31e2810b"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-home-units.log",
+      "sha256": "c58549d550cc6c5e2cd9b0cd398b4fd4d8eaaf72c7984fd5a26f25d7c9039df3"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-contracts-36-pass.log",
+      "sha256": "ba630242762b1d5787447c9bfd9a2261a0031d33febf49f642827f791cc66795"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-api-native-probe/status.json",
+      "sha256": "fb60f07a1aae4785e6073c569d6e641716a8f1a655f4fe276d5a4930aacc76b5"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-api-native-probe/selection.json",
+      "sha256": "68ef702647e9640c85b60212acf1b8e2e160ab64289d4d7415ea573db7e883f8"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-api-native-probe/summary.json",
+      "sha256": "1563864aba64d8d3a20f6cb2cec8f30f71456c71621ec1167967bc52bee56b62"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-api-native-probe/build.log",
+      "sha256": "bb0dcb07dd76024946da45ece73cc792306be31e09f411da9d7d5d20c6e0f572"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-api-native-probe/selected-api.log",
+      "sha256": "fa97525e0f17a99933060b3252c8d8048468dd9b9c438cf413dfd2a4fef70bb3"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-api-native-probe/results/feature-api.trx",
+      "sha256": "d0356290503d3da61eb13e83e18094e1b07cd4132c927c71b474a03825e051dc"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-smoke-attempt2/failure.json",
+      "sha256": "d6cfc3aacc12bc0db78e1b2cf2c8740c4acfebdcca7e3f30c1d17f4aef7708b0"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-smoke-attempt1/failure.json",
+      "sha256": "4e8704f30943a7118bb7cb1e6af70362294759e996708ccc6494afe7880b8dc8"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-build.log",
+      "sha256": "df9d9560a45d1b6ab3b53021303fd2f244c02a8258ecbcabf1d10d3dd8ca4b6e"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-auth-landmark-red.log",
+      "sha256": "ecdb96164722462ef57894de53e70c31027bc650e76bb75963d159b2d3030ddf"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-auth-landmark-pass.log",
+      "sha256": "9be609cfc227d51a2af252cc287bb747114f88f12ed27abd7f91d6e02712c31e"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-landmark-build.log",
+      "sha256": "fd2e95f4ea3c1e77b636b33de2533eeefbbcfa967baf3ca3c348c8ab08e4e1be"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-landmark-build-attempt2.log",
+      "sha256": "7c96950785800ccf8f1ec2134864f155e46e1da1b7f07db98ac1e72447b66a2d"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-landmark-lint.log",
+      "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-landmark-pass.log",
+      "sha256": "eb6b782f8c7ecf95a75315c92897961c2f8919a0c16983b3f3748ad2b726d0f3"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-claim01-release.json",
+      "sha256": "64c993e65c54e94d6c482463ff943d52e576cf9ea72ec0e0fa4465892499d1ce"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-claim02.json",
+      "sha256": "7282c9035557f5c2be4d255609d71bd2f4a6195ce9a6ce742d57025d59fcef9f"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-auth-landmark-final-pass.log",
+      "sha256": "d9497cfd0a4cfa4fae21f7c6876d546286ee5c3de12d224aecfe832665ae55c1"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-landmark-visual-pass.log",
+      "sha256": "e23c2e896857485f7517037698379bba69f3da516d3ba0d592784579647ef82c"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-landmark-visual-pass/ui.smoke-compiled-sign-in--b244e-ard-retry-identity-at-390px/sign-in-landmark.png",
+      "sha256": "3f79ccd17ca4fbfb31d60690747f262eb26914b644c9ac5baf3206a88ea1822f"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-ui-landmark-visual-pass/ui.smoke-compiled-sign-in--f5a9d-rd-retry-identity-at-1280px/sign-in-landmark.png",
+      "sha256": "0cd2243d267a354697120cf7a583786b1742cf60e17d1eec6f69e94a9a8a0e16"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-web-report-example.xml",
+      "sha256": "8a7f999154f529ad5c7841625bae820a8c2f0568f5dacda7374d94c61de28df6"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-web-report-capacity.xml",
+      "sha256": "32169539c4ce158a989fd3684518f7e091c49b0732d5b3c1e6c4180547f26064"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-web-report-capacity.log",
+      "sha256": "8c73460d1e35b950555ff26c583975ffec7f1cf104179bee2760236df839fce7"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-web-report-capacity-summary.json",
+      "sha256": "4d058be85a8d0285a1c4ca78a9013ba0703309c10616ffe80e198b0a200147c6"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-report-contracts-14-pass.log",
+      "sha256": "c85e44116f14ff1dd26195049beb85bb5d7d7acc141cfd198d549bea399f2258"
+    },
+    {
+      "path": "strataai-local/fast-ci-auth-slice-start.log",
+      "sha256": "30723b31778be9bc7eec8b343598c506d7ff99009c27e0d9f31c8da6e63e46eb"
+    },
+    {
+      "path": "strataai-local/fast-ci-auth-task-start.log",
+      "sha256": "4964b6e639e7a2a3fbca34f969a2a7c5ac4e15fc81457b228ca89be3d796aa57"
+    },
+    {
+      "path": "strataai-local/fast-ci-auth-test-start.log",
+      "sha256": "83184fc9bd2703eafa697444361b66079569aba772f7dda9cf0c74c14b085e75"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-workflow-policy-transition-red.log",
+      "sha256": "011b49956873bba3de106bdfe36a136bf379f5fdf410e68b4351856da2af62d4"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-workflow-identity-pass.log",
+      "sha256": "1777e0a103e70875d3b3cd97ad1877d4793f7155370bff8ec8c1535470e1e346"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-local-policy-transition-red.log",
+      "sha256": "583a6c4a04c65ebfaeec9d862023da097393e45f9db5075591b2af59fd1be9ab"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-local-profile-pass.log",
+      "sha256": "fb58447842bddf5a2038ed77d546f02a740cb81f23821893dc3ad8bbe87afb95"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-web-lane-attempt1/failure.json",
+      "sha256": "02ad9402c5aaa2b295391ffa46d212062786f820d6dd50ccfb4f6d50d886d48e"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-web-report-correction/selection.json",
+      "sha256": "cbd68f592035d79dd063d146a54488bb6a02f5ccf134df250b159fdead1ff4f5"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-web-report-correction/discovery.json",
+      "sha256": "f0263b97236f6425fed11fb52492b5c1829cbff16d2069036e823c1dc7b218d5"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-web-report-correction/summary.json",
+      "sha256": "4f6ba5374c715c88dce85522580c246cfa1d9bfd74cacdc33f8cb9c4d2029937"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-current-contracts-pass.log",
+      "sha256": "d1e3aac359e0a3f5f81f48fa38328243daf8427ea0260d81cfb7d1f43b5d8458"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-report-contracts-17-pass.log",
+      "sha256": "837075977bcb1b6c115c621296c75d898d5a9d4c21f4316b80fa8af2bbe05dae"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-backend-lane-attempt1/status.json",
+      "sha256": "ea8962023459476257d4708058d5ab5b54ffa3d68509886d18997278cf7ae445"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-backend-lane-attempt1/results/lane.json",
+      "sha256": "dcd646e25602c4e8873296db2a65c4059acb06ae3d09877594d8889c0d049b98"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-backend-lane-attempt1/results/summary.json",
+      "sha256": "3f9f7e2a34cdfab28fad3a3ac144ca4567081662efa535e4f3f1016fb49d2aaa"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-backend-lane-attempt1/results/feature-api.trx",
+      "sha256": "532b867377f0a9e635cc760afc41b6e1a3e52d77f0d72bd9c09476b14c9b1edd"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-backend-lane-attempt1.log",
+      "sha256": "96159ac4dff0a00cc057bf6759feea3914ea5eb80dc75907be49c1a40ea7d58a"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-final-code-receipt.json",
+      "sha256": "fa9488aaeb82e21a8613de9a9586faaf019edd27d1163226e6f546707ac3051b"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-final-validation-status.json",
+      "sha256": "1e1e1d9672190939986fb0c2e37b145cb12875277cabe95c5f56c07e4cdb2081"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-final-backend-attempt1/results/lane.json",
+      "sha256": "34c726b056c9ec9fc4383ce4d7b5fdfd6cff0bd45a2d127fa1a31feb868069fc"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-final-backend-attempt1/results/domain-summary.json",
+      "sha256": "c1c1a06f93b8caa480a48fc279bdfcaaa15449700dde639bc8dbbd6ba64e2970"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-final-backend-attempt1/results/summary.json",
+      "sha256": "3f9f7e2a34cdfab28fad3a3ac144ca4567081662efa535e4f3f1016fb49d2aaa"
+    },
+    {
+      "path": "strataai-local/codeql/fast-feature-ci-20261101/status.json",
+      "sha256": "11efdff5fc2f7640dfc2ea18c1680529db05bc5cae9c350d77111aa16be6cd7e"
+    },
+    {
+      "path": "strataai-local/codeql/fast-feature-ci-20261101/full.sarif",
+      "sha256": "5314b51b491564c2afc86d0dedad2fdb527c09b6b5587eb4761f36ddb365bea1"
+    },
+    {
+      "path": "strataai-local/fast-feature-ci-select-contract-preflight.log",
+      "sha256": "e0569954df455bcb009d00c48296299442888a11fc0258013bcf8cd5188ed236"
+    },
+    {
+      "path": "strataai-local/runs/1793508475725-59ad55a6/0-repository-contracts.log",
+      "sha256": "2ea7f26b8df1cfea44e78a65a27242b74a0021206decfa34a08010bef3aea599",
+      "result": "Passed",
+      "stage": "repository-contracts"
+    },
+    {
+      "path": "strataai-local/runs/1793508475725-59ad55a6/1-ledger.log",
+      "sha256": "a9d14af6e89e16649300c58ff10623fbecdee5cd94240b1c21e3142438643ba7",
+      "result": "Passed",
+      "stage": "ledger"
+    },
+    {
+      "path": "strataai-local/runs/1793508475725-59ad55a6/2-integration-inventory.log",
+      "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502",
+      "result": "Passed",
+      "stage": "integration-inventory"
+    },
+    {
+      "path": "strataai-local/runs/1793508475725-59ad55a6/3-runtime-drift.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": "Passed",
+      "stage": "runtime-drift"
+    },
+    {
+      "path": "strataai-local/runs/1793508475725-59ad55a6/4-selected-web-feature.log",
+      "sha256": "bd94ed1f17a8f07984b45016fa633b534710d99bafb484157f9f6c29b45d78f4",
+      "result": "Passed",
+      "stage": "selected-web-feature"
+    },
+    {
+      "path": "strataai-local/runs/1793508475725-59ad55a6/5-python-contracts.log",
+      "sha256": "2f51e75f35f607e9670cc7fc1a76e8f59b06618a7a7b423e55229023fd560066",
+      "result": "Passed",
+      "stage": "python-contracts"
+    },
+    {
+      "path": "strataai-local/runs/1793508475725-59ad55a6/6-secret-scan.log",
+      "sha256": "812dfc98b2b02b68721fa9df407ab17f1207d11ade94b3281a79e4debe767a5d",
+      "result": "Passed",
+      "stage": "secret-scan"
+    }
+  ]
+}

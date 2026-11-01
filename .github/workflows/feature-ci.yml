@@ -10,12 +10,23 @@ on:
         description: Run full qualification
         type: boolean
         default: false
+      measure_backend:
+        description: Add the reviewed backend lane for timing; retain all changed-source checks
+        type: boolean
+        default: false
+      cold_cache:
+        description: Measure fresh dependency caches without reducing selected checks
+        type: boolean
+        default: false
 concurrency:
   group: feature-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}
 permissions:
   contents: read
   actions: read
+env:
+  FAST_CI_PLAN_DIR: artifacts/fast
+  FAST_CI_COLD_CACHE: ${{ inputs.cold_cache || false }}
 jobs:
   select:
     runs-on: ubuntu-24.04
@@ -24,16 +35,26 @@ jobs:
       web: ${{ steps.plan.outputs.web }}
       runtime: ${{ steps.plan.outputs.runtime }}
       browser: ${{ steps.plan.outputs.browser }}
+      dotnet: ${{ steps.plan.outputs.dotnet }}
+      api: ${{ steps.plan.outputs.api }}
       reused: ${{ steps.reuse.outputs.reused }}
     steps:
+      - name: Start feature timing before setup and contracts
+        id: clock
+        run: echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
-          cache: npm
-      - run: npm ci --ignore-scripts
+          cache: ${{ !inputs.cold_cache && 'npm' || '' }}
+      - run: |
+          if [ "$FAST_CI_COLD_CACHE" = true ]; then
+            npm ci --ignore-scripts --cache "$RUNNER_TEMP/fast-cold-npm"
+          else
+            npm ci --ignore-scripts
+          fi
       - name: Validate CI contracts and immutable full-suite coverage
         run: |
           node --test tests/automatic-qualification.test.mjs tests/local-workflow.test.mjs tests/feature-ci.test.mjs tests/integration-suites.test.mjs tests/build-metadata.test.mjs tests/delivery-progress.test.mjs tests/ticket-dependencies.test.mjs
@@ -41,6 +62,8 @@ jobs:
           node scripts/ci/generate-feature-runtime.mjs --check
           python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
           node scripts/delivery-progress.mjs validate
+          node --test ci/fast/*.test.mjs
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s ci/fast -p '*_test.py'
       - name: Preserve delivery history
         if: github.event_name == 'pull_request'
         env:
@@ -52,11 +75,13 @@ jobs:
         id: plan
         env:
           FORCE_FULL: ${{ inputs.full || false }}
-        run: node scripts/ci/select-feature-tests.mjs
+          MEASURE_BACKEND: ${{ inputs.measure_backend || false }}
+        run: node ci/fast/plan.mjs
       - name: Find equivalent completed qualification
         id: reuse
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          FAST_CI_STARTED_AT: ${{ steps.clock.outputs.started }}
         run: node scripts/ci/automatic-qualification.mjs lookup
       - name: Retain selection evidence
         if: always()
@@ -64,15 +89,22 @@ jobs:
         with:
           name: feature-selection-${{ github.sha }}
           path: |
-            feature-plan.json
-            ci-request.json
+            artifacts/fast/feature-plan.json
+            artifacts/fast/ci-request.json
           if-no-files-found: error
           retention-days: 14
   web:
     needs: select
     if: needs.select.outputs.reused == 'false' && needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        partition: [1, 2, 3]
+    env:
+      FAST_CI_WEB_PARTITION: ${{ matrix.partition }}
+      STRATAAI_POST_MVP_LOAD_TESTS: '0'
     steps:
       - uses: actions/checkout@v7
         with:
@@ -80,27 +112,62 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm run typecheck && npm run typecheck:browser && npm run lint
-      - name: Critical unit baseline
-        run: npm test -- src/features/auth/AuthPage.return.test.tsx src/features/kanban/cardDates.test.ts src/features/kanban/cardKeyboardCoordinates.test.ts
-      - name: Affected unit and component tests
-        env:
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
-        run: |
-          if [ -z "$PR_BASE" ]; then
-            npm test
+          cache: ${{ !inputs.cold_cache && 'npm' || '' }}
+      - run: |
+          if [ "$FAST_CI_COLD_CACHE" = true ]; then
+            npm ci --ignore-scripts --cache "$RUNNER_TEMP/fast-cold-npm"
           else
-            npm test -- --changed "$PR_BASE"
+            npm ci --ignore-scripts
           fi
-      - run: npm run build
-  runtime:
+      - uses: actions/download-artifact@v8
+        with:
+          name: feature-selection-${{ github.sha }}
+          path: artifacts/fast
+      - if: matrix.partition == 1
+        run: npx playwright install --with-deps chromium
+      - name: Selected web types, lint, complete unit files, build and compiled UI smoke
+        run: node ci/fast/run.mjs web
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: fast-web-${{ github.sha }}-${{ matrix.partition }}
+          path: artifacts/fast/web
+          if-no-files-found: error
+  backend:
     needs: select
-    if: needs.select.outputs.reused == 'false' && needs.select.outputs.runtime == 'true'
-    uses: ./.github/workflows/feature-runtime.yml
-    with:
-      browser: ${{ needs.select.outputs.browser }}
+    if: needs.select.outputs.reused == 'false' && needs.select.outputs.dotnet == 'true' && needs.select.outputs.full != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+          cache: ${{ !inputs.cold_cache }}
+          cache-dependency-path: '**/packages.lock.json'
+      - run: |
+          if [ "$FAST_CI_COLD_CACHE" = true ]; then
+            npm ci --ignore-scripts --cache "$RUNNER_TEMP/fast-cold-npm"
+          else
+            npm ci --ignore-scripts
+          fi
+      - uses: actions/download-artifact@v8
+        with:
+          name: feature-selection-${{ github.sha }}
+          path: artifacts/fast
+      - name: Compile, complete Domain tests and reviewed feature HTTP methods
+        run: node ci/fast/run.mjs backend
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: fast-backend-${{ github.sha }}
+          path: artifacts/fast/backend
+          if-no-files-found: error
   full:
     needs: select
     if: needs.select.outputs.reused == 'false' && needs.select.outputs.full == 'true'
@@ -108,7 +175,7 @@ jobs:
   required-ci:
     name: required-ci
     if: always()
-    needs: [select, web, runtime, full]
+    needs: [select, web, backend, full]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -120,6 +187,16 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: feature-selection-${{ github.sha }}
+          path: artifacts/fast
+      - uses: actions/download-artifact@v8
+        if: needs.select.outputs.reused == 'false' && needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
+        with:
+          pattern: fast-web-${{ github.sha }}-*
+          path: artifacts/fast/web-partitions
+          merge-multiple: false
+      - name: Verify every complete web partition and original case inventory
+        if: needs.select.outputs.reused == 'false' && needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
+        run: node ci/fast/web-partitions.mjs verify
       - name: Require exactly the selected checks
         id: qualified
         env:
@@ -128,7 +205,9 @@ jobs:
           RUNTIME_SELECTED: ${{ needs.select.outputs.runtime }}
           FULL_SELECTED: ${{ needs.select.outputs.full }}
           WEB_RESULT: ${{ needs.web.result }}
-          RUNTIME_RESULT: ${{ needs.runtime.result }}
+          RUNTIME_RESULT: skipped
+          BACKEND_SELECTED: ${{ needs.select.outputs.dotnet }}
+          BACKEND_RESULT: ${{ needs.backend.result }}
           FULL_RESULT: ${{ needs.full.result }}
           REUSED: ${{ needs.select.outputs.reused }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -138,6 +217,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ci-qualification-${{ steps.qualified.outputs.key }}
-          path: ci-qualification.json
+          path: artifacts/fast/ci-qualification.json
           if-no-files-found: error
           retention-days: 14

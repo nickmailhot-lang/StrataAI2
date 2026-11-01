@@ -8,13 +8,13 @@ import { randomUUID } from 'node:crypto';
 import { context, localPlan, snapshot, git, hash, atomicJson, withLock, evidenceInventory, writeShellStep, executeShellStep } from './repository.mjs';
 import { doctor } from './doctor.mjs';
 const args = process.argv.slice(2);
-const allowed = new Set(['--base', '--mode', '--plan', '--all-browser']);
+const allowed = new Set(['--base', '--mode', '--plan', '--all-browser', '--full']);
 for (let i = 0; i < args.length; i++) { if (!allowed.has(args[i])) throw new Error(`Unknown option ${args[i]}`); if (['--base','--mode'].includes(args[i])) { if (!args[++i] || args[i].startsWith('--')) throw new Error('Missing option value'); } }
 const baseRef = args.includes('--base') ? args[args.indexOf('--base') + 1] : 'origin/main';
 const mode = args.includes('--mode') ? args[args.indexOf('--mode') + 1] : 'final';
 if (!['fast', 'final'].includes(mode)) throw new Error('Mode must be fast or final');
 const { root, state, worktree } = context();
-const plan = localPlan(baseRef);
+const plan = localPlan(baseRef,{forceFull:args.includes('--full') || args.includes('--all-browser')});
 if (args.includes('--plan')) { console.log(JSON.stringify(plan, null, 2)); process.exit(0); }
 const lock = join(state, `verify-${worktree}.lock`);
 withLock(lock, () => {
@@ -24,7 +24,7 @@ withLock(lock, () => {
   const directory = join(state, 'runs', runId); mkdirSync(directory, { recursive: true, mode: 0o700 });
   const startedAt = new Date().toISOString(); const started = Date.now(); const results = [];
   const receipt = { schemaVersion: 1, mode, runId, baseRef, baseSha: plan.baseSha, head: plan.head, tree: plan.tree, plan,
-    startedAt, platform: process.platform, architecture: process.arch, runtimePlatform: 'linux/amd64', results, passed: false,
+    startedAt, platform: process.platform, architecture: process.arch, runtimePlatform: plan.full ? 'linux/amd64' : plan.dotnet ? 'Linux SDK source tests; see backend lane provenance' : null, results, passed: false,
     qualification: 'Local feature evidence only; required-ci and exact-revision full release qualification remain required.' };
   const persist = () => atomicJson(join(directory, 'result.json'), receipt);
   const processOptions = (fd, options = {}) => ({ cwd: root, shell: false, stdio: ['ignore', fd, fd],
@@ -60,20 +60,24 @@ withLock(lock, () => {
     if (mode === 'final' && plan.full) {
       const contracts = readdirSync(join(root, 'tests')).filter(p => p.endsWith('.test.mjs')).sort().map(p => `tests/${p}`);
       run('repository-contracts', process.execPath, ['--test', '--test-concurrency=1', ...contracts]);
+      run('fast-policy-contracts',process.execPath,['--test',...readdirSync(join(root,'ci/fast')).filter(p=>p.endsWith('.test.mjs')).map(p=>`ci/fast/${p}`)]);
+      run('fast-report-contracts','python3',['-m','unittest','discover','-s','ci/fast','-p','*_test.py']);
     } else runShellStep('repository-contracts', contractStep.run);
     run('ledger', process.execPath, ['scripts/delivery-progress.mjs', 'validate', '--base-ref', plan.baseSha]);
     run('integration-inventory', process.execPath, ['scripts/ci/verify-integration-suites.mjs']);
     run('runtime-drift', process.execPath, ['scripts/ci/generate-feature-runtime.mjs', '--check']);
-    if (plan.tier !== 'docs') {
+    if (!plan.full && plan.tier !== 'docs') {
+      const fastDirectory=join(directory,'fast-plan');mkdirSync(fastDirectory,{recursive:true});
+      atomicJson(join(fastDirectory,'feature-plan.json'),plan);
+      if(plan.web)run('selected-web-feature',process.execPath,['ci/fast/run.mjs','web'],{env:{FAST_CI_PLAN_DIR:fastDirectory,FAST_CI_RESULTS:join(directory,'web-feature'),STRATAAI_POST_MVP_LOAD_TESTS:'0'}});
+      if(mode==='final' && plan.dotnet)run('selected-backend-feature',process.execPath,['ci/fast/run.mjs','backend'],{env:{FAST_CI_PLAN_DIR:fastDirectory,FAST_CI_RESULTS:join(directory,'backend-feature')}});
+    }
+    if (plan.full) {
     run('web-types', 'npm', ['run', 'typecheck']);
     run('browser-types', 'npm', ['run', 'typecheck:browser']);
     run('lint', 'npm', ['run', 'lint']);
     if (mode === 'final' && plan.full) run('web-unit', 'npm', ['test', '--', '--maxWorkers=1']);
-    else for (const name of ['Critical unit baseline', 'Affected unit and component tests']) {
-      const step = feature.jobs.web.steps.find(s => s.name === name);
-      if (!step?.run || step.run.includes('${{')) throw new Error('Review changed feature unit command before local execution.');
-      runShellStep(name === 'Critical unit baseline' ? 'web-unit-baseline' : 'web-unit-affected', step.run, { env: { PR_BASE: plan.mergeBase } });
-    }
+    else run('web-unit', 'npm', ['test', '--', '--maxWorkers=1']);
     run('web-build', 'npm', ['run', 'build']);
     }
     if (mode === 'final') {

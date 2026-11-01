@@ -13,7 +13,7 @@ Reuse current MUI/appTheme, shared shells and stable routes. Do not create stand
 
 Use isolated branches/worktrees. Assign one integration owner to shared App/InternalAppShell/PortalShell/navigationModel/appTheme/designTokens and shared component files; feature work in independent modules continues. Do not modify another checkout's uncommitted work. Any disruptive UX migration needs a reversible flag and tested rollback.
 
-Record implemented, tested and accepted separately in `docs/ux/delivery-report.md`. No combined product-completion percentage. Run targeted checks during development and the impact-selected `required-ci` gate before merge under `docs/architecture/feature-ci.md`. Full qualification remains mandatory for release/MVP acceptance and risk-selected changes. A failed check must be retained and evaluated; never skip, relax or bypass it to close a PRD. A current draft PR with pending evidence is not accepted MVP functionality. Avoid redundant dependency installation, rebuilds, logs and scratch artifacts.
+Record implemented, tested and accepted separately in `docs/ux/delivery-report.md`. No combined product-completion percentage. Run targeted checks during development and the impact-selected `required-ci` gate before merge under `docs/architecture/feature-ci.md`. The 2026-10-31 user-approved feature gate targets execution below ten minutes: ordinary PRs, including CI/shared changes, use selected frontend or backend checks; unknown comparisons/consumers refuse mapping. Full testing remains nightly and mandatory for each exact production candidate and release/MVP acceptance; explicit full requests remain available. A failed check must be retained and evaluated; never skip, relax or bypass it to close a PRD. A current draft PR with pending evidence is not accepted MVP functionality. Avoid redundant dependency installation, rebuilds, logs and scratch artifacts.
 
 The BoardWindow capacity phase preserves a fixed 24-case functional counterpart in `BoardWindow.test.tsx` and 24 deferred large cases. Put unrelated new UX/accessibility regressions in dedicated test files; do not widen an expected count merely to accommodate a new test.
 
@@ -44,6 +44,12 @@ push. New edits, partial staging or a changed base invalidate evidence. Never us
 `--no-verify`, force-push, alter evidence or weaken a check to obtain a pass.
 Local feature evidence does not replace impact-selected required-ci, full-sanity,
 review, product acceptance or exact-revision release qualification.
+
+Ordinary final verification shares the selected feature runners with hosted CI.
+Use `--full` for complete local qualification; `--all-browser` also requests full.
+New source/tests remain in the complete filesystem/dependency comparison. Preserve
+all original cases/assertions and report existing capacity deferrals separately;
+an execution overrun fails instead of silently dropping checks.
 
 Claim one task/branch/worktree and nonoverlapping paths through `dev:agents`.
 One integration owner controls shared contracts, shells/theme, manifests/locks,

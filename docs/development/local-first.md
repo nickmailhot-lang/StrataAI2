@@ -55,42 +55,59 @@ Official installers: [Apple Command Line Tools](https://developer.apple.com/xcod
 npm run verify:local -- --base origin/main --plan
 npm run verify:local -- --base origin/main --mode fast
 npm run verify:local -- --base origin/main
+npm run verify:local -- --base origin/main --full
 ```
 
 Plan mode includes committed branch changes against the merge base, staged,
-unstaged and untracked files, deletes and both rename paths. It reuses
-scripts/ci/feature-impact.json and selectImpact; invalid bases and missing critical
-browser inventory refuse selection. Unknown paths conservatively select full CI.
+unstaged and untracked files, deletes and both rename paths. It uses
+`ci/fast/plan.mjs`, the same feature profile as hosted CI, retaining the existing
+dependency map. Invalid bases, missing critical inventory and unknown paths or
+backend consumers refuse selection until reviewed.
 
 The shared impact policy emits `docs`, `feature` or `full`. Documentation/evidence
 changes retain contracts, ledger/history, inventory/drift, release contracts and
 secrets without unrelated web, .NET, database or browser builds. The docs doctor
 requires only the tools these checks consume, including Docker for secret scanning.
-AGENTS.md and CI/tooling changes are high risk and select full.
+The 2026-10-31 user-approved policy keeps ordinary shared/CI changes in the feature
+gate; full qualification runs nightly, for exact production candidates and on
+explicit request. New source/tests remain in actual filesystem/dependency selection.
 
-For code, fast mode runs the contract tests declared by feature CI, history-preserving ledger validation,
-integration inventory/runtime drift checks, types, lint, the same critical unit
-baseline and changed/import-graph selection as feature CI, and a production web build. It never issues a commit receipt.
+Fast mode runs CI contracts, history-preserving ledger validation and immutable
+inventory/drift checks, plus the selected frontend lane when affected. It never
+issues a commit receipt. Final mode runs each selected shared feature runner and
+scans for secrets before issuing exact-tree evidence.
 
-Final mode expands root contracts, all web units, locked .NET restore/Release
-compilation with warnings as errors, native domain tests, Linux API tests, all Python contracts and the
-complete Linux restricted persistence program when full impact is selected. Eligible
-leaf changes retain the CI critical unit baseline plus changed/import-graph tests
-and CI release-artifact contracts. Untracked source expands to complete local
-coverage, preventing Git-based selection from missing new files. Every final run
-scans the candidate for secrets; every code change runs the canonical generated
-feature-runtime shell checks plus selected whole browser files. `--all-browser` explicitly expands to every browser spec. The unchanged
-Playwright configuration retains one worker, zero retries and original deadlines.
-Web unit tests run with one worker to reduce resource contention on laptops.
+The frontend lane runs web/browser types, lint, complete dependency-selected unit
+files plus critical auth/admission checks, production compilation and focused
+compiled UI smoke. Runtime discovery and JUnit multiplicities must match, including
+parameter rows with repeated display names. Only the original source-bound 24
+BoardWindow capacity deferrals remain separately skipped; the 24 functional
+counterparts are unchanged. Hosted execution partitions every selected complete test file across three runners;
+each partition retains independent collection/report checks and the aggregate
+requires the entire partition manifest. Local final verification retains all
+selected files in one bounded process. Web units use two workers; original production browser
+configuration and per-case assertions/retries/deadlines remain unchanged.
 
-**A local feature pass is not full qualification.** The full-impact flag and reasons
-remain in the receipt and still require GitHub full-sanity before merge when the
-existing policy selects it. Local feature runtime does not reproduce every full
+The backend lane performs locked solution restore/Release compilation with warnings
+as errors, the complete Domain suite and complete methods from reviewed HTTP test
+files. A private owned Linux SDK container supplies source testing on this Mac;
+it mounts a materialized candidate read-only and exposes no runtime ports. Strict
+TRX validation separates the three existing Domain load deferrals from passing
+cases and refuses new skips or empty/missing selected API results. This is HTTP
+feature smoke, not full PostgreSQL/Worker/provider acceptance.
+
+`--full` retains the complete root/source/Python/API/persistence and production
+runtime checks. `--all-browser` also requests full and selects every original
+browser spec. No suite is dropped or deadline increased to meet a timing budget.
+
+**A local feature pass is not full qualification.** Selected and deferred scope
+remain in the receipt; an explicit full request still requires GitHub full sanity.
+Feature runners do not reproduce every full
 PostgreSQL upgrade/recovery, provider, scanner, SBOM or source-free release-bundle
 job. It must never emit a full-qualification artifact. The nightly/release/MVP
 rules in [feature CI](../architecture/feature-ci.md) remain unchanged.
 
-The runtime executes checked-in feature-runtime shell bodies directly, replacing
+The explicit full runtime executes checked-in feature-runtime shell bodies directly, replacing
 only hosted artifact transfer with current-tree local image builds, hosted browser
 installation with the prepared local browser, and fake-provider launch/cleanup
 with an owned process. A runtime-only cat adapter supplies a Node CSPRNG UUID for
@@ -163,9 +180,11 @@ only after confirming the owning process has stopped. Locks are never stolen by 
 
 ## Rollout and measurement
 
-The developer-tooling workflow itself is selected for full CI under the existing
-policy. Local feature evidence is a prerequisite to its commit/push, with hosted
-qualification still pending afterward. Use [the implementation record](local-first-evidence.md)
+The 2026-10-31 user-approved feature policy applies to developer-tooling changes
+as well. The earlier automatic full escalation remains historical at `43c04462`.
+Local feature evidence is a prerequisite to commit/push, with independent hosted
+feature checks still pending afterward; nightly and exact production candidates
+retain complete qualification. Use [the implementation record](local-first-evidence.md)
 for observed results and limits. Measure cold setup separately from warm verification;
 record source snapshot, queue time, wall time and longest check before changing
 coverage or claiming a speedup.

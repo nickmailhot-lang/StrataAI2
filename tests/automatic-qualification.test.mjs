@@ -60,7 +60,7 @@ test('workflow retains stable strict aggregate and evidence-bound skips without 
   const w=parse(readFileSync('.github/workflows/feature-ci.yml','utf8'));
   assert.ok(!w.on.pull_request.types.includes('ready_for_review'));
   for (const event of ['opened','synchronize','reopened','labeled','unlabeled']) assert.ok(w.on.pull_request.types.includes(event));
-  for (const job of ['web','runtime','full']) assert.ok(w.jobs[job].if.includes("needs.select.outputs.reused == 'false'"));
+  for (const job of ['web','backend','full']) assert.ok(w.jobs[job].if.includes("needs.select.outputs.reused == 'false'"));
   assert.equal(w.jobs['required-ci'].name,'required-ci');assert.equal(w.jobs['required-ci'].if,'always()');
   assert.equal(w.permissions.actions,'read');
   assert.ok(w.jobs.select.steps.some(s=>s.run==='node scripts/ci/automatic-qualification.mjs lookup'));
