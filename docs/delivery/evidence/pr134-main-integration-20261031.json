@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "revision": "8b7aae13b94e0f4b17edaff4d2a7d7558c0d66f1",
+  "parents": [
+    "ab7f229877bbd3ed9ce1b7ae8abac3a79e90ae8f",
+    "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab"
+  ],
+  "tree": "38c512392a0fed014059c8a12c29a0f960514b21",
+  "originalLocalCommit": "3d6bf898bf940092a97480f5316d35d4af56c636",
+  "acceptanceRefs": [
+    "PRD-09/DETAIL-FR-008",
+    "PRD-09/DETAIL-FR-009",
+    "UXA-02",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-08"
+  ],
+  "change": "Combined updated-main integration after PR133. Existing safe Markdown context hints and exact URL/name/rel/sanitizer/withdrawal behavior retained; no new visible scope.",
+  "local": {
+    "runId": "1793427953391-2608af23",
+    "passed": true,
+    "durationMs": 3650179,
+    "receiptSha256": "fb9cd3821c4feaab30dad9350ca88e7ad7abd4dfac337d8852f495f29a693f02",
+    "stages": [
+      {
+        "name": "repository-contracts",
+        "passed": true,
+        "durationMs": 127403
+      },
+      {
+        "name": "ledger",
+        "passed": true,
+        "durationMs": 11674
+      },
+      {
+        "name": "integration-inventory",
+        "passed": true,
+        "durationMs": 107
+      },
+      {
+        "name": "runtime-drift",
+        "passed": true,
+        "durationMs": 78
+      },
+      {
+        "name": "web-types",
+        "passed": true,
+        "durationMs": 7788
+      },
+      {
+        "name": "browser-types",
+        "passed": true,
+        "durationMs": 2396
+      },
+      {
+        "name": "lint",
+        "passed": true,
+        "durationMs": 5308
+      },
+      {
+        "name": "web-unit",
+        "passed": true,
+        "durationMs": 376566
+      },
+      {
+        "name": "web-build",
+        "passed": true,
+        "durationMs": 8846
+      },
+      {
+        "name": "dotnet-restore",
+        "passed": true,
+        "durationMs": 1906
+      },
+      {
+        "name": "dotnet-build",
+        "passed": true,
+        "durationMs": 25586
+      },
+      {
+        "name": "dotnet-Domain",
+        "passed": true,
+        "durationMs": 3151
+      },
+      {
+        "name": "dotnet-Api-linux",
+        "passed": true,
+        "durationMs": 1095358
+      },
+      {
+        "name": "python-contracts",
+        "passed": true,
+        "durationMs": 129020
+      },
+      {
+        "name": "secret-scan",
+        "passed": true,
+        "durationMs": 4387
+      },
+      {
+        "name": "persistence",
+        "passed": true,
+        "durationMs": 163624
+      },
+      {
+        "name": "feature-runtime",
+        "passed": true,
+        "durationMs": 1685340
+      }
+    ],
+    "qualification": "Local feature evidence only; required-ci and exact-revision full release qualification remain required."
+  },
+  "browser": {
+    "passed": 22,
+    "failed": 0,
+    "retries": 0,
+    "wholeFiles": [
+      "tests/browser/board.spec.ts",
+      "tests/browser/card-description.spec.ts",
+      "tests/browser/strata-lot-directory.spec.ts"
+    ],
+    "logSha256": "a729055f210919e129478b11a4ef7ab6bf2112fe6f53dd128c13aa7873a8e22a",
+    "scope": "Whole production Board, description and unit-directory workflows; original role/tenant/abuse runtime commands. Both restored-version conflict recoveries pass; responsive/zoom/Axe assertions retained."
+  },
+  "targeted": {
+    "passed": 31,
+    "logSha256": "ac190f86d479133e962f68ea1753ea47cfb17e122eaced9e030fc5e4474d7649"
+  },
+  "security": {
+    "status": "passed",
+    "findings": 0,
+    "rules": 87,
+    "sarifSha256": "c29efb5e5c1881d79e6a9b170719d5827f92430da2c35af1b77a3e50b7a8315d",
+    "statusSha256": "94f275498e458446c05c787e011ed3c08597be6616dc338a323a9dc998e50e5e",
+    "scope": "Complete fresh JavaScript/TypeScript code-scanning suite on combined candidate"
+  },
+  "retainedFailure": {
+    "result": "Failed before analysis",
+    "cause": "Installed Docker daemon was stopped; started Docker.app and verified server29.9.2 before unchanged-candidate retry. No source/check relaxation.",
+    "statusSha256": "048a3a6ae1dbf070d921b4ed9ef7fcdd1317e3eafaa32145e6c3bfc06dd598ea"
+  },
+  "ux": {
+    "priorEvidence": "docs/delivery/evidence/description-link-polish-20261030.json",
+    "applicability": "Prior five actual component/appTheme viewport/zoom renders retained; presentation/theme unchanged by main integration. Fresh production whole-file browser assertions passed. No new manual visual inspection claimed."
+  },
+  "remaining": [
+    "Fresh current-head/base hosted impact-selected CI and complete CodeQL/review findings before authorized normal merge.",
+    "No parent PRD/product/MVP acceptance inferred; prior failures/history retained."
+  ]
+}

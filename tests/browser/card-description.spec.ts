@@ -77,6 +77,8 @@ for (const width of [1280, 390]) {
       await expect(preview.locator('blockquote')).toHaveText('Retained quote');
       await expect(preview.locator('pre code')).toHaveText('<script>literal code</script>\n');
       await expect(preview.getByRole('link', { name: 'Manual', exact: true })).toHaveAttribute('rel', 'noopener noreferrer nofollow');
+      await expect(preview.getByRole('link', { name: 'Manual', exact: true })).toHaveAttribute('title', 'Opens in a new tab.');
+      await expect(preview.getByText('(new tab)', { exact: true })).toBeVisible();
       await expect(preview.getByRole('link', { name: 'Unsafe', exact: true })).toHaveCount(0);
       await expect(preview.locator('img,script,iframe,svg')).toHaveCount(0);
       await expect(preview.getByText('Diagram alternative', { exact: true })).toBeVisible();
@@ -291,6 +293,8 @@ for (const width of [1280, 390]) for (const audience of ['organization-reader', 
       await expect(preview.locator('em')).toHaveText('read-only emphasis');
       const reference = preview.getByRole('link', { name: 'Reference', exact: true });
       await expect(reference).toHaveAttribute('href', 'https://example.test/reference');
+      await expect(reference).toHaveAttribute('title', 'Opens in a new tab.');
+      await expect(preview.getByText('(new tab)', { exact: true })).toBeVisible();
       // Foreground admission can replace the next disclosure's Tab stop.
       // Settle that read before checking an uninterrupted keyboard round trip.
       await page.bringToFront();

@@ -37,6 +37,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       });
       const reviewedActor = (await (await context.request.get('/me')).json()).id;
       const creation = trackInvitationAdmission(page, org, reviewedActor, undefined, `/app/${org}/invite`);
+      const memberSource = { eventType: 'ORGANIZATION_MEMBER_ADDED', actorId: '' };
+      const membershipAdmission = trackInvitationAdmission(page, org, reviewedActor, undefined, `/app/${org}/invite`, undefined, undefined, memberSource);
       await page.goto(`/app/${org}/members`);
       await openAdmittedReview(page.getByRole('link', { name: 'Create Organization invitation' }),
         page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true }));
@@ -89,12 +91,14 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const pending = await recipient.request.get('/me/invitations'); expect(pending.status()).toBe(200);
       const invitations = (await pending.json()).items.filter((item: { organizationId: string }) => item.organizationId === org); expect(invitations).toHaveLength(1);
       const beforeAdmission = admissions;
-      expect((await recipient.request.post(`/me/invitations/${invitations[0].id}/accept`, { headers })).status()).toBe(200);
       const recipientId = (await (await recipient.request.get('/me')).json()).id;
+      memberSource.actorId = recipientId;
+      expect((await recipient.request.post(`/me/invitations/${invitations[0].id}/accept`, { headers })).status()).toBe(200);
       const membership = await recipient.request.get(`/organizations/${org}/members/${recipientId}`); expect(membership.status()).toBe(200);
       const before = (await membership.json()).member;
       await expect.poll(() => addedActors.includes(recipientId), { timeout: 30_000 }).toBe(true);
       await expect.poll(() => admissions, { timeout: 30_000 }).toBeGreaterThan(beforeAdmission);
+      await expect.poll(membershipAdmission.ready, { timeout: 30_000 }).toBe(true);
       await expect(page.getByText('Invitation creation acknowledged.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Retry same invitation' })).toBeDisabled();
       expect(writes).toHaveLength(2);
@@ -103,6 +107,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const choice = page.getByRole('combobox', { name: 'Access surface' }); await focusAdmittedControl(choice); await choice.press('ArrowDown');
       await pressAdmittedAction(page.getByRole('option', { name: 'Owner Portal', exact: true }));
       await expect(page.getByRole('combobox', { name: 'Invitation role' })).toHaveText('Owner');
+      await expect(page.getByLabel(/^Invitation email/)).toHaveValue(email);
       await pressAdmittedAction(page.getByRole('button', { name: 'Create invitation', exact: true }));
       await expect(page.getByText('Invitation creation acknowledged.')).toBeVisible(); expect(writes).toHaveLength(3);
       expect(writes[2].key).not.toBe(writes[0].key); expect(writes[2].input).toEqual({ email, surface: 'PORTAL', targetRole: 'OWNER' });

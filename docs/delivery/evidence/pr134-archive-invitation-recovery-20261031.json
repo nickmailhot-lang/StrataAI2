@@ -1,0 +1,536 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-31T18:42:24.167Z",
+  "sourceRevision": "1db4bcb6ec082f8d12f4b10a4b035bfdaaf19b5c",
+  "sourceTree": "19cec9e5f6df9ad5c17946644cd7016b1f117ce2",
+  "base": "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab",
+  "priorPublishedHead": "9cfa4f45df5d240341a332ef96bde1b8952d5f23",
+  "scope": "Bounded browser input/source admission recovery; application components, API/permissions/tenant/Portal contracts unchanged.",
+  "priorEvidence": [
+    "docs/delivery/evidence/pr134-browser-recovery-20261031.json",
+    "docs/delivery/evidence/pr134-main-integration-20261031.json"
+  ],
+  "originalHostedFinal": {
+    "run": 41207814559,
+    "head": "9cfa4f45df5d240341a332ef96bde1b8952d5f23",
+    "result": "failure",
+    "jobs": [
+      {
+        "id": 124556398719,
+        "name": "select",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124556760475,
+        "name": "full / metadata",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124556761175,
+        "name": "runtime",
+        "status": "completed",
+        "result": "skipped"
+      },
+      {
+        "id": 124556761243,
+        "name": "web",
+        "status": "completed",
+        "result": "skipped"
+      },
+      {
+        "id": 124556893484,
+        "name": "full / dotnet-quality",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124556893550,
+        "name": "full / web-quality",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124556893581,
+        "name": "full / postgres-integration",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124567815732,
+        "name": "full / source-quality-gate",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124567837442,
+        "name": "full / build-images-once",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124568954568,
+        "name": "full / security",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124568954617,
+        "name": "full / container-integration (browser-full, 3/4)",
+        "status": "completed",
+        "result": "failure"
+      },
+      {
+        "id": 124568954650,
+        "name": "full / container-integration (browser-foundation, 1/1)",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124568954662,
+        "name": "full / container-integration (browser-notifications, 1/1)",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124568954670,
+        "name": "full / container-integration (browser-full, 1/4)",
+        "status": "completed",
+        "result": "failure"
+      },
+      {
+        "id": 124568954687,
+        "name": "full / container-integration (browser-full, 2/4)",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124568954693,
+        "name": "full / container-integration (commands, 1/1)",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124568954706,
+        "name": "full / container-integration (browser-full, 4/4)",
+        "status": "completed",
+        "result": "success"
+      },
+      {
+        "id": 124615273760,
+        "name": "full / full-sanity-gate",
+        "status": "completed",
+        "result": "failure"
+      },
+      {
+        "id": 124615292998,
+        "name": "required-ci",
+        "status": "completed",
+        "result": "failure"
+      },
+      {
+        "id": 124615294077,
+        "name": "full / release-bundle",
+        "status": "completed",
+        "result": "skipped"
+      }
+    ],
+    "browserCounts": {
+      "1": {
+        "passed": 138,
+        "failed": 1
+      },
+      "2": {
+        "passed": 137,
+        "failed": 0
+      },
+      "3": {
+        "passed": 136,
+        "failed": 1
+      },
+      "4": {
+        "passed": 138,
+        "failed": 0
+      }
+    },
+    "retainedFailureSummaries": [
+      "pr134-shard1-failure-41207814559.json",
+      "pr134-shard3-failure-41207814559.json"
+    ],
+    "restarted": false,
+    "observedAt": "2026-10-31T18:11:24.287302+00:00"
+  },
+  "originalHostedFailures": [
+    {
+      "run": 41207814559,
+      "job": 124568954670,
+      "head": "9cfa4f45df5d240341a332ef96bde1b8952d5f23",
+      "test": "tests/browser/archived-cards.spec.ts:7:7 at1280px",
+      "assertion": "line51 Refresh board expected focused within5000ms after native Retry this Card archive; element not found.",
+      "passed": 138,
+      "failed": 1,
+      "artifact": 13049961354,
+      "artifactSha256": "4f160042612a36696ff6f2342bcf06042beea014bd7790b652b907be04528a91",
+      "restarted": false
+    },
+    {
+      "run": 41207814559,
+      "job": 124568954617,
+      "head": "9cfa4f45df5d240341a332ef96bde1b8952d5f23",
+      "test": "tests/browser/organization-invitation-administration.spec.ts:6:7 at390px",
+      "assertion": "line107 Invitation creation acknowledged. expected visible5000ms after Create invitation for Owner Portal; missing.",
+      "passed": 136,
+      "failed": 1,
+      "artifact": 13049944072,
+      "artifactSha256": "76044d1be2018209331a2b1f42794e28896afcb2098bbcdf564c4629cd7ae1d1",
+      "restarted": false
+    }
+  ],
+  "disposition": {
+    "at": "2026-10-31T17:30:22.065092+00:00",
+    "result": "Bounded browser admission corrections; no application source, helper activation limits, authority, deadlines or result assertions changed.",
+    "archive": "Actual unchanged CardArchiveControl native1280 counterfactual: ignored first retry Enter leaves1POST/0ack and original result red; existing pressObservedRequest exactly2samekey/bodyPOST and1ack even600ms reply. Whole production focus assertion retained.",
+    "invitation": "Actual unchanged OrganizationInvitationPage native390 counterfactual: original pre-source read counter allows new draft before canonical membership withdrawal, clears email and native validation blocks thirdPOST/red. Post-source protected read then draft yields exactly3POSTs, first2samekey/body and thirdnewPortalOwner key/ack; no pageerrors. Existing unit explicitly requires unsent draft retirement on canonical change; no appfix warranted.",
+    "protocol": "Three meaningful membership-source/refusal cases red against original tracker; all72 admission protocol tests and74 original archive/invitation component cases pass; browser types pass.",
+    "correction": "Archive retry uses existing observed-request helper stopping at secondPOST. Invitation passive observer now optionally requires targetmember source and successful postsource protected reads for every current stream; existing rawcounts/result/grantseparation preserved plus emailvalue assertion, no silent refill.",
+    "scope": "Whole archived-cards and Organization invitation administration plus previous4whole browser files selected conservatively; full17stage/freshcompleteJSCodeQL now required.",
+    "claims": "Serial RECOVERY06 preserves all prior claimed paths; no application path expansion. Five existing scoped records reopened viaCLI with original histories."
+  },
+  "localQualification": {
+    "runId": "1793468011082-ff026ba1",
+    "tree": "19cec9e5f6df9ad5c17946644cd7016b1f117ce2",
+    "head": "9cfa4f45df5d240341a332ef96bde1b8952d5f23",
+    "base": "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab",
+    "durationMs": 3980804,
+    "receiptSha256": "560d961c28e7b6314a530f028b98ef7e2c7ea0da8d922d067d5cba5115f5c51c",
+    "results": [
+      {
+        "name": "repository-contracts",
+        "passed": true,
+        "durationMs": 126136,
+        "sha256": "891692861f3a93d7549b7e91dcbd895b232ad550e0be5108924badd2bb688e69"
+      },
+      {
+        "name": "ledger",
+        "passed": true,
+        "durationMs": 10707,
+        "sha256": "a9d14af6e89e16649300c58ff10623fbecdee5cd94240b1c21e3142438643ba7"
+      },
+      {
+        "name": "integration-inventory",
+        "passed": true,
+        "durationMs": 96,
+        "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502"
+      },
+      {
+        "name": "runtime-drift",
+        "passed": true,
+        "durationMs": 73,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "web-types",
+        "passed": true,
+        "durationMs": 7302,
+        "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+      },
+      {
+        "name": "browser-types",
+        "passed": true,
+        "durationMs": 2132,
+        "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+      },
+      {
+        "name": "lint",
+        "passed": true,
+        "durationMs": 5623,
+        "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+      },
+      {
+        "name": "web-unit",
+        "passed": true,
+        "durationMs": 364613,
+        "sha256": "de6640773d0f52d2aec80b1b56775fb7bb344ca5483d81edba30616621c10410"
+      },
+      {
+        "name": "web-build",
+        "passed": true,
+        "durationMs": 8034,
+        "sha256": "fcaf5ee258296291e0af5e15cac653425d5366602d3bb316bcf4a7650201aaa5"
+      },
+      {
+        "name": "dotnet-restore",
+        "passed": true,
+        "durationMs": 1273,
+        "sha256": "40d104602671164ab3958225da3e1c8cabd55f0251d6df6bc911d9d5a24f44ce"
+      },
+      {
+        "name": "dotnet-build",
+        "passed": true,
+        "durationMs": 23231,
+        "sha256": "da40b8b971ee7aac86fcf1b557c595cb768e65352b9356a38cf2a02b0249fdd3"
+      },
+      {
+        "name": "dotnet-Domain",
+        "passed": true,
+        "durationMs": 2582,
+        "sha256": "0e0c203d95398cccf912d7c33749302542847706138841f45485032e24c33a06"
+      },
+      {
+        "name": "dotnet-Api-linux",
+        "passed": true,
+        "durationMs": 1081124,
+        "sha256": "142b1c059efb0402787632671ab9fbc6fa800eab7394b1c72cb534456c5e4177"
+      },
+      {
+        "name": "python-contracts",
+        "passed": true,
+        "durationMs": 194505,
+        "sha256": "b693f6d40ea6548b72c0f2a97271d33d9e6e5ce59d62f5b426c278a1bab6e24e"
+      },
+      {
+        "name": "secret-scan",
+        "passed": true,
+        "durationMs": 4533,
+        "sha256": "50cc1ab3f328f2056fd3ab9ea098cefeac4fd8a5637558ce94ce3d5ba392306c"
+      },
+      {
+        "name": "persistence",
+        "passed": true,
+        "durationMs": 191711,
+        "sha256": "5fc947f6ee07ac5ca5ae28734dfc1b61650cc0aa63bd63b20821188714dd19da"
+      },
+      {
+        "name": "feature-runtime",
+        "passed": true,
+        "durationMs": 1955547,
+        "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5"
+      }
+    ],
+    "browserFiles": [
+      "tests/browser/archived-cards.spec.ts",
+      "tests/browser/board-creation-recovery.spec.ts",
+      "tests/browser/board.spec.ts",
+      "tests/browser/card-description.spec.ts",
+      "tests/browser/organization-invitation-administration.spec.ts",
+      "tests/browser/work-usability.spec.ts"
+    ],
+    "visualEvidence": [
+      {
+        "file": "test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+        "sha256": "b75f02aecb4e5ac708c0f649dc670994079986d4940d057ac5e6a963253b4a69"
+      },
+      {
+        "file": "test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+        "sha256": "819fea29d78f1244c9a96361b6b03abc21072e768d78217ab48956b7772639a7"
+      },
+      {
+        "file": "test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+        "sha256": "851d741a2b50b20318f2831b394447f04e2c69db10eb46d9888d716f675a9125"
+      },
+      {
+        "file": "test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+        "sha256": "82de2370aa10f6a3166cd5aca47c82a87fdbeb9d9854b5d1cf8566a41c780ff9"
+      },
+      {
+        "file": "test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+        "sha256": "b507626c0e7f37d9d88ee32c5ced2e5d1650a5240456d2a229108412931172f4"
+      },
+      {
+        "file": "test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+        "sha256": "a0ab5cdb2ce03ec15d01da024826be6435bc2bcee1fabad0b1684128e1c38887"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-36e64-original-key-retry-at-768px/recovered-board-canonical-text-768.png",
+        "sha256": "1e81d377c569a8291b2d039280b3295831e50291af8ce130a79182fd6c31e19c"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-36e64-original-key-retry-at-768px/recovered-board-directory-text-768.png",
+        "sha256": "b0e74b9392b901eaf9cb85d40543ee2d46da31283636d417f968ee8f9fc2f5ed"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-36e64-original-key-retry-at-768px/recovered-board-draft-768.png",
+        "sha256": "51e77b892ca0ee8f84d3eb10d0df8adbec9498948956a565ddd3f28644c4f513"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-36e64-original-key-retry-at-768px/recovered-board-return-768.png",
+        "sha256": "2d12750fc153c86212c138b48141b1cf49d49a071d1cb61284875b51c72966f4"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-3e317-original-key-retry-at-390px/recovered-board-draft-390.png",
+        "sha256": "615dd81c95494100d9561f2d81d2f26cc2bbd8c4b8594b97c9fc1ac6499bdd8b"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-3e317-original-key-retry-at-390px/recovered-board-return-390.png",
+        "sha256": "dbe3feadfa931ff10582cacaf7858ba4673f9439726665fa731e302a57549cd2"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-aefaf-original-key-retry-at-320px/recovered-board-draft-320.png",
+        "sha256": "0a75e4801356c80840db1f695121b2e65a9cad8b5064ab97db383aa1accd4e13"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-aefaf-original-key-retry-at-320px/recovered-board-return-320.png",
+        "sha256": "624a578261ab99e881a1c615e4d484fdcc1d0fb9255964004f838bf4bc284ee1"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-db78d-riginal-key-retry-at-1280px/recovered-board-draft-1280.png",
+        "sha256": "41d17b42524cf5fd36b71c547e9e99e0297aba2c0fd04f128dbcb366ec27e195"
+      },
+      {
+        "file": "test-results/board-creation-recovery-PR-db78d-riginal-key-retry-at-1280px/recovered-board-return-1280.png",
+        "sha256": "4949fae1a00fb0446d826c4a5b373618107cc335202f76f21aa33427ae709e27"
+      },
+      {
+        "file": "test-results/work-usability-UXA-02-04-0-0e95b--filter-and-return-at-768px/board.png",
+        "sha256": "3faf60485f863bf8af2fe6ddb3932ff007cae31792713fac5822582d37737019"
+      },
+      {
+        "file": "test-results/work-usability-UXA-02-04-0-0e95b--filter-and-return-at-768px/detail.png",
+        "sha256": "f5bb698a2ac76b52d5862584dbfc6ee21d3f8c7512a573b7ef0fd413ad4e4fe6"
+      },
+      {
+        "file": "test-results/work-usability-UXA-02-04-0-46dbc-filter-and-return-at-1280px/board.png",
+        "sha256": "4cf7434a5578ad52e156a06a1bca83aa78da26efa0147d70a447f2436a59c371"
+      },
+      {
+        "file": "test-results/work-usability-UXA-02-04-0-46dbc-filter-and-return-at-1280px/detail.png",
+        "sha256": "d68d8dcd94ae41c662e681b04e26669f95194856f6281191e4acd1fbd5d768b8"
+      },
+      {
+        "file": "test-results/work-usability-UXA-02-04-0-59ea8--filter-and-return-at-320px/board.png",
+        "sha256": "9522daef3985a89ecc54d13fc4479d9de6a296ce7d976305e09797537a790143"
+      },
+      {
+        "file": "test-results/work-usability-UXA-02-04-0-59ea8--filter-and-return-at-320px/detail.png",
+        "sha256": "169c0e7a052cacaa3e4c8a4ab54498dc6f319c6c463273a61b4feb690e215783"
+      },
+      {
+        "file": "test-results/work-usability-UXA-02-04-0-ecbaa--filter-and-return-at-390px/board.png",
+        "sha256": "4d5842dbdf649d763b878f79aff1a11fe18da97e5aa7db5eb78800508617af0d"
+      },
+      {
+        "file": "test-results/work-usability-UXA-02-04-0-ecbaa--filter-and-return-at-390px/detail.png",
+        "sha256": "5985e5de0cf5d2eed7fafef8922305340e46dd354bdd018eab9019f62d13268f"
+      }
+    ],
+    "visualReview": {
+      "inspected": [
+        "recovered-board-draft-320.png",
+        "work-usability320/detail.png"
+      ],
+      "result": "Fresh actual320px recovered draft retains original Create focus, visible values and viewport; workCard detail shows current saved result and keyboard focus. Native archive/invitation counterfactual captures inspected separately; no independent UX/product acceptance."
+    },
+    "browser": {
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "suiteRetries": 0
+    },
+    "webUnit": {
+      "passed": 3101,
+      "skipped": 24,
+      "skipScope": "Existing deferred capacity cases; not passing tests"
+    },
+    "qualification": "Local feature evidence only; required-ci and exact-revision full release qualification remain required."
+  },
+  "security": {
+    "findings": 0,
+    "rules": 87,
+    "sarifSha256": "d9d74e5e824dfe8989f760c808ebd1f6653c9a27ecb85c2489eeac8c6b1f5abb"
+  },
+  "limitations": [
+    "Native isolated component harnesses complement full production consumer tests; no independent product/MVP acceptance.",
+    "Fresh final published head/base hosted full, required-ci, release, five-language CodeQL and review findings remain required.",
+    "All prior failed runs, assertions, deadlines, zero suite retries, fixture authority, ordered main ancestry and evidence histories retained."
+  ],
+  "nativeEvidence": [
+    {
+      "file": "pr134-browser1-41207814559/native-probe/probe.mjs",
+      "sha256": "e4b7a6140943769a3e91ccb19c66912edf36b942d1a57008dffa9560fb364fe3"
+    },
+    {
+      "file": "pr134-browser1-41207814559/native-probe/original-single-activation.png",
+      "sha256": "dd85c7667c0cc169428ede689fc243d805318a0b48e3dbed16eb6a42481f0aed"
+    },
+    {
+      "file": "pr134-browser1-41207814559/native-probe/result.json",
+      "sha256": "93b33b59bbc83fc63f91f6e2d734528adc1fcbd9e7573675efe6cf3f9eac3ab8"
+    },
+    {
+      "file": "pr134-browser1-41207814559/native-probe/run.log",
+      "sha256": "c8e5ae01b295f6f2ff3032e777824acd1a4d76f1ea55ba7df3a6d4707a5cc93d"
+    },
+    {
+      "file": "pr134-browser1-41207814559/native-probe/package.json",
+      "sha256": "1239d4d885dcad42201a27ed9324f8f0f760b78700d8db9ced39a511cffe7eae"
+    },
+    {
+      "file": "pr134-browser1-41207814559/native-probe/existing-request-observation.png",
+      "sha256": "ab0a6835fff774e9cb3713bea7e509cdca3285aafeb0efaa3c6a36d216a6bd92"
+    },
+    {
+      "file": "pr134-browser3-41207814559/native-probe/probe.mjs",
+      "sha256": "7ecd7ecfd1ae5cb44c00f3f59fc2bfe30dc868c95172eec4aca7b2b2570f0c08"
+    },
+    {
+      "file": "pr134-browser3-41207814559/native-probe/result.json",
+      "sha256": "a9f87898f862ba2ae43d48940a1ed197fce7ff4ae3e7e9f8303762767be34942"
+    },
+    {
+      "file": "pr134-browser3-41207814559/native-probe/run.log",
+      "sha256": "dcdaf29ca10a63772ff818966e1180c02fa07e14fb58307b1f4ebe705f0be390"
+    },
+    {
+      "file": "pr134-browser3-41207814559/native-probe/post-source-protected-read.png",
+      "sha256": "322f997af3dee6d6df069e7a81029978e1e2119bf0b7bdf697b2be245e94f857"
+    },
+    {
+      "file": "pr134-browser3-41207814559/native-probe/package.json",
+      "sha256": "1239d4d885dcad42201a27ed9324f8f0f760b78700d8db9ced39a511cffe7eae"
+    },
+    {
+      "file": "pr134-browser3-41207814559/native-probe/original-prior-read-counter.png",
+      "sha256": "38890add0e38eacaa907ad3ac7c85122b0d737a55b3779defa8526deb0651711"
+    },
+    {
+      "file": "pr134-browser3-41207814559/membership-admission-red.log",
+      "sha256": "ba55d89cf374918ec16f588ea426a93c44946f0df4851fce0906e2294480c984"
+    },
+    {
+      "file": "pr134-browser3-41207814559/membership-admission-targeted.log",
+      "sha256": "bbd77ecb99c8e6e18ca33cf4a2828bdf672b54ad7ea33469293b0ab3295d2e3c"
+    },
+    {
+      "file": "pr134-browser3-41207814559/combined-admission-targeted.log",
+      "sha256": "4f706513d4eefc2d22f34c32b6d57ddb388d5117bfe9aa6562449298b239a1a7"
+    },
+    {
+      "file": "pr134-browser3-41207814559/browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "file": "pr134-browser3-41207814559/component-targeted.log",
+      "sha256": "e0f324d093c77ffdf5ae3ca374694fb6fc1719bf47bff20b66d9633a3a0555d7"
+    }
+  ],
+  "documentationPreparation": {
+    "result": "Failed before docs gate",
+    "cause": "Legacy singular testResult Passed remained after changing current revision and broad test gate to Pending. Validator correctly refused unsupported old pass.",
+    "correction": "Preserve old singular result in qualificationHistory and record current broad testResult Not Run, with exact localValidation Passed separately. No application/test/receipt changes.",
+    "artifacts": [
+      {
+        "file": "attempt1-evidence.json",
+        "sha256": "29eb65439d576fd70b841e01a8e75f311a4b375c86dbdb7f30c29aa6f6442fe0"
+      },
+      {
+        "file": "attempt1-unsubstantiated-test-pass.log",
+        "sha256": "6baf2498ab14a41dca0f96c5bc1cd660ce21e8ef833a47fa1b4df28ce4a55e78"
+      },
+      {
+        "file": "attempt1-wrapper.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  }
+}

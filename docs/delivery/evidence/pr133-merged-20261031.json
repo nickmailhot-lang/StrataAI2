@@ -1,0 +1,71 @@
+{
+  "head": "1cc91b9bc96f054a5dc7510fee9c090b092417f8",
+  "tree": "9a98163fce1a470b4dff6852e10aa8e61b99f61f",
+  "base": "122c72e37cee679547cc4ffcf24d70e94c4e15e4",
+  "fullRun": 41157857004,
+  "probeRun": 41175500639,
+  "cleanupRun": 41175666534,
+  "allRunConclusions": "success",
+  "artifact": 13031709854,
+  "neutralSelectionArtifact": 13032871012,
+  "neutralSelectionSha256": "057f8fc6210c93911f03e2c5c3c3014c9e764126414846f3229effeca7a82fa7",
+  "exactIdentity": {
+    "repository": "nickmailhot-lang/StrataAI2",
+    "commit": "9d911fa4e8981c3a22448f91c2d9a51c68b708c6",
+    "tree": "9a98163fce1a470b4dff6852e10aa8e61b99f61f",
+    "base": "122c72e37cee679547cc4ffcf24d70e94c4e15e4",
+    "source": "1cc91b9bc96f054a5dc7510fee9c090b092417f8",
+    "policy": "688e8139ce8cb3745886cb541f5e0381f277d3e9963199c4aaaf8dcc8c47732f",
+    "scope": {
+      "tier": "full",
+      "full": true,
+      "web": true,
+      "runtime": false,
+      "browser": [
+        "tests/browser/board.spec.ts",
+        "tests/browser/strata-lot-directory.spec.ts"
+      ],
+      "commands": [
+        "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+        "Private board discovery and revoked membership against restricted PostgreSQL runtime"
+      ]
+    }
+  },
+  "probeRequest": {
+    "identity": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commit": "9d911fa4e8981c3a22448f91c2d9a51c68b708c6",
+      "tree": "9a98163fce1a470b4dff6852e10aa8e61b99f61f",
+      "base": "122c72e37cee679547cc4ffcf24d70e94c4e15e4",
+      "source": "1cc91b9bc96f054a5dc7510fee9c090b092417f8",
+      "policy": "688e8139ce8cb3745886cb541f5e0381f277d3e9963199c4aaaf8dcc8c47732f",
+      "scope": {
+        "tier": "full",
+        "full": true,
+        "web": true,
+        "runtime": false,
+        "browser": [
+          "tests/browser/board.spec.ts",
+          "tests/browser/strata-lot-directory.spec.ts"
+        ],
+        "commands": [
+          "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+          "Private board discovery and revoked membership against restricted PostgreSQL runtime"
+        ]
+      }
+    },
+    "prior": {
+      "artifactId": 13031709854,
+      "runId": 41157857004
+    }
+  },
+  "heavyJobsInBothAutomaticRuns": "web/runtime/full skipped; required-ci success",
+  "temporaryLabelRemoved": true,
+  "completeFiveLanguageCodeQL": "success, no new alerts",
+  "reviewThreads": [],
+  "merged": true,
+  "mergeCommit": "eeec016c71fefd64c5d87f5d7d3ec2134c8a32ab",
+  "targetTreeAndOrderedParentsVerified": true,
+  "claimReleasedAfterIntegration": true,
+  "acceptance": "No parent PRD/product/MVP acceptance inferred"
+}

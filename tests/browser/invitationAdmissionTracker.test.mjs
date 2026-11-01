@@ -266,3 +266,40 @@ test('conflicting or unidentified canonical events fail instead of being discard
   assert.throws(() => appendCanonicalEvents(events, [{ ...source, metadata: { private: true } }]), /Conflicting copies/);
   assert.equal(events.length, 1);
 });
+
+function membershipFixture() {
+  const f = independentMetadataFixture();
+  const tracker = trackInvitationAdmission(f.page, 'org', 'actor', undefined, '/app/org/invite', undefined, undefined,
+    { eventType: 'ORGANIZATION_MEMBER_ADDED', actorId: 'recipient' });
+  const socket = f.socket();
+  const source = (id, eventId = 'member-source', actorId = 'recipient', connection = socket.value) => connection.emit('framereceived', {
+    payload: JSON.stringify({ type: 2, invocationId: id, item: { organizationId: 'org', userId: 'actor', page: {
+      cursor: 'opaque-source', resetRequired: false, events: [{ eventId, eventType: 'ORGANIZATION_MEMBER_ADDED',
+        organizationId: 'org', actorId }],
+    } } }),
+  });
+  return { ...f, tracker, socket, source, openSocket: f.socket };
+}
+test('next invitation cannot use a pre-membership admission or a read started before its actual source', () => {
+  const f = membershipFixture(); f.socket.head('form'); f.response(f.request());
+  assert.equal(f.tracker.ready(), false);
+  const oldRead = f.request(); f.source('form'); f.response(oldRead);
+  assert.equal(f.tracker.ready(), false);
+  f.response(f.request()); assert.equal(f.tracker.ready(), true);
+});
+test('membership source requires the intended recipient and all current stream generations', () => {
+  const f = membershipFixture(); f.socket.head('form'); f.source('form', 'foreign-member', 'another-recipient');
+  f.response(f.request()); assert.equal(f.tracker.ready(), false);
+  f.source('form'); f.response(f.request()); assert.equal(f.tracker.ready(), true);
+  const caption = f.openSocket(); caption.head('new-current-stream');
+  assert.equal(f.tracker.ready(), false);
+  f.source('new-current-stream', 'member-source', 'recipient', caption.value); assert.equal(f.tracker.ready(), false);
+  f.response(f.request()); assert.equal(f.tracker.ready(), true);
+});
+test('duplicate membership delivery cannot fence a completed read, but current source changes must', () => {
+  const f = membershipFixture(); f.socket.head('form'); f.source('form'); f.response(f.request());
+  assert.equal(f.tracker.ready(), true); f.source('form'); assert.equal(f.tracker.ready(), true);
+  f.source('form', 'later-member-source'); assert.equal(f.tracker.ready(), false);
+  f.response(f.request()); assert.equal(f.tracker.ready(), true);
+  f.navigate('/login'); f.navigate('/app/org/invite'); assert.equal(f.tracker.ready(), false);
+});

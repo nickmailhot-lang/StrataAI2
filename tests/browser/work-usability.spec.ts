@@ -73,8 +73,26 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(detail.getByRole('button', { name: 'Edit Card assignees', exact: true })).toBeFocused();
     await openAdmittedReview(detail.getByRole('button', { name: 'Edit dates', exact: true }), detail.getByLabel('Due date', { exact: true }));
     await detail.getByLabel('Due date', { exact: true }).fill('2026-10-01');
-    await activate('Save dates', detail);
+    const dateWrites: { body: { dueAt: string; dueTimezone: string }; key: string | undefined }[] = [];
+    page.on('request', request => {
+      if (request.method() === 'PATCH' && new URL(request.url()).pathname === `/cards/${cardId}/dates`)
+        dateWrites.push({ body: request.postDataJSON(), key: request.headers()['idempotency-key'] });
+    });
+    // The assignee's live event can withdraw admission between focus and Enter.
+    // Observe the original request once; never reactivate after it starts or
+    // retry the result. Retain the native keyboard and saved-result assertions.
+    await pressObservedRequest(detail.getByRole('button', { name: 'Save dates', exact: true }), () => dateWrites.length, 1);
     await expect(detail.getByText('Dates saved.', { exact: true })).toBeVisible();
+    expect(dateWrites).toHaveLength(1);
+    expect(dateWrites[0].body).toMatchObject({ dueAt: '2026-10-01', dueHasTime: false, dueComplete: false });
+    expect(dateWrites[0].key).toMatch(/^[0-9a-f-]{36}$/);
+    const datedBoard = await context.request.get(`/boards/${board}`);
+    expect(datedBoard.status()).toBe(200);
+    const persistedDates = (await datedBoard.json()).lists.flatMap((column: { cards: { id: string; dueAt: string; dueTimezone: string }[] }) => column.cards)
+      .find((card: { id: string }) => card.id === cardId);
+    expect(persistedDates.dueTimezone).toBe(dateWrites[0].body.dueTimezone);
+    expect(new Intl.DateTimeFormat('en-CA', { timeZone: persistedDates.dueTimezone, year: 'numeric', month: '2-digit', day: '2-digit' })
+      .format(new Date(persistedDates.dueAt))).toBe('2026-10-01');
     await activate('Close', detail);
     const face = page.getByRole('link', { name: 'Inspect roof', exact: true });
     await expect(face).toBeFocused(); await expect(face).toContainText('Assigned to Work reviewer');
