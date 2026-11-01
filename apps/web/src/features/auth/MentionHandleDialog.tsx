@@ -27,6 +27,7 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
   const field = useRef<HTMLInputElement | null>(null); const mounted = useRef(false);
   const dialog = useRef<HTMLDivElement | null>(null); const retry = useRef<HTMLButtonElement | null>(null);
   const recoverFocus = useRef(false);
+  const initialFocus = useRef(false); const [entered, setEntered] = useState(false);
   const deny = useEffectEvent(() => { pending.current = undefined; setSetting(undefined); setDraft(''); setUncertain(false); onDenied(); });
   async function account(controller: AbortController) {
     if (controller.signal.aborted) throw new Error('Account request interrupted');
@@ -60,6 +61,7 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
       if (mounted.current && generation === epoch.current) { setSetting(value); setDraft(value.handle); }
     } catch (failure) {
       if (mounted.current && generation === epoch.current) {
+        initialFocus.current = false;
         if (failure instanceof SessionDenied) deny();
         else setError('Unable to load your current handle. Review the account setting before saving.');
       }
@@ -77,6 +79,14 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
     return () => { mounted.current = false; epoch.current++; operation.current?.abort(); operation.current = undefined; };
   }, [open, subject]);
   useEffect(() => {
+    if (!open || !entered || busy || !setting || setting.userId !== subject || !initialFocus.current) return;
+    // Opening and protected admission can finish in either order. Consume this
+    // once, and never reclaim a deliberate control choice or a hidden tab.
+    initialFocus.current = false;
+    const paper = dialog.current?.querySelector('[role="dialog"]');
+    if (document.visibilityState === 'visible' && (document.activeElement === paper || document.activeElement === document.body)) field.current?.focus();
+  }, [open, entered, busy, setting, subject]);
+  useEffect(() => {
     if (!busy && uncertain && recoverFocus.current) {
       recoverFocus.current = false;
       if (document.visibilityState === 'visible' && (dialog.current?.contains(document.activeElement) || document.activeElement === document.body)) retry.current?.focus();
@@ -84,6 +94,7 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
   }, [busy, uncertain]);
   async function save() {
     if (operation.current || !setting && !pending.current) return;
+    initialFocus.current = false;
     if (pending.current && pending.current.original.userId !== subject) { deny(); return; }
     let intent = pending.current;
     if (!intent) {
@@ -142,7 +153,11 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
   const foreignSetting = setting !== undefined && setting.userId !== subject;
   const foreignIntent = pending.current !== undefined && pending.current.original.userId !== subject;
   return <Dialog ref={dialog} open={open} onClose={() => { if (!busy && !pending.current) onClose(); }} fullWidth maxWidth="sm" aria-labelledby="mention-handle-title"
-    slotProps={{ transition: { onEntered: () => field.current?.focus() } }}>
+    slotProps={{ transition: {
+      onEnter: () => { initialFocus.current = true; setEntered(false); },
+      onEntered: () => setEntered(true),
+      onExit: () => { initialFocus.current = false; setEntered(false); },
+    } }}>
     <DialogTitle id="mention-handle-title">Your mention handle</DialogTitle>
     <DialogContent><Stack component="form" id="mention-handle-form" aria-label="Change mention handle" onSubmit={event => { event.preventDefault(); void save(); }} spacing={2} sx={{ pt: 1 }} aria-busy={busy}>
       <Typography>Your unique handle stays reserved to your account after you change it. You can return to a previously owned handle.</Typography>
