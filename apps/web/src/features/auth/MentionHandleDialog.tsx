@@ -20,7 +20,8 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
 }) {
   const [setting, setSetting] = useState<MentionHandleSetting>(); const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false); const [uncertain, setUncertain] = useState(false);
-  const [error, setError] = useState<string>(); const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string>(); const [validationError, setValidationError] = useState<string>();
+  const [saved, setSaved] = useState(false);
   const pending = useRef<MentionHandleIntent | undefined>(undefined);
   const operation = useRef<AbortController | undefined>(undefined); const epoch = useRef(0);
   const field = useRef<HTMLInputElement | null>(null); const mounted = useRef(false);
@@ -53,7 +54,7 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
   const load = useEffectEvent(async () => {
     if (operation.current || pending.current) return;
     const controller = new AbortController(); operation.current = controller; const generation = ++epoch.current;
-    setBusy(true); setError(undefined); setSetting(undefined); setSaved(false);
+    setBusy(true); setError(undefined); setValidationError(undefined); setSetting(undefined); setSaved(false);
     try {
       const value = await bounded(controller, () => current(controller));
       if (mounted.current && generation === epoch.current) { setSetting(value); setDraft(value.handle); }
@@ -87,12 +88,12 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
     let intent = pending.current;
     if (!intent) {
       try { intent = createMentionHandleIntent(setting!, draft); }
-      catch { setError('Use 3–40 letters, digits or underscores, beginning with a letter. Reserved names cannot be chosen.'); return; }
+      catch { setValidationError('Use 3–40 letters, digits or underscores, beginning with a letter. Reserved names cannot be chosen.'); return; }
     }
     const controller = new AbortController(); operation.current = controller; const generation = ++epoch.current;
     recoverFocus.current = dialog.current?.contains(document.activeElement) ?? false;
     const active = () => mounted.current && generation === epoch.current;
-    setBusy(true); setError(undefined); setSaved(false);
+    setBusy(true); setError(undefined); setValidationError(undefined); setSaved(false);
     try {
       const result = await bounded(controller, async () => {
         const admitted = await account(controller);
@@ -149,8 +150,10 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
       {saved && <Alert severity="success" role="status">Handle change confirmed.</Alert>}
       {busy && <CircularProgress aria-label="Checking account handle" />}
       <TextField inputRef={field} label="Mention handle" value={foreignSetting || foreignIntent ? '' : draft} disabled={busy || uncertain || !setting}
-        onChange={event => { setDraft(event.target.value); setSaved(false); }} slotProps={{ htmlInput: { maxLength: 40 } }}
-        helperText="3–40 letters, digits or underscores. Start with a letter. Names are case insensitive." autoComplete="off" />
+        onChange={event => { setDraft(event.target.value); setValidationError(undefined); setSaved(false); }}
+        slotProps={{ htmlInput: { maxLength: 40 }, formHelperText: { role: validationError ? 'alert' : undefined } }}
+        error={Boolean(validationError)}
+        helperText={validationError ?? '3–40 letters, digits or underscores. Start with a letter. Names are case insensitive.'} autoComplete="off" />
       {!setting && !uncertain && <Button disabled={busy} onClick={() => void load()}>Review current setting</Button>}
     </Stack></DialogContent>
     <DialogActions>

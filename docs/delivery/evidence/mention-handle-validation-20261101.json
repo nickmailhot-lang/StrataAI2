@@ -1,0 +1,258 @@
+{
+  "source": "91abc967d4587b4f263c839480ce4da4a94b1bea",
+  "tree": "4c33855c221e72a1cd3e263106901200511639a2",
+  "base": "1ebe8eae74157fc30be66aebda7dd6530ecb7830",
+  "at": "2026-11-01T07:26:07.816989+00:00",
+  "scope": "Existing PRD15 account mention-handle field validation only. COMMENT-FR005, sections16/17, TC03/11/12; UXA03/04/05/06/07/08. Existing live GitHub issue16 reconciled; current handle normalization/authorization/receipts unchanged.",
+  "implementation": "Dedicated local validation state drives existing MUI TextField error/helper association and alert. Editing clears only this validation without requests; existing operational errors/recovery remain separate.",
+  "localGate": {
+    "result": "Passed",
+    "runId": "1793517341324-7d90f06c",
+    "durationMs": 410193,
+    "stages": 7,
+    "web": {
+      "files": 226,
+      "passed": 3108,
+      "existingDeferred": 24
+    },
+    "uiSmoke": 2,
+    "typesLintBuildContractsLedgerInventoryDriftSecrets": "Passed",
+    "scope": "Selected feature only; full production regression not run."
+  },
+  "targeted": "17 passing cases across4 files, including5 new field-validation cases and original guarded intent/conflict/account-loss/recovery cases.",
+  "browser": {
+    "result": "Passed",
+    "cases": 5,
+    "viewports": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "textZoom": "768px at200%",
+    "commands": "Compiled actual ProfilePage + MentionHandleDialog, native keyboard Enter invalid/correct/save/close, zero invalid/edited writes, exactly1 deliberate valid PATCH with original actor/version, current-setting read, focusreturn, zero Axe after finite CSS transitions, no pageoverflow/pageerrors.",
+    "visualReview": "All5 actual invalid-field captures inspected: readable wrapped messages, controls visible, no horizontal clipping.",
+    "acceptanceBoundary": "Synthetic HTTP fixtures, not canonical persistence/tenant/Portal or screen-reader/product acceptance."
+  },
+  "retainedFailures": [
+    {
+      "case": "Original source regression",
+      "result": "Failed",
+      "detail": "4 missing field invalid-state/description cases failed; conflict case passed. Original source and log retained."
+    },
+    {
+      "case": "New test typecheck",
+      "result": "Failed",
+      "detail": "Unsupported redundant RTL exact selector option; removed option, same exact string-name match and assertions retained."
+    },
+    {
+      "case": "Browser attempt1",
+      "result": "Failed",
+      "detail": "3passed/2contrast audit failures sampled MUI error-color transition. Original traces/frames retained and inspected. Probe now waits until actual dialog CSS animations finish within unchanged5s expectations; same Axe rules/assertions and30s case budget; all5passed. No app/theme/rule suppression."
+    },
+    {
+      "case": "Setup/sequencing",
+      "result": "Failed",
+      "detail": "Initial claim before dependency installation refused; premature final verifier stopped before CLI writes ended; owned lock preserved after actual PID absent twice; subsequent lock-refusal log retained; separate API verification Python quoting preparation refusal before ref movement. No pass claimed from those attempts."
+    }
+  ],
+  "publication": {
+    "normalCommit": "0fa5596fe019d3cdcb3905a105d7e2196d9846cf",
+    "apiCommit": "91abc967d4587b4f263c839480ce4da4a94b1bea",
+    "tree": "4c33855c221e72a1cd3e263106901200511639a2",
+    "parents": [
+      "1ebe8eae74157fc30be66aebda7dd6530ecb7830"
+    ],
+    "verifiedFiles": [
+      [
+        "apps/web/src/features/auth/MentionHandleDialog.tsx",
+        "59eb0e21141859ab7e57c32ecd82fec8e50e92c4"
+      ],
+      [
+        "apps/web/src/features/auth/MentionHandleDialog.validation.test.tsx",
+        "c9e03fc8cf6063deca80cf6f024ddb75b7dfc45b"
+      ],
+      [
+        "docs/delivery/progress.json",
+        "e460e94555dd6b9ed9d55f55f27b89d03f549eac"
+      ]
+    ],
+    "remoteRefChanged": false,
+    "preparationFailure": "First local verification command refused Python/shell quoting before any checks/ref movement; fetched object retained, corrected verification reads dedicated manifest file."
+  },
+  "artifacts": [
+    {
+      "path": "strataai-local/mention-handle-validation/browser-attempt1-config.mjs",
+      "sha256": "484bf90125d10eacf17b5a8405f035a6527cf32504b7cf4d7db16a9ad3283d36"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-attempt1-source.mjs",
+      "sha256": "68f4d0a0ad7b4a02f040fd579cbf72ab8d11f2969b13e89a59983fde849d9f2a"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-attempt1.log",
+      "sha256": "341e7658f3ff1bb36fcf34d2d3e9237ffd3bc14aa932f2236b01583a3bf17874"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-attempt2.log",
+      "sha256": "6eaa3035961fc6057dae8a98e8c194c6763705804201f9eb4918494232758261"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/.last-run.json",
+      "sha256": "b3fdf6603e8e6433975f73dcfd7c87b642d524675cb3bc22cf32059c5264adaa"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-07119-e-validation-1280px-text-1x/error-context.md",
+      "sha256": "ede5dec615af4d6e0b40ef6fea39c2965d03e0f96e024a5116b9bed3856fa2dd"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-07119-e-validation-1280px-text-1x/trace.zip",
+      "sha256": "0b71dd8d9d42963640fdef383b337c9689e582e8841ebc8e7c5b6fa672d5d602"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-7e59e-le-validation-768px-text-2x/invalid-field.png",
+      "sha256": "edb6e23d26d07240a807116751b71ffcac6f76fb78119121fdd00d6a56794f1c"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-85b77-le-validation-390px-text-1x/error-context.md",
+      "sha256": "99a5d5ecefefd8fed629c3628a3841dd2647358ef3541f812f3802d5046465d2"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-85b77-le-validation-390px-text-1x/page@ff6f3d50433320227338d7470fbaf1be-1793517789817.jpeg",
+      "sha256": "2bb3903b440318dcb4b506a56d614a86dd93102be2087f415b2126ee52c9f4f3"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-85b77-le-validation-390px-text-1x/page@ff6f3d50433320227338d7470fbaf1be-1793517789837.jpeg",
+      "sha256": "3c3de9183d0c0a40956b800486dedd818d47787ba705620c377ddfb58eed1261"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-85b77-le-validation-390px-text-1x/page@ff6f3d50433320227338d7470fbaf1be-1793517789851.jpeg",
+      "sha256": "3c92cbef6b43f53da7d5951c8c4cee1281b69cdd2f61df2e944f8bd6fabc080e"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-85b77-le-validation-390px-text-1x/trace.zip",
+      "sha256": "a6c215cd6df5efe92da71d4cf260934e76b332aaf4852f0169d4f90dc4e538cf"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-e6f7d-le-validation-768px-text-1x/invalid-field.png",
+      "sha256": "bbd6713f1f90d254c7f08f6a125030bf22a0e6fc7349491e0261a96133203534"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results/validation-compiled-actual-ff514-le-validation-320px-text-1x/invalid-field.png",
+      "sha256": "2ff70a9d69a975ce861effffc6acd5538bc11ad572fc0b8a9f508d9d12eaf510"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results-attempt2/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results-attempt2/validation-compiled-actual-07119-e-validation-1280px-text-1x/invalid-field.png",
+      "sha256": "2b007b4ad2de7b44d562bd3dfe8b2deeb4a9b8194697e45fce1de8868cf55f1a"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results-attempt2/validation-compiled-actual-7e59e-le-validation-768px-text-2x/invalid-field.png",
+      "sha256": "edb6e23d26d07240a807116751b71ffcac6f76fb78119121fdd00d6a56794f1c"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results-attempt2/validation-compiled-actual-85b77-le-validation-390px-text-1x/invalid-field.png",
+      "sha256": "024422d456479d1abd0a822a12a39e3979a36c46174990c2b144f343e70194c9"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results-attempt2/validation-compiled-actual-e6f7d-le-validation-768px-text-1x/invalid-field.png",
+      "sha256": "bbd6713f1f90d254c7f08f6a125030bf22a0e6fc7349491e0261a96133203534"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser-results-attempt2/validation-compiled-actual-ff514-le-validation-320px-text-1x/invalid-field.png",
+      "sha256": "2ff70a9d69a975ce861effffc6acd5538bc11ad572fc0b8a9f508d9d12eaf510"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/browser.config.mjs",
+      "sha256": "f4dd6b41382cc9de004cba02013f6fa796c7e3a0823b1380b35ebbe10519518d"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/code-commit.log",
+      "sha256": "d591392307529a5789fda24d71b13cff50f1abb2c5d57083da59f9d1614752ff"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/code-publication-proof.json",
+      "sha256": "065c13bbec35e146011d5ce3ee7945ba4636cf92efb17ebe9cbc75d579099f04"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/explicit-code-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/final-code-attempt2.log",
+      "sha256": "805bf81064b33294524c5f3bbfeafd10e33f35f5680fac0a2722dda955b16463"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/final-code-attempt3.log",
+      "sha256": "33c25d162990243b9af50ca99500fc83f68962dac292e5871cd0e17a5e041058"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/final-code-attempt4.log",
+      "sha256": "02e9788da9b88b5323df2df9f01bd607b621da9cd4f906ecdff762abfc293404"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/final-code-receipt.json",
+      "sha256": "009d2b4ad126c3eb181b7679a9b2268022108df6aa4283894c1e782e015f8bb6"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/final-code.log",
+      "sha256": "060c05cdcfd6aab23d2e66174c9f62c70ea8077732daf4f09dbbdeb241bee060"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/npm-install.log",
+      "sha256": "20d60d2cd165208d0d3fb0f75ae6a796816ec23b28c082f9df1d0b5f67bdc67e"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/original-red-test.tsx",
+      "sha256": "13d2773b07daa78bc7ab6e052c9b5c213508455b1e2f47b0baf5c33179df303b"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/original-red.log",
+      "sha256": "24d34a3cc77bceaff620833330176d33f21e4585fe97c2cee154dc8a6d7c98f3"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/owned-cancelled-verifier-lock/owner.json",
+      "sha256": "582499c3e6925c512dccb497f9f381659b10af2edc6e2b4126fd1da84eb8a679"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/plan.json",
+      "sha256": "2423f40cce2b4b5bf8158d701ed0bf830d64aa3807070c2d6231b6687c341e1c"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/premature-verifier-cancelled.json",
+      "sha256": "916165aba5612058b81f575da7dcd86492f24978f9a86a5b18d279e659542418"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/push-dry-run.log",
+      "sha256": "2e554a39e2bb4414b5e2c3f5a90ebc87b405b5b8231d692704ec6df4580e8f60"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/targeted-final.log",
+      "sha256": "9b92d28da56f1cf81bd341d8bcaa1438e60ac21a5a7d59067dac9256b6fe7a4b"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/targeted-pass.log",
+      "sha256": "d2652d0802295171b31d8cd40423874be4a342527542f4f992066cb9099e66c6"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/typecheck-corrected.log",
+      "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/typecheck-failed-test.tsx",
+      "sha256": "fb05113ed5bb8411bf01c1040a9e5514e4c34bf32b34dd2151bb65fff8b1d224"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/validation-corrected.log",
+      "sha256": "11df72bbbef7dc14b895289e8273fb01786021d800635ee77034aba4c76dbc01"
+    },
+    {
+      "path": "strataai-local/mention-handle-validation/validation.spec.mjs",
+      "sha256": "d3f76d9308237abb798986ed1cbf68c304617ae542d90e3eac9d4d6323800563"
+    }
+  ],
+  "acceptance": "Implemented and locally tested; broader criteria, product/UX/MVP acceptance, target integration and full release qualification remain unverified."
+}
