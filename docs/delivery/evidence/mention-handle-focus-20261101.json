@@ -1,0 +1,397 @@
+{
+  "source": "9e30e836956beffe083f9e3ec08e8e6fbd71755e",
+  "tree": "deeff96d98945195df085f9bd5a7da03d84e862c",
+  "base": "a393da3e54480d897b29cf6430a56343be30c43e",
+  "at": "2026-11-01T19:41:31.709409+00:00",
+  "scope": "PRD15 COMMENT-FR005 support, section16 dialog focus, TC11/12 and UXA03/04/05/06/07/08. Existing current source/live issue16/backlog and original guarded recovery reconciled; only initial focus is new.",
+  "implementation": "One-shot initial field focus after both transition entry and protected admission. Only while dialog owns initial focus and document is visible; consume choice on failure, command start, exit or deliberate focus elsewhere. Original retry focus, authority, requests/versions/busy/refusals/deadlines/layout remain unchanged.",
+  "originalSourceRegression": "Initial tests2failed/3passed; current5test original-source counterfactual3failed/2passed. All22 targeted cases across5files pass with bounded source, including original account/refusal/key/body recovery.",
+  "localGate": {
+    "result": "Passed",
+    "runId": "1793561464033-58c7d75b",
+    "durationMs": 420577,
+    "stages": 7,
+    "files": 227,
+    "passed": 3113,
+    "existingDeferred": 24,
+    "compiledSignIn": 2,
+    "scope": "Exact selected feature tree; types/lint/build/contracts/ledger/history/inventory/drift/Python/secrets. No full production qualification."
+  },
+  "browser": {
+    "result": "Passed",
+    "cases": 15,
+    "viewports": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "zoom": "768px200%",
+    "modes": [
+      "Delayed read completing after visible dialog entry focuses admitted field",
+      "Deliberate Close choice after initial focus remains owned",
+      "Fast admitted read does not steal Close focus when transition finishes"
+    ],
+    "assertions": "Native keyboard invalid input, correction and1deliberate actor/version-bound PATCH/current-setting fixture acknowledgment, zero invalid/edit writes, focus return, zero Axe/no pageerrors/no overflow. Original30s case/5s assertions, zero retries.",
+    "visualReview": "Representative actual admitted-field and deliberate-Close captures inspected at all4 widths and200%; stable existing layout and visible focus; no clipping/overflow.",
+    "boundary": "Synthetic HTTP fixtures are not canonical persisted auth/tenant/Portal, screen-reader, full release or product/MVP acceptance."
+  },
+  "retainedFailures": [
+    {
+      "case": "Original source focus ordering",
+      "result": "Failed",
+      "detail": "Slow read left focus on dialog; fast read transition reclaimed deliberate Close focus. Originalsource at a393da3e remains immutable; test sources/logs retained."
+    },
+    {
+      "case": "Browser attempt1 readiness",
+      "result": "Failed",
+      "detail": "All15 new probes stopped on all-animation-settled predicate counting intentionally infinite spinner/focus ripple. Original logs/traces/frame inspected. Corrected readiness waits actual opening opacity and finite parent/subtree animations within original5s; same15focus/Axe/command/assertion scenarios passed26s. No app/theme/rule/deadline/retry relaxation."
+    },
+    {
+      "case": "Unit focus-choice setup refinement",
+      "result": "Not Run",
+      "detail": "Replaced unreachable focus attempt on busy disabled Close with enabled Close chosen after admission and asserted enabled before choosing it; preserved same ownership assertion. Current5cases independently rerun on originalsource and failed3 as expected."
+    }
+  ],
+  "publication": {
+    "normalCommit": "8ac3b8f3bde69efc7f56526f26157b6dd9ba4eaf",
+    "apiCommit": "9e30e836956beffe083f9e3ec08e8e6fbd71755e",
+    "tree": "deeff96d98945195df085f9bd5a7da03d84e862c",
+    "parents": [
+      "a393da3e54480d897b29cf6430a56343be30c43e"
+    ],
+    "all3BlobsFetchedVerified": true,
+    "remoteRefChanged": false
+  },
+  "artifacts": [
+    {
+      "path": "strataai-local/mention-handle-focus/bounded-focus-candidate.tsx",
+      "sha256": "d1f4ae638a8a2f6c933c7ecdeadc1ade804eb58f51b79a81747667c67571583a"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-attempt1-config.mjs",
+      "sha256": "27d14bf39242015c0aeee490bbc0541166650137896cbb92c9264a35bf2f9666"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-attempt1-source.mjs",
+      "sha256": "20885d88e0263b5c97348dda67bb197336f10789381f9830985a374fb867513d"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-attempt1.log",
+      "sha256": "ebed89bd5809a763097b6d32c8075271429bd1232a8dad2e59eff4967956b0e1"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-attempt2.log",
+      "sha256": "aebef42937874ae9425a1a551d30435c58bdf573c2a06757836642fd0f219433"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/.last-run.json",
+      "sha256": "1da5745b18bb9fbfc4df967350338637d0b8483567eb38acd694251f1517a093"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-0688b--after-ready-1280px-text-1x/error-context.md",
+      "sha256": "bf8e07f5454b233f229c71ea3721136a6a409746192b02bd40ef12a64bed4b63"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-0688b--after-ready-1280px-text-1x/trace.zip",
+      "sha256": "d9e805a3a335a8d877e6cbda1d3e8c181fa5652e3ab43997253609c81fc0faea"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-0c2f2-e-after-ready-768px-text-1x/error-context.md",
+      "sha256": "07f61a2fbd4248b04d33405877c390146f838807d75a2218819f77f2c12415b2"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-0c2f2-e-after-ready-768px-text-1x/trace.zip",
+      "sha256": "cb2567cf7081a9d8d9e21f3477d26214cacf96bedd150350f660a31aa3358019"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-3b83e-e-after-ready-768px-text-2x/error-context.md",
+      "sha256": "da165eb5ecb040452f661ab0f0f2e4656620e516e29db33588bf748750b7fb03"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-3b83e-e-after-ready-768px-text-2x/trace.zip",
+      "sha256": "97b0f1059e093f266594e5ee9d841ec149d53c894b2c9f7fb54b79689ae82f20"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-8e3ea-e-after-ready-390px-text-1x/error-context.md",
+      "sha256": "9d9943c07fe3366029117e7f435dfe6273707f6bfa9965a0f036ae4695ef6755"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-8e3ea-e-after-ready-390px-text-1x/trace.zip",
+      "sha256": "9bd4240b795af75fa42af72832ef71f314445ee3cbfc65754637aba9641282ba"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-f179f-e-after-ready-320px-text-1x/error-context.md",
+      "sha256": "d383acf54e6bc988edcb64da9031b4b9a479b25fe81c6cc69ecf0eacfc31d0a8"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focu-f179f-e-after-ready-320px-text-1x/trace.zip",
+      "sha256": "21ab7bc65652beaee5b648dfe67a60ca3123fdaf050dff56e19a6bad134b52e0"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-1280px-text-1x/error-context.md",
+      "sha256": "69c1c2a23352481af3d470dee0bb152596dffc192967751f2957851c9ee276d6"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-1280px-text-1x/trace.zip",
+      "sha256": "2d042e4e3fae8c209bc33f61a7384e160a9d975fd18ad5ecc7277a8b2a741a0e"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-320px-text-1x/error-context.md",
+      "sha256": "936c09f13c2dbc2a1a64f22045df70eb7157f02415361e98580153f996ba5105"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-320px-text-1x/trace.zip",
+      "sha256": "59cc75e2d537116fc8842589dd8f0deeb8e7b5d2429e7c54324a1f46a9348e7c"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-390px-text-1x/error-context.md",
+      "sha256": "2e42d230d124cf9772e884d9b04f00a3635c41f9685870c69793b9a5b7fc539c"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-390px-text-1x/trace.zip",
+      "sha256": "990710297529b54a29bb4e8fa7dc3bc9ff9797fd8de84d3483d23d844a004af9"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-768px-text-1x/error-context.md",
+      "sha256": "6a0c4c764929dd20878e475fa58a0534e8d506fce08c286983dcf7bb5c4b6282"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-768px-text-1x/trace.zip",
+      "sha256": "99e9415ac42bc53372d69ce24f53d279cbfba612b13a1927361e23442a06a4ac"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-768px-text-2x/error-context.md",
+      "sha256": "1ba7916d91263c0bf79b8d6535bdb4e5a60fee66f8e893929247e3a0587777dc"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-delayed-ready-768px-text-2x/trace.zip",
+      "sha256": "5c40530dbcc12ac7fdc9ba2c65bc40f69d5a6e8b3e114f3c093aca13542134c1"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-1280px-text-1x/error-context.md",
+      "sha256": "64899615533cb735312e79d0f5bfe3acf4d47f95fb39327e4072d97d11f427bd"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-1280px-text-1x/trace.zip",
+      "sha256": "f111105afe341763aaef128bdaae9d162d53c300ba79eb3fd4d93ce700d273d4"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-320px-text-1x/error-context.md",
+      "sha256": "1efd5c700ef0b4213ef25523e262aebbcf356422f6e2f88a230d67e271bf76f5"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-320px-text-1x/trace.zip",
+      "sha256": "b1fe3511094349fd40683f9f2da2ac6c40d980b76faf05283e680368f5dd9c5d"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-390px-text-1x/error-context.md",
+      "sha256": "3a78a392ad8659213efc4b1835c3f85a9141c9010b3059c1f0d17aa1919ddb50"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-390px-text-1x/trace.zip",
+      "sha256": "7e30f1dd95344ad31b8e25e06dc55baea70fba0a1aedda6dc4d1bc8793543d33"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-768px-text-1x/error-context.md",
+      "sha256": "c4925c24a72a48e84d7eed802e31ac92265207bed3e1ba08eb20ec2c7171fed8"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-768px-text-1x/trace.zip",
+      "sha256": "cb8e8886e973c2e012b1b09a2cb3ae3cc0de7b056f5d83aa75ca5e2ba5261b1f"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-768px-text-2x/error-context.md",
+      "sha256": "77504709a8f70cc985bd9bd02206953a67e68eff75090509a7a4579a01f45c1f"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results/focus-compiled-handle-focus-fast-close-768px-text-2x/trace.zip",
+      "sha256": "2ff8d55a02ef9939953f2cc9875dc4be813aa0446a4e2b601717e674ec6d9dd2"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-0688b--after-ready-1280px-text-1x/admitted-focus.png",
+      "sha256": "0823844cb479f68411fb33fbd6808a279a36051aa02a5f633829526f921e6857"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-0688b--after-ready-1280px-text-1x/invalid-field.png",
+      "sha256": "83cb2d67cff3f2c69ed65d48f9c25b5cca6adb2011cdf12318c87fe40d8292eb"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-0c2f2-e-after-ready-768px-text-1x/admitted-focus.png",
+      "sha256": "366a1d8b7cc71a605ad0dffdd803201caeecc8d5d472370f75ad110ec34d569f"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-0c2f2-e-after-ready-768px-text-1x/invalid-field.png",
+      "sha256": "d30ee8ab7c69c4e93ae4a0a788ee1e2a2ee59938f8ac0fa4aa0eb2e2b790b1b9"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-3b83e-e-after-ready-768px-text-2x/admitted-focus.png",
+      "sha256": "2e56602860f927bd323684540c83877a7721b2c3efc3c0f20c696a67f684afdf"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-3b83e-e-after-ready-768px-text-2x/invalid-field.png",
+      "sha256": "8c15f9c0bc37b1795f820395147318a28c1f76d34bce6ae050a31d71eb9299a8"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-8e3ea-e-after-ready-390px-text-1x/admitted-focus.png",
+      "sha256": "2ad1d06fb8afd18945a5b142cc1974f850fcdb1194b19d43ed2f790d7e9d0ec3"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-8e3ea-e-after-ready-390px-text-1x/invalid-field.png",
+      "sha256": "67b9f5f585fda83c7de06cbf804f09792521fc7fb9fce530c514632def59fbb8"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-f179f-e-after-ready-320px-text-1x/admitted-focus.png",
+      "sha256": "3280f49badef83d3755278c64e6c3073166f125ac9fd9fa807d8d3dbaaf92d1b"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focu-f179f-e-after-ready-320px-text-1x/invalid-field.png",
+      "sha256": "4cbca53857d3dcc56f865ec835b1fb0c13b57b45425836b98729d12e80fe0879"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-1280px-text-1x/admitted-focus.png",
+      "sha256": "ead478b8b209a0cd1e4d78287475c3b35aed99cacdb29b22b6532c34048797af"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-1280px-text-1x/invalid-field.png",
+      "sha256": "2b007b4ad2de7b44d562bd3dfe8b2deeb4a9b8194697e45fce1de8868cf55f1a"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-320px-text-1x/admitted-focus.png",
+      "sha256": "2797067959ac6bb18e3f1c0be58cf05750bcd777482a7ea3b89b0b7017dea694"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-320px-text-1x/invalid-field.png",
+      "sha256": "2ff70a9d69a975ce861effffc6acd5538bc11ad572fc0b8a9f508d9d12eaf510"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-390px-text-1x/admitted-focus.png",
+      "sha256": "6c1cd65539da43e9f038f1185dcbf52b973e46fffe39e5163d886fec67e4e33f"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-390px-text-1x/invalid-field.png",
+      "sha256": "024422d456479d1abd0a822a12a39e3979a36c46174990c2b144f343e70194c9"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-768px-text-1x/admitted-focus.png",
+      "sha256": "2965350d4b0bcb627cfbd9cc92138f9b465db693a352806e1f59b9704c484fdc"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-768px-text-1x/invalid-field.png",
+      "sha256": "bbd6713f1f90d254c7f08f6a125030bf22a0e6fc7349491e0261a96133203534"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-768px-text-2x/admitted-focus.png",
+      "sha256": "3308ad9ba25d76455f762e0bb7ee51e4b787dc868e78f9312dede871ea77494e"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-delayed-ready-768px-text-2x/invalid-field.png",
+      "sha256": "edb6e23d26d07240a807116751b71ffcac6f76fb78119121fdd00d6a56794f1c"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-1280px-text-1x/admitted-focus.png",
+      "sha256": "dea5b3b3b97b4ac9b538c67bf4b2ff77dd48e3d7e0eee3145e4be6183b350bbd"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-1280px-text-1x/invalid-field.png",
+      "sha256": "83cb2d67cff3f2c69ed65d48f9c25b5cca6adb2011cdf12318c87fe40d8292eb"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-320px-text-1x/admitted-focus.png",
+      "sha256": "2766a063ade591580e02b1ec1fbd3dea92441fa5903887e1a644691e5d92b3f1"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-320px-text-1x/invalid-field.png",
+      "sha256": "4cbca53857d3dcc56f865ec835b1fb0c13b57b45425836b98729d12e80fe0879"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-390px-text-1x/admitted-focus.png",
+      "sha256": "2ad1d06fb8afd18945a5b142cc1974f850fcdb1194b19d43ed2f790d7e9d0ec3"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-390px-text-1x/invalid-field.png",
+      "sha256": "67b9f5f585fda83c7de06cbf804f09792521fc7fb9fce530c514632def59fbb8"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-768px-text-1x/admitted-focus.png",
+      "sha256": "366a1d8b7cc71a605ad0dffdd803201caeecc8d5d472370f75ad110ec34d569f"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-768px-text-1x/invalid-field.png",
+      "sha256": "d30ee8ab7c69c4e93ae4a0a788ee1e2a2ee59938f8ac0fa4aa0eb2e2b790b1b9"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-768px-text-2x/admitted-focus.png",
+      "sha256": "85963086896043c802b96593450806e06c48011addfac4686818a4f7234ef2f7"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser-results-attempt2/focus-compiled-handle-focus-fast-close-768px-text-2x/invalid-field.png",
+      "sha256": "8c15f9c0bc37b1795f820395147318a28c1f76d34bce6ae050a31d71eb9299a8"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/browser.config.mjs",
+      "sha256": "7c60ec2bbc2c7b069e3530d594dc95783d186579424c7c53db4cf607d7b261a4"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/code-commit.log",
+      "sha256": "189203045e198cf3713bb54dd813f5a3c08cfe4b41d63ac7a71cefd364374181"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/code-publication-proof.json",
+      "sha256": "9708645d71b60785125e0a49d8a5decfb09748a4866e2e50fae2a323f49ea12a"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/current-tests-original-source-red.log",
+      "sha256": "493b2008a8f108b41be109293805a3b451ff51ca4f9106816ce7d2f829a05f41"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/explicit-code-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/final-code-receipt.json",
+      "sha256": "18c76082278feed9b4fdb2acf13621bded6436bf100dba61cb2d540e891ebcd4"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/final-code.log",
+      "sha256": "1061346b89e84a1a4b50efb58c899a392d7212740fc0c87c0559ef414778d2d1"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/focus.spec.mjs",
+      "sha256": "f60e62a41ff2459fa0fb00acf303064bcd7f32de74b3880b68c9497cabc315ad"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/original-red-test.tsx",
+      "sha256": "5b7437ee4bfa7cccae5ff6bd7729d7cd762bf2b6517928e58b5f319cd6ee46f1"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/original-red.log",
+      "sha256": "3ee8b4a7f60537b921d3a8ab616ba2c19350dacfdae269dc41816644e72b0875"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/readiness-failure-frame.jpeg",
+      "sha256": "399745ed077d80f6ae5cd796f55d1b0260422ff86c4411a2558de7266adf7fd6"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/targeted-final.log",
+      "sha256": "6cd2ad459e9370cbd65ee1527026465c05ff03d0b441bc687605b0641839a815"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/targeted-initial-test.tsx",
+      "sha256": "5b7437ee4bfa7cccae5ff6bd7729d7cd762bf2b6517928e58b5f319cd6ee46f1"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/targeted.log",
+      "sha256": "7a5520ff374767db6b22cfd372a61850b9a9ae0dca26e0b1e5b87bee97f95023"
+    },
+    {
+      "path": "strataai-local/mention-handle-focus/typecheck.log",
+      "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+    }
+  ],
+  "acceptance": "Implemented and tested scoped increment; broad criteria and full/product/UX/MVP acceptance unverified. PR136 merged normally after fresh exact checks; no PRD parent closure."
+}
