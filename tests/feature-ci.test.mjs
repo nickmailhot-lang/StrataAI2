@@ -154,3 +154,13 @@ test('all full-qualification .NET consumers install the verified SDK without flo
     assert.equal(setup[0].with['cache-dependency-path'], '**/packages.lock.json');
   }
 });
+
+test('feature web partitions retain every required report and do not cancel sibling evidence', () => {
+  const feature=workflow('feature-ci');
+  assert.deepEqual(feature.jobs.web.strategy?.matrix?.partition,[1,2,3]);
+  assert.equal(feature.jobs.web.strategy['fail-fast'],false);
+  assert.equal(feature.jobs.web.env.FAST_CI_WEB_PARTITION,'${{ matrix.partition }}');
+  const aggregate=feature.jobs['required-ci'].steps;
+  assert.ok(aggregate.some(step=>step.with?.pattern==='fast-web-${{ github.sha }}-*'));
+  assert.ok(aggregate.some(step=>step.run==='node ci/fast/web-partitions.mjs verify'));
+});

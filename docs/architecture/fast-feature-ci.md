@@ -87,3 +87,35 @@ element without changing authentication, recovery or layout. Both original Axe
 and same-key/body keyboard retry checks now pass, alongside 77 account-entry and
 invitation component cases, build/type checks and lint. This is scoped local
 evidence; it does not change PR134 or establish hosted timing/product acceptance.
+
+## Retained first hosted timing failure and bounded recovery
+
+The first PR135 feature run (`41275468371`, head `68d891bf`) passed its complete
+web lane: 225 files, 3,103 cases and 24 existing capacity deferrals, compilation,
+types/lint and both compiled UI scenarios. The lane took 494.568 seconds, but the
+whole feature interval exceeded ten minutes and the strict aggregate correctly
+failed. The cold measurement (`41275507572`) passed its backend lane in 153.644
+seconds, including all 47 reviewed HTTP cases and 1,105 Domain cases with three
+existing deferrals. Its web job timed out during unit execution. Both failed
+qualifications remain failed; their original ZIPs and logs are retained with
+verified digests. No warm measurement or unchanged rerun was dispatched.
+
+Runtime collection and execution repeat isolated file initialization. The bounded
+recovery partitions the complete selected web files deterministically across three
+hosted jobs. Each file and every original parameter row remains in exactly one
+partition, with independent runtime discovery and strict JUnit validation. Sibling
+jobs retain their evidence when one fails. Partition one also owns types, lint,
+compilation and the unchanged compiled UI checks; these checks run once. The
+aggregate requires all three source/scope-bound reports, hashes and revalidated
+case inventories before it can pass. Missing, duplicate, empty, failed or altered
+partitions refuse. The partition manifest is included in the sealed scope and
+qualification reuse identity. The original ten-minute budget remains unchanged.
+
+A meaningful old-workflow contract failed for the absent parallel execution and
+report consumer before the recovery. Targeted execution of the shared runner used
+all 11 dependent Home/critical files split 4/4/3, preserving all 184 cases and both
+compiled UI cases. This scoped probe passed locally; full exact-source verification
+and fresh hosted cold/warm qualification are still required. Local final verification
+continues to execute the complete selected web files on this machine, without
+simultaneous heavy processes. No original production test/configuration or full
+nightly/candidate workflow was changed.

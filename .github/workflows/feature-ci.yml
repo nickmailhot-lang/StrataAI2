@@ -98,7 +98,12 @@ jobs:
     if: needs.select.outputs.reused == 'false' && needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        partition: [1, 2, 3]
     env:
+      FAST_CI_WEB_PARTITION: ${{ matrix.partition }}
       STRATAAI_POST_MVP_LOAD_TESTS: '0'
     steps:
       - uses: actions/checkout@v7
@@ -118,13 +123,14 @@ jobs:
         with:
           name: feature-selection-${{ github.sha }}
           path: artifacts/fast
-      - run: npx playwright install --with-deps chromium
+      - if: matrix.partition == 1
+        run: npx playwright install --with-deps chromium
       - name: Selected web types, lint, complete unit files, build and compiled UI smoke
         run: node ci/fast/run.mjs web
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: fast-web-${{ github.sha }}
+          name: fast-web-${{ github.sha }}-${{ matrix.partition }}
           path: artifacts/fast/web
           if-no-files-found: error
   backend:
@@ -182,6 +188,15 @@ jobs:
         with:
           name: feature-selection-${{ github.sha }}
           path: artifacts/fast
+      - uses: actions/download-artifact@v8
+        if: needs.select.outputs.reused == 'false' && needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
+        with:
+          pattern: fast-web-${{ github.sha }}-*
+          path: artifacts/fast/web-partitions
+          merge-multiple: false
+      - name: Verify every complete web partition and original case inventory
+        if: needs.select.outputs.reused == 'false' && needs.select.outputs.web == 'true' && needs.select.outputs.full != 'true'
+        run: node ci/fast/web-partitions.mjs verify
       - name: Require exactly the selected checks
         id: qualified
         env:

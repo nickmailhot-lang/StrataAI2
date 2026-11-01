@@ -6,6 +6,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requireFeatureChecks } from './require-feature-checks.mjs';
 import { requireGateResults } from '../../ci/fast/aggregate.mjs';
+import { partitionWebTests } from '../../ci/fast/web-partitions.mjs';
 
 const digest = value => createHash('sha256').update(value).digest('hex');
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
@@ -21,6 +22,7 @@ export function identity(plan, env, event) {
   if (plan.profile) {
     const {scopeFingerprint,...scope}=plan;
     if (digest(JSON.stringify(scope))!==scopeFingerprint || plan.sourceTree!==git('rev-parse','HEAD^{tree}')) throw new Error('Changed fast source/scope');
+    if(!plan.full && plan.web && JSON.stringify(plan.webPartitions)!==JSON.stringify(partitionWebTests(plan.webTests)))throw new Error('Missing or changed complete web partition scope');
     if (!plan.full && (plan.web && !plan.webTests?.length || plan.api && !plan.apiSelection?.methods?.length)) throw new Error('Empty selected fast evidence');
   }
   const base = event.pull_request?.base.sha ?? event.merge_group?.base_sha ?? git('rev-parse', 'HEAD^');

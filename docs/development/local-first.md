@@ -82,7 +82,10 @@ files plus critical auth/admission checks, production compilation and focused
 compiled UI smoke. Runtime discovery and JUnit multiplicities must match, including
 parameter rows with repeated display names. Only the original source-bound 24
 BoardWindow capacity deferrals remain separately skipped; the 24 functional
-counterparts are unchanged. Web units use two workers; original production browser
+counterparts are unchanged. Hosted execution partitions every selected complete test file across three runners;
+each partition retains independent collection/report checks and the aggregate
+requires the entire partition manifest. Local final verification retains all
+selected files in one bounded process. Web units use two workers; original production browser
 configuration and per-case assertions/retries/deadlines remain unchanged.
 
 The backend lane performs locked solution restore/Release compilation with warnings

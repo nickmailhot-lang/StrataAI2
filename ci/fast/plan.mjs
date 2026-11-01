@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { changedPaths } from '../../scripts/ci/select-feature-tests.mjs';
 import { selectFeatureGate } from './selection.mjs';
 import { selectWebTests } from './web-selection.mjs';
+import { partitionWebTests } from './web-partitions.mjs';
 import { selectBackendTests } from './backend-selection.mjs';
 
 export function createPlan(paths, root, options = {}) {
@@ -22,6 +23,7 @@ export function createPlan(paths, root, options = {}) {
   plan.commands = []; // Comprehensive production commands remain in full sanity.
   plan.omitted = plan.deferred;
   plan.webTests = !plan.full && plan.web ? selectWebTests(root, plan.changedPaths).files : [];
+  plan.webPartitions = plan.webTests.length ? partitionWebTests(plan.webTests) : [];
   const folder = 'tests/StrataAI.Api.Tests/';
   plan.apiSelection = !plan.full && plan.api ? selectBackendTests(plan.changedPaths,
     readdirSync(resolve(root, folder)).map(f => folder + f), file => readFileSync(resolve(root, file), 'utf8')) : null;

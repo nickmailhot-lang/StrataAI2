@@ -6,6 +6,8 @@ import { createHash } from 'node:crypto';
 import { snapshot } from '../../scripts/local/repository.mjs';
 import { apiTestArguments } from './api-selection.mjs';
 import { linuxBackend } from './linux-backend.mjs';
+import { partitionWebTests } from './web-partitions.mjs';
+import assert from 'node:assert/strict';
 
 const lane = process.argv[2], root = process.cwd();
 const plan = JSON.parse(readFileSync(resolve(process.env.FAST_CI_PLAN_DIR ?? 'artifacts/fast', 'feature-plan.json'), 'utf8'));
@@ -21,6 +23,14 @@ mkdirSync(output,{recursive:true});
 const start = Date.now(), commands = [];
 let linux;
 let coldPackages;
+let partition=null, summary=null;
+const checks=[];
+if(lane==='web'){
+  assert.deepEqual(plan.webPartitions,partitionWebTests(plan.webTests));
+  const requested=process.env.FAST_CI_WEB_PARTITION;
+  if(requested!==undefined){if(!/^[123]$/.test(requested))throw Error('Invalid web partition');partition=plan.webPartitions[Number(requested)-1];}
+  else if(process.env.GITHUB_ACTIONS==='true')throw Error('Hosted web partition required');
+}
 const run = (command, args, extra = {}) => {
   const remaining = 600_000 - (Date.now() - start);
   if (remaining <= 0) throw new Error('Fast lane execution budget exhausted');
@@ -32,14 +42,16 @@ const run = (command, args, extra = {}) => {
 };
 try { if (lane === 'web') {
   if (!plan.webTests?.length) throw new Error('Empty web selection');
-  run('npm',['run','typecheck']); run('npm',['run','typecheck:browser']); run('npm',['run','lint']);
-  writeFileSync(resolve(output,'selection.json'),JSON.stringify({root,files:plan.webTests}));
-  const files=plan.webTests.map(p=>p.replace(/^apps\/web\//,''));
+  if(!partition||partition.id===1){run('npm',['run','typecheck']); run('npm',['run','typecheck:browser']); run('npm',['run','lint']);checks.push('types','browser-types','lint');}
+  const selected=partition?.files??plan.webTests;
+  writeFileSync(resolve(output,'selection.json'),JSON.stringify({root,files:selected}));
+  const files=selected.map(p=>p.replace(/^apps\/web\//,''));
   run('npm',['exec','--workspace','@strataai/web','--','vitest','list',...files,'--no-staticParse','--maxWorkers=2',`--json=${resolve(output,'discovery.json')}`]);
   run('npm',['test','--',...files,'--maxWorkers=2','--reporter=junit',`--outputFile=${resolve(output,'web.xml')}`]);
   run('python3',['ci/fast/web_results.py',resolve(output,'selection.json'),resolve(output,'web.xml'),'ci/fast/web-deferred.json',resolve(output,'discovery.json'),resolve(output,'summary.json')],{PYTHONDONTWRITEBYTECODE:'1'});
-  run('npm',['run','build']);
-  run('npx',['playwright','test','--config','ci/fast/ui.config.ts'],{FAST_CI_UI_RESULTS:resolve(output,'ui')});
+  summary=JSON.parse(readFileSync(resolve(output,'summary.json')));checks.push('units');
+  if(!partition||partition.id===1){run('npm',['run','build']);
+    run('npx',['playwright','test','--config','ci/fast/ui.config.ts'],{FAST_CI_UI_RESULTS:resolve(output,'ui')});checks.push('build','compiled-ui');}
 } else {
   if (!plan.apiSelection?.methods?.length) throw new Error('Empty API selection');
   if (process.platform !== 'linux') linux=linuxBackend(plan.sourceTree,output);
@@ -55,5 +67,5 @@ try { if (lane === 'web') {
 source();
 const elapsedMs=Date.now()-start;
 if (elapsedMs>=600_000) throw new Error('Fast lane exceeded execution budget');
-writeFileSync(resolve(output,'lane.json'),JSON.stringify({lane,revision:plan.revision,sourceTree:plan.sourceTree,scopeFingerprint,commands,elapsedMs,runtimePlatform:linux?linux.runtime:{platform:process.platform,architecture:process.arch},coldCacheRequested:!!plan.measurement?.coldCache,result:'Passed',productionQualified:false},null,2)+'\n');
+writeFileSync(resolve(output,'lane.json'),JSON.stringify({lane,revision:plan.revision,sourceTree:plan.sourceTree,scopeFingerprint,commands,elapsedMs,...(lane==='web'?{partition,summary,checks,reportHashes:Object.fromEntries(['selection.json','discovery.json','web.xml','summary.json'].map(name=>[name,createHash('sha256').update(readFileSync(resolve(output,name))).digest('hex')]))}:{}),runtimePlatform:linux?linux.runtime:{platform:process.platform,architecture:process.arch},coldCacheRequested:!!plan.measurement?.coldCache,result:'Passed',productionQualified:false},null,2)+'\n');
 } finally {try{linux?.close();}finally{if(coldPackages)rmSync(coldPackages,{recursive:true,force:true});}}

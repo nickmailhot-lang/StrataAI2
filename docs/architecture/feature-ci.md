@@ -37,7 +37,12 @@ not automatically start the 45-minute complete API suite.
 | Explicit full | Original complete full-sanity workflow and qualification record | No new development-policy omissions |
 
 Removed frontend sources, helper/config/dependency changes conservatively select
-all web units when the web lane is required. Critical files must exist. Runtime
+all web units when the web lane is required. Critical files must exist. Hosted web files are divided deterministically into three complete-file partitions;
+types/lint/build/compiled UI run once in partition one. Every partition retains
+independent runtime discovery and strict reports. The aggregate verifies all three
+source/scope-bound reports, hashes and case inventories before success; missing,
+duplicate or failed partitions refuse. Local verification executes the complete
+selected files serially on this machine. Runtime
 Vitest discovery is compared with JUnit case multiplicities; repeated parameter
 display names preserve every row. XML attribute whitespace is normalized only for
 report identity. Empty reports, missing files/cases, failed cases and unreviewed
