@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-02T11:49:11.831058+00:00",
+  "source": {
+    "revision": "aa7d0f1256a4e350ac7960bc18b3958baf6297ce",
+    "tree": "71d11b768c8835a68482b3e5cd51da83e3aa4282",
+    "base": "d977719a5ee57b08b218aca5db31dd10afd29604",
+    "normalHookedBackup": "23e4cff423348f57075beab8875e2405d91569ea",
+    "paths": [
+      "tests/browser/comment-mention-prefix-validation.spec.ts"
+    ],
+    "scope": "Executable coverage only. Existing picker implementation92add retained unchanged; no app/authority/API/runtime/workflow edits."
+  },
+  "requirements": [
+    "PRD-15/COMMENT-FR-005",
+    "PRD-15 sections16/17 TC03/11/12",
+    "UXA-02",
+    "UXA-03",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-07",
+    "UXA-08"
+  ],
+  "canonical": {
+    "run": "886a86c0-0a03-4cc1-8f20-3255e8d041d4",
+    "durationSeconds": 1390.011,
+    "passed": 12,
+    "skipped": 0,
+    "retries": 0,
+    "completeFiles": {
+      "board.spec.ts": 5,
+      "comment-mentions.spec.ts": 2,
+      "comment-mention-prefix-validation.spec.ts": 5
+    },
+    "viewports": [
+      "320",
+      "390",
+      "768",
+      "1280",
+      "768 at200%/root32px"
+    ],
+    "capturesDirectlyViewed": 26,
+    "scope": "Actual production UI/cookies/API/Postgres/native prefix errors/no invalid lookups or writes/one normalized lookup/selected teammate revision/one native comment POST/independent persisted author/body/version/private recipient inbox/Card return/reopen/Axe. Original two mention recovery/withdrawal cases and five Board cases complete. Native focus/viewport/center-hit checks separate from fullpage captures. Exact3linuxamd64 image/tree/livebindings and owned cleanup verified; independent originalHTML12inventory matches. Workspace absence not independently observed; original runtime cleanup semantics only.",
+    "security": "Original setup/restricted roles/143unsafe-role refusals/permissions/private Board/auth/abuse stages unchanged and passed."
+  },
+  "staticAndLocal": {
+    "codeql": {
+      "findings": 0,
+      "rules": 87,
+      "suite": "complete JavaScript code scanning",
+      "version": "2.27.3",
+      "sarifSha256": "d4babdc74bd5812beeec74b57c33511943ceb10017af0d8225f940b26c22e8ec"
+    },
+    "localRun": "1793619434676-f11a1127",
+    "durationMs": 409655,
+    "stagesPassed": 7,
+    "completeWebFiles": 232,
+    "passedCases": 3148,
+    "originalCapacityDeferred": 24,
+    "compiledUiSmokePassed": 2,
+    "receiptSha256": "47e362c5b72ffa2c52dd65dffae05d04efb6e961805a890e7bedd10c09b2a2b9"
+  },
+  "visualEvaluation": {
+    "originalObservation": "Four selected-draft captures showed floating label over first line immediately after mention selection; preserved unmodified.",
+    "diagnostic": "Compiled exactproduction router/theme controlledknownheads at5widths:5PASS8.5s. Initial data-shrink true with in-flight transform; settled(.75,14,-9)label clears text, focus/value unchanged. All5settled captures directly viewed. No app fix or source/test assertion change.",
+    "scope": "Controlled diagnostic is separate from real runtime; capture transient is not evidence of persistent app defect. Broad UX acceptance unverified."
+  },
+  "pendingVariants": {
+    "pr149": {
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/149",
+      "head": "3be4ebdd036c1bfd4a5ed1c769107dcda5d68ab9",
+      "tree": "840485703a7302523e27bcf8f6129f7745f06964",
+      "status": "Ready/open/unmerged; no merge authorized.",
+      "snapshotManifestSha256": "9900afd838eefb6ad8163d5e2f619a491baa28c5d5a001ccc8e1f1e36f7c9e21",
+      "changedFiles": [
+        {
+          "path": "apps/web/src/features/kanban/CardCommentsControl.editor-focus.test.tsx",
+          "sha256": "49cb7afd1881e6acee55fb5186fc33817ab7cac27bba87bd7b976c66b77760f5",
+          "blob": "f2eb0365ee1c559a9d6313dee6e2bf3c55faa1e2"
+        },
+        {
+          "path": "apps/web/src/features/kanban/CardCommentsControl.tsx",
+          "sha256": "6f207a92a1b7347a2cb5f742c80375ce9e4a30d9701c51f9c243b1d4a91c0e7f",
+          "blob": "4b40f83459640ccbb389123f4124d634145cec78"
+        },
+        {
+          "path": "docs/delivery/evidence/comment-field-canonical-20261102.json",
+          "sha256": "4927aaa3e340390e4d8c1b014553a3046b8187e4d1ce659bd5068313d37ca2ef",
+          "blob": "0f260417c5be6657f03de5ebbedcadcfc73ad819"
+        },
+        {
+          "path": "docs/delivery/evidence/comment-field-canonical-docs-format-20261102.json",
+          "sha256": "fa14e8c15e80ea3a3789e3fa35909b99bb6a71dd9e9aeb811cac0156636fe535",
+          "blob": "d4ec6bf848df9bc87db07a528daa28f03952f738"
+        },
+        {
+          "path": "docs/delivery/evidence/comment-field-canonical-docs-preparation-20261102.json",
+          "sha256": "00230baf89e1578f177a4c91a62e314bb080711ea000203cb336dac8c9db3334",
+          "blob": "9e9d60c7c74c7201f6191042f4bc398d20c38f43"
+        },
+        {
+          "path": "docs/delivery/progress.json",
+          "sha256": "f39bd0af649ba548d75aaccb52ac34f118adeb7dfc4ed5dace31a2ed2ec0528a",
+          "blob": "d6d1db282a540a2f905eba524a9b71f7663129a7"
+        },
+        {
+          "path": "docs/ux/delivery-report.md",
+          "sha256": "a4e350767d70b29740abcec9991cba7be0b2fa61510063b1c10196775565ce5f",
+          "blob": "c38d4dde32c3e317a3bf66a944835ca4a56f3a45"
+        },
+        {
+          "path": "tests/browser/card-comment-field-validation.spec.ts",
+          "sha256": "a53d86133c7c2fae67d1f341dda4b310f96f966b970768eed60588fa7872147e",
+          "blob": "a3aee316beba03a2a690854045491b417ca67407"
+        },
+        {
+          "privateEvidence": "hosted/final-qualification.json",
+          "sha256": "9555888646e660287dbafa353cac761730f90f06b3f524321dd374dd524e9337"
+        },
+        {
+          "privateEvidence": "review-handoff.json",
+          "sha256": "bccade1d99ddfc954cee14cbfc3d8d44ce609798f94ebae64baf3c76e31eda35"
+        },
+        {
+          "privateEvidence": "code-publication-identity-proof.json",
+          "sha256": "894aec859ef9b33cfbe94c68e348659e5a6f0fb0335a5d99a7bbb175cca2ae68"
+        },
+        {
+          "privateEvidence": "final-publication-identity-proof.json",
+          "sha256": "2a3a4c6bc42741a7c52d8630b72098f450e17fc4e125fe96f2cd8edbc684b79d"
+        }
+      ],
+      "terminalProofSha256": "9555888646e660287dbafa353cac761730f90f06b3f524321dd374dd524e9337",
+      "preservation": "Complete original source/tracking/report/evidence bytes and private terminal records snapshotted before serial docs lease transfer. Source-only Review04 retains all3paths. Pending variants not included/tested/integrated in this main-based branch; retain for future lossless integration."
+    },
+    "pr147": {
+      "head": "88bbb17da8fee025a29aac757b67e64cd53ba894",
+      "status": "Unmerged/source-only Review; existing pending snapshot chain retained, not included."
+    }
+  },
+  "limitations": [
+    "Existing Task/Test remain Review, broadTestNotRun and criteriaUnverified. No implementation lifecycle promotion or duplicateTask.",
+    "Hosted exacthead/review/targetintegration pending at this source evidence stage.",
+    "Full nightly and exactproduction qualification remain mandatory; productionQualifiedfalse; no parent/product/MVP acceptance."
+  ],
+  "immutablePrivateEvidenceHashes": [
+    {
+      "path": "runtime-attempt1-status.completed.json",
+      "sha256": "14d14aa6bae77951f00d5487ca295e26aa2636d2390851b80f1365088090f10b"
+    },
+    {
+      "path": "runtime-attempt1-artifact-inventory.json",
+      "sha256": "1f0dd5d847c302fbb927a635412cc4aff95bb9716e06e978fcfb4c9042ea38c6"
+    },
+    {
+      "path": "runtime-attempt1-html-report-proof.json",
+      "sha256": "8e6c2626df5c13dea04ffeefae397b9f81771a67fc08b818748e1df54b6bd6d9"
+    },
+    {
+      "path": "runtime-attempt1-live-image-binding.json",
+      "sha256": "0b8d778df055889fd98150e0bf054c85b23f99d6d1a481d2405254e6d09a9b31"
+    },
+    {
+      "path": "owned-cleanup-proof.json",
+      "sha256": "e2811c0795d7eeff414d48fc7f7a5b05fddd8ec48c2261de3b9452f69665fbcb"
+    },
+    {
+      "path": "visual-review.json",
+      "sha256": "8a11468a7f79455aea0acbf189920293ed3634080c0389a87ec6b9ad3a1b1265"
+    },
+    {
+      "path": "native-label-transition-evaluation.json",
+      "sha256": "2eee4d5a9c7c9728cd4f2efe9d10a672a4ce52442bc183f82961b622a863cefe"
+    },
+    {
+      "path": "native-label-transition-attempt1.json",
+      "sha256": "f64635283a1ad7c6b255fc124e8fbca441ba45f08ecef71d30943ef7a7fb47f8"
+    },
+    {
+      "path": "final-code-attempt1-receipt.json",
+      "sha256": "47e362c5b72ffa2c52dd65dffae05d04efb6e961805a890e7bedd10c09b2a2b9"
+    },
+    {
+      "path": "final-validation-attempt1-status.completed.json",
+      "sha256": "7a27a8c6f88945e1c62cd886235274b6c2dd2ff8bd4dec3f65c0110cc2580c02"
+    },
+    {
+      "path": "code-publication-identity-proof.json",
+      "sha256": "f80224b882ad8b247813cb4f7f3913841416c92ed4428b6d4bcde99a1c04bc7b"
+    }
+  ],
+  "productionQualified": false
+}
