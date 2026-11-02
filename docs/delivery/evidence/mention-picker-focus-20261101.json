@@ -1,0 +1,2276 @@
+{
+  "schemaVersion": 1,
+  "status": "Scoped locally qualified; hosted/full/product acceptance pending",
+  "source": "c84ef9823fc73b1b04736ca2f724e7efa1b5aeb7",
+  "tree": "4f6f650d5fafd60cbdf248185b8a20a768fb147d",
+  "base": "bacad858a073393def14301d568eb35466acd189",
+  "requirements": [
+    "PRD-15 COMMENT-FR-005",
+    "PRD-15 sections16/17 TC11/12",
+    "UXA03/04/05/06/07/08"
+  ],
+  "implementationPaths": [
+    "apps/web/src/features/kanban/CommentMentionPicker.tsx",
+    "apps/web/src/features/kanban/CommentMentionPicker.focus.test.tsx"
+  ],
+  "behavior": "Use the unchanged approved focusRecovery helper to park an activated Find/Next control before busy state retires it. Restore only a still-owned current actor/Card-version visible-document action; preserve deliberate Close/unowned activation/hidden/withdrawal/unmount choices. Prefer current Next when continuation remains, otherwise Find; expose the retained control in the viewport.",
+  "unchanged": [
+    "Original protected profile-before/after GETs, Card scope/version, immutable mention option metadata and cursor validation.",
+    "All request paths/methods/counts, original comment command/recovery, role/tenant/Portal authority.",
+    "Original busy/disabled admission, 15000ms protected-read bound, browser30s scenario/5000ms result budget, zero retries and Axe rules.",
+    "Existing focusRecovery helper, shared shell/theme, APIs/events/schema and full/nightly/production workflows."
+  ],
+  "results": {
+    "originalNative": {
+      "result": "Failed",
+      "scope": "Standalone compiled original picker/appTheme matching main source blob; 3 authoritative GETs returned200, activeElement BODY during and after completion; original5000ms Find-focus assertion failed. Original screenshot/errorcontext/network+trace inspected. Best-effort fixture telemetry501 retained separately, not a cause of authoritative lookup failure."
+    },
+    "originalComponent": {
+      "result": "Failed",
+      "cases": 7,
+      "failed": 5,
+      "passed": 2,
+      "scope": "Original-source missing owned dialog parking, hidden/retired focus behavior; deliberate Close/unowned cases passed. Exact test snapshot retained."
+    },
+    "targeted": {
+      "result": "Passed",
+      "files": 6,
+      "cases": 73,
+      "scope": "11new dedicated focus cases plus original prefix validation/comments/mention parsers/unchanged focusRecovery helper; actor/version/disabled/hidden/unmount/operational refusal/Next final and continuation ownership."
+    },
+    "typesLint": {
+      "result": "Passed"
+    },
+    "exactLocal": {
+      "result": "Passed",
+      "run": "1793578988781-a6913cbf",
+      "durationMs": 154134,
+      "files": 17,
+      "passed": 222,
+      "existingDeferred": 0,
+      "scope": "All7 selected stages/types/browser types/lint/build/compiled sign-in smoke/contracts/ledger/inventory/drift/Python/secrets. Broader hosted branch scope remains pending."
+    },
+    "compiledNative": {
+      "result": "Passed",
+      "cases": 20,
+      "durationSeconds": 25.9,
+      "widths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "textZoom": "768px at200%",
+      "scope": "Actual compiled picker+appTheme/MUI Dialog, native Tab/Enter, Find/Next-final/Next-more/deliberate-Close focus ownership, exact3or6GETs/current cursor, immutable option callback, 0 authoritative writes, launcher focus return,0Axe and0horizontal overflow. Isolated synthetic HTTP fixture."
+    }
+  },
+  "visualReview": "20 returned-focus captures inspected directly across all scenarios/fourwidths+200%; focus rings/retained actions visible and unobscured.40original busy+return captures retained and hashed. Original failure busy image/trace inspected. Narrow320px fixture label ellipsis is unchanged baseline, not a new layout change or broad UX acceptance.",
+  "preparationFailures": [
+    {
+      "result": "Failed",
+      "scope": "Contact-sheet preparation only",
+      "cause": "Prepared Python lacks PIL; no images or source changed.",
+      "resolution": "No dependency installation; original captures viewed directly."
+    }
+  ],
+  "coordination": {
+    "authorized": true,
+    "mainBaseline": "bacad858a073393def14301d568eb35466acd189",
+    "pendingPR139": "7d5a17cf17c2380604581434612532500a38b17a",
+    "pendingSnapshotSha256": "7a6f40feb39e7ccbda2a6b51549bf30a3c8d209620b0869f7db06a1b07b0bdeb",
+    "policy": "Only add T05 to verified main records; pending PR139 history/evidence remains byte-exact on its separate branch/snapshot. No copying unmerged source or source-path waiver. Later integration must reconcile actual source/tracking union and requalify the combined candidate."
+  },
+  "limitations": [
+    "Hosted selectedCI/all5CodeQL/reviews and exact public-head artifacts pending.",
+    "Synthetic isolated picker/MUI fixture is not the canonical persisted Card/comment journey, real roles/tenant/Portal or screen-reader acceptance.",
+    "Local selected17files/222cases does not claim complete frontend/full/backend regression.",
+    "Fullnightly/exactproduction qualification and product/MVP/parent acceptance remain unverified."
+  ],
+  "productionQualified": false,
+  "sourceBlobHashes": {
+    "apps/web/src/features/kanban/CommentMentionPicker.tsx": "59ee0612b1a3ed42dc55d938d6804a84b116e689",
+    "apps/web/src/features/kanban/CommentMentionPicker.focus.test.tsx": "d5a45a020d8ee1ff974f5d0dab549ccf30c06d87"
+  },
+  "privateArtifacts": [
+    {
+      "path": "strataai-local/mention-picker-focus/targeted-final.log",
+      "sha256": "7d40dcd0bebdac9441f55ed33c75d2a72fed99a5c8ff8e7745c00dd3334c63a0"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/native-original.log",
+      "sha256": "9c00740ac6c5fc78e44b944eb7bc6e69d100e19f38ce34db9d4d5fa36aaed4c7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/lint.log",
+      "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/targeted-attempt1.log",
+      "sha256": "64abcfead1c1f369564b47befb98c9160e5483fab6b9c0e9ba3eab48a9fb01a1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/original-focus-regression.tsx",
+      "sha256": "b47650c3b8aebf532749cfe2c96646042a9bc3a1affcdd3388bb8a79d497c577"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/tracking-cli.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/typecheck.log",
+      "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/original-picker.tsx",
+      "sha256": "9a18763c54b4101aa56e50758026a502d11bc22bd90ab19616b8f1976e63adf9"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/focus.spec.mjs",
+      "sha256": "13e2c8512779ae208730734c733e212666b71836fbcf5b1c8ac7ebf36781ceb1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-transfer.json",
+      "sha256": "e9fa59faf69aa97cf2cc532e9e0828e575d35126facaac95a079ff44ed77362a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-attempt1.log",
+      "sha256": "df80ca397abf52b55a9962098746accf746948eba0cecc1fd76e63a3bc100abe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/final-local-attempt1.log",
+      "sha256": "9f3c8dc1ac244ff3c50ef4c7b718f198a00a04d57a0658f1e772889635293ad4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/original-component-red.log",
+      "sha256": "6105ef26fae5704c43f7cce44ed2a4eb4e4a32f8b9374d9ef4ba3e205efbf830"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/native-original.spec.mjs",
+      "sha256": "81ba8e2651dd500c2a526fa20fa971a6772a26adc1129f85e54982897677f19e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/explicit-code-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-harness-build.log",
+      "sha256": "7ecc4073b709c8e4ac32465f74689659c0dd3b87817a5f0eb632c3daac6f9fc4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/code-commit.log",
+      "sha256": "48c0ee67afe6a799a72c4b073c6c9b482347629021a699fb0661029cc5312b74"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-transfer-snapshot.json",
+      "sha256": "7a6f40feb39e7ccbda2a6b51549bf30a3c8d209620b0869f7db06a1b07b0bdeb"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/final-code-receipt.json",
+      "sha256": "de2c5b78a54eca8e4437b11e5df443858557a3e77f370d512bac07fd29ae67c7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/native-original-results/native-original-native-loo-6335f--through-the-protected-read/original-busy.png",
+      "sha256": "cc4471f33c50e7b886763619a7d9ec80984e4781723c78a3b0043f60ce4baef6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/native-original-results/native-original-native-loo-6335f--through-the-protected-read/trace.zip",
+      "sha256": "ae9de8a2a8f9beaaa0d8f0c2dadd58cac081c6a18b6b168a9c2f987c9e4537bc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-768px-text1x/busy-focus.png",
+      "sha256": "dd84720d0b1ba465d9d19af7326799612a9d541b53300bae0e23929af6ab1c42"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-768px-text1x/returned-focus.png",
+      "sha256": "02e3b9bb76a252eb2e29f1e94c4e8359426bbfe181f06d0f7056d1ecdb145af4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-390px-text1x/busy-focus.png",
+      "sha256": "1358439e75e7292273c7f5768c193a3fe2ed6a2c0435e4332aa883b56e0b4ddb"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-390px-text1x/returned-focus.png",
+      "sha256": "96a0a4d077c59c08f775d18fafd4538d84ef4b0b6c5b07881294c2b808f1284e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-768px-text1x/busy-focus.png",
+      "sha256": "dd84720d0b1ba465d9d19af7326799612a9d541b53300bae0e23929af6ab1c42"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-768px-text1x/returned-focus.png",
+      "sha256": "2b8c166a382d3214670856c780243086ccc350d971f276f2dab7041a8a5e7e82"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-768px-text2x/busy-focus.png",
+      "sha256": "8d06dcff58e5e7d34f29e7682880139da49faf1391425ea4f8c17e79c073654e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-768px-text2x/returned-focus.png",
+      "sha256": "febee74a84a05d285aa038395e63cc34d2387525d3dea04745254453b5d5d418"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-768px-text2x/busy-focus.png",
+      "sha256": "8d06dcff58e5e7d34f29e7682880139da49faf1391425ea4f8c17e79c073654e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-768px-text2x/returned-focus.png",
+      "sha256": "d5d4f82767391904c9cc6e2ea04bc1c634a3174eb60306abaa4b045247ada84b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-768px-text2x/busy-focus.png",
+      "sha256": "432af47966d088f364a6df1c7e04e863e76ec7da347ccb85a422ae27dd0ec482"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-768px-text2x/returned-focus.png",
+      "sha256": "e9916cfb05f88fbda9cf29f2d124d08a29552cfdc747d659ab60f8800ed0729f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-320px-text1x/busy-focus.png",
+      "sha256": "da08b60036e3691d379b992c565602183cfe9e9027d1bb49cbd5024c6afbd7e5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-320px-text1x/returned-focus.png",
+      "sha256": "65ae591b0808b06d9e72ce79462cf6777557b1913002faff1e398190c77cc971"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-768px-text1x/busy-focus.png",
+      "sha256": "b617febf99e61ad3b4fd0d46c6b4992f28435f683c874c476a4b308d1f8f58cb"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-768px-text1x/returned-focus.png",
+      "sha256": "e9277df9845c39df94d138c971d7803ec522a98aacae0998e7d3ed833559b45f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-1280px-text1x/busy-focus.png",
+      "sha256": "552d2e60763c6d6adf778edf0400d18c5156e2de9d12d684500a646c7f3ad3ae"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-1280px-text1x/returned-focus.png",
+      "sha256": "e4e7f9c1f38f43f537101ccff5e042660c3ac8ac1ba2a0b9e98fcff3ba85be83"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-1280px-text1x/busy-focus.png",
+      "sha256": "e0218a752a7209aa3cdb56d469cd027b119562bad3973e5cfaa52e22ac42f4c8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-1280px-text1x/returned-focus.png",
+      "sha256": "9fcfceb9a0ea6bbdbce8348f96a6db54c765baf949bf7f53a75f82099ac71c5f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-390px-text1x/busy-focus.png",
+      "sha256": "9f24a69edb4d792849c10b1a6984e9d99ef05d89a8427091a18133a389a9b10b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-390px-text1x/returned-focus.png",
+      "sha256": "0c19be28e93f2fca8009c8a35471b745000f3acb9996fa438f68993d9fb90d9f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-320px-text1x/busy-focus.png",
+      "sha256": "da08b60036e3691d379b992c565602183cfe9e9027d1bb49cbd5024c6afbd7e5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-320px-text1x/returned-focus.png",
+      "sha256": "4d9d844555705c6fbae9e72d7b240d49b448ab7b24fe8315040931f6feaf6f8e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-320px-text1x/busy-focus.png",
+      "sha256": "da08b60036e3691d379b992c565602183cfe9e9027d1bb49cbd5024c6afbd7e5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-320px-text1x/returned-focus.png",
+      "sha256": "7d75280b1ac569a2b68306dad50b94f91b646a95089791eb9df1c891cf9bd3b8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-390px-text1x/busy-focus.png",
+      "sha256": "2abb6978fad8f804e40a2939a0e6f6bd6aea31ba658b90a1f9fe39cef8a50c90"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-390px-text1x/returned-focus.png",
+      "sha256": "d4f10d43746ec25a80ede8b7e56692f1b9eb691f862bc57ac5f9cf881a19359b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-1280px-text1x/busy-focus.png",
+      "sha256": "552d2e60763c6d6adf778edf0400d18c5156e2de9d12d684500a646c7f3ad3ae"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-final-1280px-text1x/returned-focus.png",
+      "sha256": "5f592bd7c96a43ffc5988741e4b248de4f0f72569911cc9e5b4453ecbd4ffab7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-768px-text1x/busy-focus.png",
+      "sha256": "4ed5d517db5a6c20924bf30a139dd73b3f5caa1f4a2a00091c2859db6beecda2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-768px-text1x/returned-focus.png",
+      "sha256": "ef9d34ae526eca723bcd2bc1b727cd0dd2b5a885627dc300732f7d91a115044a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-320px-text1x/busy-focus.png",
+      "sha256": "78e0beeecce3b4f2aeca507e6a89c5ff6faed182a220a9360bd62f0f4bcc294f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-320px-text1x/returned-focus.png",
+      "sha256": "78071d62f6a810c87080529dcf4c2107f9b4c06cae2938c0f482acbeeba1bd1e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-390px-text1x/busy-focus.png",
+      "sha256": "2abb6978fad8f804e40a2939a0e6f6bd6aea31ba658b90a1f9fe39cef8a50c90"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-next-more-390px-text1x/returned-focus.png",
+      "sha256": "218b6fd01cd41044ef0f301b052bb81fbc46bae6cd327d7366f7aa4309ee38dc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-768px-text2x/busy-focus.png",
+      "sha256": "a1ee2a7696a5e8340b23081adc034ff44a699436aa74ed98180caa3753bbb8fa"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-find-768px-text2x/returned-focus.png",
+      "sha256": "553b051b850f5cc11a27880558ada7d506641fb5dedbc325c7e5c96396750c56"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-1280px-text1x/busy-focus.png",
+      "sha256": "1c2f46495075518f9fd39a35c6db01807bacd62f774e6e9b790e1a20be72bed0"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/browser-results-attempt1/focus-actual-compiled-picker-deliberate-close-1280px-text1x/returned-focus.png",
+      "sha256": "1e8af4c2100bbc30fa98255a9e4c2b5f9fed4c494a5661c8da48f9db1bc06132"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/star-history-retirement-768.png",
+      "sha256": "53a18cf233f1ce2f88cd8ef426e814771d7815a550517749866553056e99014a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-to-card-return-320.png",
+      "sha256": "e22ca17d178bdabb31616b3bf4763e4920e1b511ef6cec5a3c4294463b3f07b9"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-star-test-failed-1.png",
+      "sha256": "48dd98925d5b6945ac68e60eec701a781662c27400f19f28b8ca0ea1aead9249"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle103-0563e-context-withdrawn.png",
+      "sha256": "12ede056f4f9d62c547f407c665e121fda791382bc9634676a35b5c8b4e73592"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-full4-search-failure.png",
+      "sha256": "15b737104bab5c2a019782bfc7e22770df3bf519a5be6ec4db2fa8439c2344c2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-search-320-readable.png",
+      "sha256": "0c78e129937dbd3f0d41725d3a19b726b36bdd737b63f053703cfa6a71f7b8c3"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-last-page-768.png",
+      "sha256": "0c6f30daa2e270df88024845abe053168bc13a5b78248d35fbab87a361000dff"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-121-settings-red-1280.png",
+      "sha256": "1766f26dff6a09ed44c3b7c9f7c363970ac3300cb50c1f910fa4160fc86461dd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle20-tablet-baseline.png",
+      "sha256": "204de93a8ede0bb52ae0bf560b6f6494f9a360966cdc984fe77d62d037910cbd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/star-history-retirement-390.png",
+      "sha256": "b4161ba36b350fe8b3405a2456d49e7f9ad5f8d4f3ff246b3ecf9fb42442bf03"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle103-0563e-named-board.png",
+      "sha256": "57dcaa26190da22abffa67af65645e2d3d2c80fab002a57df4e18de0d4102e96"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle-18-organization-actions-44-320.png",
+      "sha256": "b95ae632ce6e97ca1566a642d5c657dc3236c6de3568df0f3fd423705c29c69c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-search-paging-test-failed-1.png",
+      "sha256": "ffe6a7ba37b4bc17e7a52e3da58942a9abe5b596a63774cee1944d8ab2883ad5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle103-1bceb-named-card.png",
+      "sha256": "e9e286f760fdd1083446470699e9e310b0c92144498c42c43011b4b19f4e09c4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-star-test-failed-2.png",
+      "sha256": "bed0bf232e255065ed9cd096e921e2f71c570254c8a46de6d31458c4b22a3991"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle139-org-member-320.png",
+      "sha256": "a67763b7ab1be4ae2bd52f09b5742757bef43aad043c0803544225176d47fc03"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-last-page-390.png",
+      "sha256": "b8a8b058356b627924e482ba0df19963896b7bb05468270df58ce1448a1c0bb8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-star-test-failed-3.png",
+      "sha256": "b631b33addad876d772f3152e8e2b4124fbb5a8628d35b166369d007c1260b5c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-search-results-390.png",
+      "sha256": "54094c306f203ffcfa5efeb7e3765fcb675f1a8b762dc24e80f260c30cfa5358"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-fixed-search-zoom-768.png",
+      "sha256": "45fd2e6b7a2d563945fd2d52fe3b1dea8a99739afed4dfafa127d36afd532e76"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-fixed-search-results-1280.png",
+      "sha256": "502f179b4aeaf1cafdf0bbecfe31754d6ef3ca0b41204d3de5720d7ec696b5fa"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/retention-editor-entry-1280.png",
+      "sha256": "1f7d4262fa44339b273e6546a7df3dd6000f46e0b8a61314059d28a37a5f4c8f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-paging-final-768.png",
+      "sha256": "cf91cda49dc89ee3d665a097553cfe926bbe88e95b25b2d29fe81e8ea3af75fc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle57-first-use-320.png",
+      "sha256": "7b2f4fea9d86c039777b12f4fbefb91109f31315a773a87fe20d11298aa65236"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/card-refusal-c055-390.png",
+      "sha256": "8629dfd5d1e9e88fab2e6e2aeba0ae1bfe3a5d301880889cb913ee3b55ce5d25"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-applied-reviewed-1280.png",
+      "sha256": "2e97eb609b21ca52a080f056cc6c62a9b881e13a565c55e85c30c4c378738e44"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle103-0563e-named-card.png",
+      "sha256": "d8f77cd673d0967f18a8901a3b63937385da2b54e350b4a70a7c4c41bd9af15d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle19-card-details-1280.png",
+      "sha256": "b44b41d836b7b240c4daceb36474efea5497ca1af3ddc2046005f9752c01363a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle103-99582-named-board.png",
+      "sha256": "ad6ea269a131ec7f66b9fef25138abba2f2d4ffc97370f5258b1cda65806618d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-fixed-card-details-390.png",
+      "sha256": "5b095d84a24531945705d820e2b1bd311f4048956b7f1318c2c73fb25b792429"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-paging-first-red-390.png",
+      "sha256": "68610d2f706dd9c64e2533ff9fd98b39b3a04ad94b00cff1d32dd214737025ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-return-origin-live.png",
+      "sha256": "3e958174e16fea6d28112d15e610187355b528e950fddec3a1c02fc301d09e6a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-paging-final-390.png",
+      "sha256": "cfd9f89d0f3da8571fa290ebb64793546d467f162e7b605d8af0176440455ae8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-invitation-clock-test-failed-1.png",
+      "sha256": "cdadc8b9dc3a9ea18961ac6567ce7db4d97d7ff481836f66ed5d833edb586a14"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-paging-final-1280.png",
+      "sha256": "db1094bbe9cc30ff65c6200cf82b42d67ab0ded793e78804551f65587a6012b3"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/list-submit-97f3-list-order-return-320.png",
+      "sha256": "820d3ddfd5a57945ef37be77249eadd04b2c70984b0cd8f8588d4be7c50ab0b2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/list-submit-97f3-list-order-return-390.png",
+      "sha256": "0f44fdacf73cdff5fbbbe7946752e92cc3c243377ceb41bb817d283ab4abc6be"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-09.png",
+      "sha256": "4f95015db41de9d295e2a7dd3f4ffbb6b28c443b5ea92fd0611cf2a6dc777484"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/controlled-form-9ad-ux-form-error-1280.png",
+      "sha256": "7cd5dab447e7c6ca246cfccf095957de3bcbfd86a0dc2109b0ea8226739b04e6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle46-card-movement-02.png",
+      "sha256": "bc2446c262498dd7375fa1d362b3ac0e4b6b82a978e8f3ae578ed0e996f13fd6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-paging-final-320.png",
+      "sha256": "bdaa47b74c2211dd4ed9dead2d67733c46a02876c602fdfae4cec7c3df761b8f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-121-scroll-touch-red-390.png",
+      "sha256": "05293708fc5a0d257a80d801e9bb7938e5a9c348b60a005e3b9d21217e759305"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle46-card-movement-03.png",
+      "sha256": "23f2cac023927fd2b5cded9ed215490dd46f1de8fb5306c4169a3bf99c3ba27f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-01.png",
+      "sha256": "a6fe5a483ca62ddca78e31515425e1fc909ed97b852ca777fe3a8d5ce3b764e7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-08.png",
+      "sha256": "0206c98dc1a97d63c2d4b622b50c76e0e6b7f8a8da8ed2e9246c5a7eacec9108"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-01.png",
+      "sha256": "89ece8d8a43a2f0da8a6739cf6379e439c5a738185ba2fe0fb722ff42ede339b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-modal-red-390.png",
+      "sha256": "a6300df26556251d90963f6f1def62ba70af98864ecc758fedf18f4fd23d6e13"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-03.png",
+      "sha256": "1780d081ec0a40918abbdd48b747739a23d8c9fe4f6ffae56dec9e664c14e3fb"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle46-card-movement-01.png",
+      "sha256": "23f2cac023927fd2b5cded9ed215490dd46f1de8fb5306c4169a3bf99c3ba27f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-03.png",
+      "sha256": "2526cb40ab29355ae7fbbdd8ec07bff03147198b22196f7af3f9de6c7724b118"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/list-submit-97f3-list-order-return-768.png",
+      "sha256": "f77cedd0ab24c5d9927f8d35dd07f0dd5a7b1d66ad66c141b362f14c7151c885"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-02.png",
+      "sha256": "d9789573c96bb7c1067e08a61afe389bc597260b127beeb9576ff306f5156432"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-02.png",
+      "sha256": "9870feddc3a3bd548fbd14cd7608a7576fa77f4c84b7c36a94c6db8640f87d7d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-card-details-1280.png",
+      "sha256": "74c37d54c675a5b2a344e52da17c0f12f4a59dd24cd503d5f1a6b13ef62d54d5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-06.png",
+      "sha256": "5be1e96756e4645cf3789c6c08fad1cf2f1a1853fe7c47a51fa7c1ed2b337e3b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-12.png",
+      "sha256": "fcfd374f69b640ca116c91e392159e3964ac16d428dccf91ed909d3b8d1beddf"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-last-page-1280.png",
+      "sha256": "c59332865b9d7c3efdcb201990232532ed8a69f9047e309d29818aaa4ff15b0a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle139-org-admin-768-200.png",
+      "sha256": "0f611aa2ef67d3bde82342d8054c6f220523ca7d4d92521dc8925762f62a42fd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-12.png",
+      "sha256": "4f68541adf49274af934536a3118b79fd6162b758639b561ed28c97de0ca2b0d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle46-card-movement-04.png",
+      "sha256": "fcfd374f69b640ca116c91e392159e3964ac16d428dccf91ed909d3b8d1beddf"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle139-org-member-390.png",
+      "sha256": "0cbc35b2bd721cd16b5460d2672feeb3358f2bedeb0da55296fb0567b9692e42"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-06.png",
+      "sha256": "08a09cf9e02caf32bc47a8c1f9a90e8e5277bf81c431f9cf0123c13b513e5942"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-last-page-320.png",
+      "sha256": "11cf602dfe7fb9b40a969207475f73691d42e49c1adae75113cdb706f60716fe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-07.png",
+      "sha256": "e29b476aee2bb74db6b969200913b1ceb70eae3b01dab02a311b3d1a82c22709"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle103-1bceb-context-withdrawn.png",
+      "sha256": "91e300376bf284ee578f2c6f0e3f17a10378d924a3c229c88731f1352e418a93"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/star-history-retirement-320.png",
+      "sha256": "7231a7e4873c0e97b02c64f3af1cba492bcead8332820bcd6e1ffb7d90bf50c7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-account-refusal-390.png",
+      "sha256": "297131c72b1a1316ae6b2e736dce08ef2e5a9817d8a3d0393ca0814fcd772f54"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle-18-organization-actions-44-390.png",
+      "sha256": "6830d1a4e594f9b9713a0674c104c5fab4750b31c7f72e72cbb2cc9e3514e312"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-organization-work-1280.png",
+      "sha256": "ada70c0a627b5b2704049d7467c544374ded2514891c315812a0718c229de88f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-07.png",
+      "sha256": "8fa96064e8243df10dc6a4009515a1066784a0c0c628d69d9ecae7e8bc4fa476"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-to-card-return-768.png",
+      "sha256": "cba252a0801935b0e8e681e00eb9770ea1b37207b953107191d44bf87110d2d4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-11.png",
+      "sha256": "f92736b275de1b214eb6b9866deedf8da2fd526dbef7710abfa1f95a007abbfe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-05.png",
+      "sha256": "1c62a1ce103e0adedca53339d449891b571a5cf6dc512f2f0d9a75a6d7636e79"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle103-0563e-named-return.png",
+      "sha256": "90d28f715a4a7364c44163558653bddae6451535456e16f4e169f6c8b697d59a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-cover-red-390.png",
+      "sha256": "70645c848e906c7a54fdce7b2ae5ee8763fd3c3ec66b8c166b486d958fb2fc76"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-zoom-red-768.png",
+      "sha256": "c3b1f06efdb55bb3b89cbcf2cdadecf6ccd64dbc166966c72b419eece9c1b5fd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-05.png",
+      "sha256": "ed5860e09f8dc3cc7f5f51e2622dae3ca72d86cdaa938427826cb4cca9534eed"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-11.png",
+      "sha256": "e656c11b411733b7d038598b8d54e2b8a79f15ce27136e21c07b29bea928a5e1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-fixed-card-details-1280.png",
+      "sha256": "74c37d54c675a5b2a344e52da17c0f12f4a59dd24cd503d5f1a6b13ef62d54d5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-modal-red-1280.png",
+      "sha256": "f08a8ed26366d43bafc94ffbc5feb7ccf608f05cfbe4e2958dfbbfdd84e7d7ff"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/card-refusal-c055-1280.png",
+      "sha256": "a77cc5ac717ab26340db7dbbd3d2d76d0662a2b48b6ced05c9a891da14b93b72"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-10.png",
+      "sha256": "550e14ff3df51518c23287b17c12110806680e379dddf89c11627370e8a66b7e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-04.png",
+      "sha256": "ed30e2ad06f0844b2d05dbe0722976a9e57ff2a9f50671ce839e70ba9e5e7eed"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-to-card-return-390.png",
+      "sha256": "e8c53232a540017630299aac99b37f280eeb098334d7ca8624b3061cde1f02ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-04.png",
+      "sha256": "b90d982cb2fcb6a80b24be03ce218cf3394412b371b45c7f6f16b750f0fcf2b6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-10.png",
+      "sha256": "f3b6f84cc17afae8fbfabe75d6024c5991e4ccc1dbe30a0c938423c7b0fbdfa7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle-18-organization-actions-44-768.png",
+      "sha256": "86fb3e564fd41c3c213e6c1950da177648eba7b34ee227006deff4fbbfa62dc7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-card-return-1280.png",
+      "sha256": "b375593acdd665cbe5b6ea6d0c5579e9f40aa63abdf88dafa169ac7e9dffada7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-09.png",
+      "sha256": "f92736b275de1b214eb6b9866deedf8da2fd526dbef7710abfa1f95a007abbfe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/card-return-c055-320.png",
+      "sha256": "993cb7d52f86a8d8e6bcee9874852a8e0fa41736f4a730bc86bfa48052ac4552"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-organization-work-390.png",
+      "sha256": "65728f5d2e310fc33cd0812c93c16727c0bc604d24b0db0d176d4e50c8d2997a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/retention-editor-entry-320.png",
+      "sha256": "e9be76e5c7ee5cb6e152416e09f14c74afd40a2752e04e8e5a5e121c5f69f916"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-creation-draft-390.png",
+      "sha256": "99becace41eead17c207f6a7390f397e739dda2a8c94d8d98b56bc401b1a78d4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-09.png",
+      "sha256": "1b094d3f593d3b9b715d40c2b5472bec906e0572ab546e41878d4cc8a9163836"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/list-submit-97f3-list-rename-review-390.png",
+      "sha256": "01610d896421e97d6615e8f8e58e58ff08fc0696afbe8a31e1086e107e8429e1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle103-99582-named-card.png",
+      "sha256": "2d244ced96ecab88edbf1ecf85a414200db056315b2d035c75ac91c9bb88e713"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/merge17-tracking-earned-completion.log",
+      "sha256": "9914ad955a8519699931b5bedcd3c99d382d2be7120337368d257a5915e4687f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle44-work-navigation-08.png",
+      "sha256": "6db0942957d6903d540f0f62ab4d2ff5ad3edf437a95bbebfd89fac15736d3ea"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-recovered-board-draft-390.png",
+      "sha256": "386f0cc46f730a35186aef1c39a29f2595478f9a322d6734948f91d5b3398fc6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-work-board-standard-390.png",
+      "sha256": "09ac7d0a1188dea76dbbbf03bc631809e8683f0dfde199a0cc55f5d47d0eff57"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-01.png",
+      "sha256": "dfc28488bdf6bd77476ef8a18d85a1e7319d1737b2bf5d3cc28bbb4ed3b441e7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle48-touch-work-08.png",
+      "sha256": "d9943818d47cfa5d17209272ead9be4765f20ff20aa201bbc8eb0ad79bcd1202"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-creation-draft-768.png",
+      "sha256": "667be78381dfba888c0a667472f407976a7db9c19dc0583323b64e4d5d219857"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-full3-lifecycle-3.png",
+      "sha256": "51092cb6c14908313106325044fc79a8f72a113002059e829185149f5caa5e45"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-recovered-board-return-1280.png",
+      "sha256": "1bffcebe8971cfb8671a9054d3625d21181d4f764275a774fbd1567e49251759"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-03.png",
+      "sha256": "0d0f92e07e2463be3f087e42d9a7751c0d28f37c5d036cd4e927715a606a48f3"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/list-submit-97f3-list-rename-review-768.png",
+      "sha256": "7f87eaef8606927f3addccce82d1443b31a10ab6982408f594865b5ed0e03a61"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-board-zoom-directory-768.png",
+      "sha256": "8dafd205a5b532f566b55bc922e148617c448da8060c48194ab6bb9eceda6934"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/list-submit-97f3-list-order-return-1280.png",
+      "sha256": "29800020f3d02666b25722a07eff26597fac5a000ecbe447477e5490518af827"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-return-background-320.png",
+      "sha256": "a94da399830af2fb89d1cda8f4b75f961a7d1122e2c8cd9d012e22592c38b1e0"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-02.png",
+      "sha256": "37e9dd6b0d737e4c2f54a8dfafa1a7f76d8c1f0a3c8938de4ee92a5a0545d089"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-recovered-board-draft-768.png",
+      "sha256": "4ed6390dc48b71f1cdac955408bb8bd06da08a4bdea36a0b590e70dc93e76560"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/star-search-current-demo-saved-card.png",
+      "sha256": "2361f810054101d56b20411d3b3a9a17f66b047995f41152e07ac41b7eb5c82e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-06.png",
+      "sha256": "efaf2a43f97ef2432315632da2aa8afaf684353b698cb413c84118c0f3a3c4b2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/controlled-form-9ad-ux-form-error-768.png",
+      "sha256": "843843cb09278ef5afdba0fe4fa25009d05a1d5ef8031cef83bd320590f8cf1b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-recovered-board-return-320.png",
+      "sha256": "642b1619e04550696f7ee3af4a8aacb8a05f76055bb1f0e8b32635cf6a6ee341"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-account-replacement-refused-390.png",
+      "sha256": "b1bdf517d31603cd0f57bc9b785e8f148d783b02e9f81246b7b3124ca283c7ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-search-results-1280.png",
+      "sha256": "502f179b4aeaf1cafdf0bbecfe31754d6ef3ca0b41204d3de5720d7ec696b5fa"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-07.png",
+      "sha256": "753163c030267e58cd0d0657b4dac8a934eab4ddf8370e0ad7af8de32656b666"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-card-return-320.png",
+      "sha256": "097ed81d451f68fd77166856779d6069a208dfa702a3174465a81b8a11c2af10"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/controlled-form-9ad-ux-form-error-390.png",
+      "sha256": "2c0c386e411f0e5eb43556e1a3635adea22f369d34b2929e94461280c44d2ab8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-account-replacement-refused-1280.png",
+      "sha256": "ed30e2ad06f0844b2d05dbe0722976a9e57ff2a9f50671ce839e70ba9e5e7eed"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-05.png",
+      "sha256": "27518f40b060a3b1c839c6d592b3b417b453961af84a4f566dc5d07e6cedbb77"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-filter-paging-exit-red-390.png",
+      "sha256": "68610d2f706dd9c64e2533ff9fd98b39b3a04ad94b00cff1d32dd214737025ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/list-submit-97f3-list-rename-review-1280.png",
+      "sha256": "514172b8b0a5c8070069760c64f44c1bbb0ff3896746f270a1733c374dee3ca6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-121-metadata-red-390.png",
+      "sha256": "d270cfb1ac0655c40c7a44b619498d21140cda760a1d153760b778897f62c837"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle139-org-owner-1280.png",
+      "sha256": "0f54fbb866faf8789658610106b68cb9f59d696f28c2522fc99b9375b494a649"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-work-board-standard-1280.png",
+      "sha256": "ee6482a7092acc97ee141f2684f3e736ee5443880c5a9ceb90b79e8138a9604f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle57-first-use-200.png",
+      "sha256": "dd0de8ea3d875a23dabce96e4594cfbcf759c0e9d955bfda69d4fd360005c21d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-board-zoom-red-reload-768.png",
+      "sha256": "7d760cb744ccf0ca78a2a5e6bf0892441b5705e13fae47062ee2ff10e8e489f5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-applied-reviewed-320.png",
+      "sha256": "9e5a3fd275c4fa80a8371c867330201daeb3534f633eadd84f056d96210983ec"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle43-card-baseline-04.png",
+      "sha256": "0fd489b37cbcfc020c3c04be0f28e7cb2c8c68d0a4bb7397da3561f00a1e6afc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle19-card-details-390.png",
+      "sha256": "fcfb6604a9dbb0fad95d91c22637b41418a84bd6aa32cec7e81c66fe9902c833"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-applied-reviewed-390.png",
+      "sha256": "0a1ef596e47c3fe770dc0983beb8cf24f9106ef04344245e274c2b71d7d2ecd3"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-creation-draft-1280.png",
+      "sha256": "872624aae19eb91dbe335059b0c86507442b7ff2706bbf0dc26066fa2fcbe26d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-card-return-768.png",
+      "sha256": "792ced042a556ea47ac8202c7acac22e770641c577aa2ad4472bd899aea6f68f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle100-y320-scroll-failure.png",
+      "sha256": "3c3100ad5c7ef2b88be031fc8a29d5f8c882e02722765fffc0a9f6862a93150e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-recovered-board-return-768.png",
+      "sha256": "69b5fa94b7418af5027161bd3b6395f7c1d62d5ae3859567a0dc32da94a502a7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/controlled-form-9ad-ux-form-error-320.png",
+      "sha256": "1e56498a8806ebcce5095352dfed091ee736a9c5988c897045c36f6e5cc12bf2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/card-return-c055-1280.png",
+      "sha256": "807d5e9e92072299f69a9f081d0b5a21d1480301d2cc0e5e95fab2aec178df06"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle47b-touch-target-refusal.png",
+      "sha256": "7ea0929bc136fefe9d3cf86e126374acb0be9c22e057f8afb67ce89ac4c66925"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/invitation-enabled-bound-hosted-ready-form.png",
+      "sha256": "5f41e921cc083784763e07deb1474fb0f7a61c57c1709d7e1a5a78135b541f10"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-account-refusal-1280.png",
+      "sha256": "54932f5e2111a3f7cc4ac600e9e529e526a91944ec04387f4e4b989a6030d690"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-card-return-390.png",
+      "sha256": "2ff27bd9013c1089f6c94ff236849a37750cf1a573b6da4d87e3231432b0f21b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-applied-reviewed-768.png",
+      "sha256": "0fd49e40811417ed606c7d5b2da7b2d1d51fb65b383e9bf59506dc4d1f1d067d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-recovered-board-return-390.png",
+      "sha256": "d64df870146a6a96e6cebd0de8e6eb484840738462a58620f1ba2c267e092468"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-122-full3-actions-failure.png",
+      "sha256": "242f70c42630ff98f791b0f49f813e569b25d2c4b9fd664f7713fb0c8642034c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle20-tablet-return.png",
+      "sha256": "0a475e0a07497a66f748a3259c3bed9fcc730d676c9c3dd6db4d97d3a2dba838"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-board-zoom-canonical-768.png",
+      "sha256": "188f270b059114e552bf4db099b46990c068436e6ed94cf385905c5d886f22ac"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/star-history-retirement-1280.png",
+      "sha256": "38e1b221e3e797cae2ed639617164903340c08d4277e00e310d8438f6ca72d20"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-card-details-390.png",
+      "sha256": "5b095d84a24531945705d820e2b1bd311f4048956b7f1318c2c73fb25b792429"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-121-scroll-mouse-red-390.png",
+      "sha256": "fc84866430aaf47f69034b78cad657c6e115b33d71eb126dfc6f77af1152c2ec"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-return-background-390.png",
+      "sha256": "ed8310346d4bba0bfd2ee04d5ce41c7d9d7e5b4355ca2214c0ff43a22d5998ee"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/card-return-c055-768.png",
+      "sha256": "05622a04dc2178b955e86ab950db3cd23008bb494164ca7921fe6903ba002211"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-return-background-1280.png",
+      "sha256": "655039ab54ebe435626b710899aaf798436729c6e058320a2eef7e619000bf21"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/retention-editor-entry-768.png",
+      "sha256": "de5f92e7dc7df93dfdf958d51a126849d65afacc186ca95117845cd0cd90b0cc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-to-card-return-1280.png",
+      "sha256": "3f6f66c00ec2201d0bf3fac10eb0cc76f01fc63b58f85170eba94d415af3df4c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle-18-organization-actions-44-1280.png",
+      "sha256": "ab278451a01231fd4d305b66efeded8293e64d5ecf02faf097389f7354c7d4fd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/search-return-background-768.png",
+      "sha256": "768914e1307188515cb3c29ae3b91090c7e7a823a3e8a44995a2fb598d9f6275"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-recovered-board-draft-320.png",
+      "sha256": "c5846467a060bbefeb46a297703ef194df059ad26b38e2ec9a1b05270d714ec2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle41-recovered-board-draft-1280.png",
+      "sha256": "c9d845f918d3155f6a455e90de29eb81fb9f2ac6797e2d44cfeb908acc5d2257"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/list-submit-97f3-list-rename-review-320.png",
+      "sha256": "6f26506dcc43c1f9924fee8939973cee3b846f406509f505e11039758eba9687"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/trello-polish-detail-fixed-search-results-390.png",
+      "sha256": "d51a04f32d713b2f5d3530ca7343092a37b9ed2c26fb0c05ad38f9d0dfdc7a4d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/retention-editor-entry-390.png",
+      "sha256": "49e128d6ed7e224d898c9e4171cb38bb177f6c8fb52c103b64645b50344e0db4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/cycle42-list-creation-draft-320.png",
+      "sha256": "93d49776f93a8e48d460f548765ea7e5c709f07710ea5d09bb50569704e4fcfe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/card-return-c055-390.png",
+      "sha256": "60853b10fab5ebd7051d1bf5eb7a7a0817b68b71fce56e82a3df5ee330942409"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/browser.log",
+      "sha256": "3abda286840585fabb50d7b835c91a8ba0c1ebd175d262590a05532637270026"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/api.log",
+      "sha256": "41b5a417d3414b36195d92d02e65447b11de7e871e225c09a8fbae7f5bb6b285"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/directory-1280.png",
+      "sha256": "3545c986c3a935a8d44a7e848520a0c42f340825932fd1e2e588fcc3f56c8ad1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/rework-browser.log",
+      "sha256": "efbe995eeb6a01222c7211f80a562803a46b17b3d9a36cea4cdd8e9fa1005c0d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/delivery.log",
+      "sha256": "8a8da1ffa60d26f60306fbc1416946bcef798b3ab6b08c918cb9d6ff4b4c8275"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/directory-768.png",
+      "sha256": "6d3a6cfd710635d372f4aab48734f7c4fabdb823d1e9bcaf3aba200c968cd36d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/directory-390.png",
+      "sha256": "6bf48a55d2ad0685508d6e29a424aac96e79cf4f2b362d9c1323fe9635044a7c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/rework-build.log",
+      "sha256": "3e59b24db55768c1b9fd132faf2e4806eb44e9e72d8788beace15dafd40358d1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/rework-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/rework-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/browserTypes.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/directory-320.png",
+      "sha256": "151598df37a45410637937da2c030af7b1a7885d548a79434d9d0b7792a33e42"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/build.log",
+      "sha256": "60bd4eb3ba18affb75ccb776ea70bdc9c660994ffcb4627e934d2518335bb092"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-live-final.log",
+      "sha256": "ff96e8da6f249bc3cdf6a93f19d55f793e5f1daafaf56443077c4e148668bd08"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt1.log",
+      "sha256": "9f29d07639245f91fe5575e05d47e29677606392683464884bf7d546b82d6f9a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt3.log",
+      "sha256": "dee4c68833c68b51383c4b6faa92063aff5bfd96da4089d3cb91b6482fca8c3c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt2.log",
+      "sha256": "5ce1db44a926251c8335f1dabfeb26354388814b353bf1ae08d091f395b769a2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt4.log",
+      "sha256": "5fa6e3f163f9374da71ff13e5142dd47cc785c965d7a33334fe10482911083b8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-live.log",
+      "sha256": "0199fca82a28e38e8d84a4d8ecb2c6f7155fd4f827943d9fc4f5433d7633435b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts.log",
+      "sha256": "27b57a963d9a7ccd9df3922d45b8635f2e1e52c6bc94e2b8020778231a3cc081"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-verifier.log",
+      "sha256": "63bac35e63166692ad9596c2636f731b2aa4955293651b9300232fa02cb84d4b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/security-failure.log",
+      "sha256": "bb591035301acd7769461fb699dc4c5145c23477995800c0820fae6227b3f654"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-integration-coverage.log",
+      "sha256": "0bc779b0d8ab1b4f8dcbb06e1563d5c397159cc4e6f7b5ad5e6c6a5040bc18cb"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-delivery.log",
+      "sha256": "1c5f58e05a2a63fd24dc6f006bd7b395bb9c9c5e9440e18e14288c2597dc9857"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-image-build.log",
+      "sha256": "b50aa5824aaa7f9b4629714d91506a0cb96abcc001a01a20b529b13a27383b93"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-owner.png",
+      "sha256": "1a4540eca81b12c2f93290fe11fca3fb4e696ddfca9aa7584b7f5b29f1c62f09"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/browser-reproduction.log",
+      "sha256": "e859eb9d911ea196a155d2d16be3173b531d33af904306c84c16a08e3c21825e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-contention.log",
+      "sha256": "5a00f20e47bc0a303324067b3cad14d96bf8b88e3d4b6ade57260912577e4e40"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux-installed.log",
+      "sha256": "3b4a65634bad88c04f2bc92e55d3c87a948908a71981567ec1e18d417e51ffdc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-nginx.log",
+      "sha256": "339e4ea8b4c56785f01817ba8839c78bc00ea87de8b45fcf30c0623c9df5aa1b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser-types-initial.log",
+      "sha256": "35000f5f3cb60d9bf971c76cfa22a699f2e9c4d1c400ccb52d38fe44f9778881"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-python-linux.log",
+      "sha256": "b28ebdfadaa264f6443ce4e51eb3953b9c6e2a56ed4c3ac2ccc5e91c43354ede"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-config.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-conflict-green.log",
+      "sha256": "e37696b815a8e4c2db4299a3bea353ae921064032c827eb46b0f1048e1f412e8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-conflict-red.log",
+      "sha256": "0f0c7af688ec0c75fef6b79e79f88853cd68c0f4081e5439ec258e007e618d1f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-build.log",
+      "sha256": "7627bec9a3f90e8183c37eab50fe42d2ed2a831ea854f6d956a330337964017f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-native-admission.log",
+      "sha256": "66dd6c06de377126e01fdd6bb6829da54ddddaba2a091cdf39e12411da2cc132"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-hosted-failure.log",
+      "sha256": "eed52cbb10d2407c729236b52806bb914d90f424911f958fffcbb07066485760"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-verifier-scoped.log",
+      "sha256": "f76e694268ff5f6f28dc3af53896e523e168152eeefdabb3f842546b47a3691e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-package.log",
+      "sha256": "a38d7e3fe905d6c3612eeb33fec71c95b00e8bf9b2ad6ffea45d1d53cc4f72f2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-green.log",
+      "sha256": "6e883281527e05c43b2160b06a3543ff323bf45b6622cf31ef7ace1d68e032cd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-image-build.log",
+      "sha256": "7d269bab2cd8769e781d43414cfd475bb52bd11e1107375ff34884756f67dd7e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux.log",
+      "sha256": "7bbae62c332ce85fbcd1876e737b03179b78c59b047373e4299f47a6094cbefa"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-create-red.log",
+      "sha256": "200740afd3281beda51206dfd2853eabab8860719ec2dbd4c18abf89ae1a9cd8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-security-failure.log",
+      "sha256": "99e7a3975a26f02ad8a0570dd8e7146665c2d5c924ca683103a19865ef6ce0f4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-fixed-browser.log",
+      "sha256": "c6a6f780288b0146eb5a354e28a1450cf97f5a2cf3f00679b916d42fec470710"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-types-initial-failure.log",
+      "sha256": "90232595689240f245592f48d6f3933cdc236176f0408e613983d8648a028f2f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-integration-contracts.log",
+      "sha256": "5df0edb56912e29ba032e610ffba40367e74a72f37b585ff3ec14c06dbc66c43"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-clean-linux.log",
+      "sha256": "b6165012af87d099cf4611854e12fc938e516e477f05a56e0d21904185fcde78"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-final-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-image-build-initial.log",
+      "sha256": "616343072586db222203d97a459fb3d6c580a4de428d05cf60bb289384140d66"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-320.png",
+      "sha256": "efcebbf9399208b665eaf6e154723a02658bc5fa8c873518d97e45e555391d77"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-390.png",
+      "sha256": "574cb1608b6ce01961a5ac97799a51e7ef86da05277adc223fca025e5dbe172d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux-mounted.log",
+      "sha256": "826b8d1bb435d3fe894f574ef44de72a49ddb8506526dc40ea2e68a88d6ebd2d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-hosted-failure.log",
+      "sha256": "548ed98864516e28530fb92e4dc5c3cfb5cf52e07d2162e7e2c4158676e12cfe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-768.png",
+      "sha256": "b6d434ee0472088703d96c266ce0159af313c974f427bad1ab46e3f6cc2f09b6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-keyboard-contracts.log",
+      "sha256": "6989ac2ff73be2ba589718678d7bcd7f4b03ad76b5b2960d33c640963ee79967"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser.log",
+      "sha256": "222fe999e86875501b79b41496504043263d84b66b2366378a18faaf78fe5327"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-build.log",
+      "sha256": "cb7b41ebccdb855dda80653885ce06a0b7b87ba7a501c27a11b811e8c6365c97"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-secondary.png",
+      "sha256": "f6a37e4c324e501e993293ad5cf0885b5d3de655cec7d9840a372de52ca875a4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-browser.log",
+      "sha256": "6c1107f6889750265240a3a3bf480cfbe2f92b37ee70bb22e0f6a44a0afc4e3a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-image-build.log",
+      "sha256": "f640c6b2b5102431f59986a0fd0d0798d7492a5eaacdbe96e1ae05bf5aa8952f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-final-linux.log",
+      "sha256": "5856f80dfb797750641488323c6df23bed7121c466ddc4d546afb5d3b41fa675"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/build.log",
+      "sha256": "315ece7c74be8be712f215669e847d6a383cfa027b5d6a4d32b9092e49a7a953"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/main/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-ingestion.log",
+      "sha256": "ae6432085ff9e0ad41de25c56292e4584b0cfc73d824712865b6b49006776f50"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/star-history-retirement-768.png",
+      "sha256": "53a18cf233f1ce2f88cd8ef426e814771d7815a550517749866553056e99014a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-to-card-return-320.png",
+      "sha256": "e22ca17d178bdabb31616b3bf4763e4920e1b511ef6cec5a3c4294463b3f07b9"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-star-test-failed-1.png",
+      "sha256": "48dd98925d5b6945ac68e60eec701a781662c27400f19f28b8ca0ea1aead9249"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle103-0563e-context-withdrawn.png",
+      "sha256": "12ede056f4f9d62c547f407c665e121fda791382bc9634676a35b5c8b4e73592"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-full4-search-failure.png",
+      "sha256": "15b737104bab5c2a019782bfc7e22770df3bf519a5be6ec4db2fa8439c2344c2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-search-320-readable.png",
+      "sha256": "0c78e129937dbd3f0d41725d3a19b726b36bdd737b63f053703cfa6a71f7b8c3"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-last-page-768.png",
+      "sha256": "0c6f30daa2e270df88024845abe053168bc13a5b78248d35fbab87a361000dff"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-121-settings-red-1280.png",
+      "sha256": "1766f26dff6a09ed44c3b7c9f7c363970ac3300cb50c1f910fa4160fc86461dd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle20-tablet-baseline.png",
+      "sha256": "204de93a8ede0bb52ae0bf560b6f6494f9a360966cdc984fe77d62d037910cbd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/star-history-retirement-390.png",
+      "sha256": "b4161ba36b350fe8b3405a2456d49e7f9ad5f8d4f3ff246b3ecf9fb42442bf03"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle103-0563e-named-board.png",
+      "sha256": "57dcaa26190da22abffa67af65645e2d3d2c80fab002a57df4e18de0d4102e96"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle-18-organization-actions-44-320.png",
+      "sha256": "b95ae632ce6e97ca1566a642d5c657dc3236c6de3568df0f3fd423705c29c69c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-search-paging-test-failed-1.png",
+      "sha256": "ffe6a7ba37b4bc17e7a52e3da58942a9abe5b596a63774cee1944d8ab2883ad5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle103-1bceb-named-card.png",
+      "sha256": "e9e286f760fdd1083446470699e9e310b0c92144498c42c43011b4b19f4e09c4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-star-test-failed-2.png",
+      "sha256": "bed0bf232e255065ed9cd096e921e2f71c570254c8a46de6d31458c4b22a3991"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle139-org-member-320.png",
+      "sha256": "a67763b7ab1be4ae2bd52f09b5742757bef43aad043c0803544225176d47fc03"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-last-page-390.png",
+      "sha256": "b8a8b058356b627924e482ba0df19963896b7bb05468270df58ce1448a1c0bb8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-star-test-failed-3.png",
+      "sha256": "b631b33addad876d772f3152e8e2b4124fbb5a8628d35b166369d007c1260b5c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-search-results-390.png",
+      "sha256": "54094c306f203ffcfa5efeb7e3765fcb675f1a8b762dc24e80f260c30cfa5358"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-fixed-search-zoom-768.png",
+      "sha256": "45fd2e6b7a2d563945fd2d52fe3b1dea8a99739afed4dfafa127d36afd532e76"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-fixed-search-results-1280.png",
+      "sha256": "502f179b4aeaf1cafdf0bbecfe31754d6ef3ca0b41204d3de5720d7ec696b5fa"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/retention-editor-entry-1280.png",
+      "sha256": "1f7d4262fa44339b273e6546a7df3dd6000f46e0b8a61314059d28a37a5f4c8f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-paging-final-768.png",
+      "sha256": "cf91cda49dc89ee3d665a097553cfe926bbe88e95b25b2d29fe81e8ea3af75fc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle57-first-use-320.png",
+      "sha256": "7b2f4fea9d86c039777b12f4fbefb91109f31315a773a87fe20d11298aa65236"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/card-refusal-c055-390.png",
+      "sha256": "8629dfd5d1e9e88fab2e6e2aeba0ae1bfe3a5d301880889cb913ee3b55ce5d25"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-applied-reviewed-1280.png",
+      "sha256": "2e97eb609b21ca52a080f056cc6c62a9b881e13a565c55e85c30c4c378738e44"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle103-0563e-named-card.png",
+      "sha256": "d8f77cd673d0967f18a8901a3b63937385da2b54e350b4a70a7c4c41bd9af15d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle19-card-details-1280.png",
+      "sha256": "b44b41d836b7b240c4daceb36474efea5497ca1af3ddc2046005f9752c01363a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle103-99582-named-board.png",
+      "sha256": "ad6ea269a131ec7f66b9fef25138abba2f2d4ffc97370f5258b1cda65806618d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-fixed-card-details-390.png",
+      "sha256": "5b095d84a24531945705d820e2b1bd311f4048956b7f1318c2c73fb25b792429"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-paging-first-red-390.png",
+      "sha256": "68610d2f706dd9c64e2533ff9fd98b39b3a04ad94b00cff1d32dd214737025ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-return-origin-live.png",
+      "sha256": "3e958174e16fea6d28112d15e610187355b528e950fddec3a1c02fc301d09e6a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-paging-final-390.png",
+      "sha256": "cfd9f89d0f3da8571fa290ebb64793546d467f162e7b605d8af0176440455ae8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-invitation-clock-test-failed-1.png",
+      "sha256": "cdadc8b9dc3a9ea18961ac6567ce7db4d97d7ff481836f66ed5d833edb586a14"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-paging-final-1280.png",
+      "sha256": "db1094bbe9cc30ff65c6200cf82b42d67ab0ded793e78804551f65587a6012b3"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/list-submit-97f3-list-order-return-320.png",
+      "sha256": "820d3ddfd5a57945ef37be77249eadd04b2c70984b0cd8f8588d4be7c50ab0b2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/list-submit-97f3-list-order-return-390.png",
+      "sha256": "0f44fdacf73cdff5fbbbe7946752e92cc3c243377ceb41bb817d283ab4abc6be"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-09.png",
+      "sha256": "4f95015db41de9d295e2a7dd3f4ffbb6b28c443b5ea92fd0611cf2a6dc777484"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/controlled-form-9ad-ux-form-error-1280.png",
+      "sha256": "7cd5dab447e7c6ca246cfccf095957de3bcbfd86a0dc2109b0ea8226739b04e6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle46-card-movement-02.png",
+      "sha256": "bc2446c262498dd7375fa1d362b3ac0e4b6b82a978e8f3ae578ed0e996f13fd6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-paging-final-320.png",
+      "sha256": "bdaa47b74c2211dd4ed9dead2d67733c46a02876c602fdfae4cec7c3df761b8f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-121-scroll-touch-red-390.png",
+      "sha256": "05293708fc5a0d257a80d801e9bb7938e5a9c348b60a005e3b9d21217e759305"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle46-card-movement-03.png",
+      "sha256": "23f2cac023927fd2b5cded9ed215490dd46f1de8fb5306c4169a3bf99c3ba27f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-01.png",
+      "sha256": "a6fe5a483ca62ddca78e31515425e1fc909ed97b852ca777fe3a8d5ce3b764e7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-08.png",
+      "sha256": "0206c98dc1a97d63c2d4b622b50c76e0e6b7f8a8da8ed2e9246c5a7eacec9108"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-01.png",
+      "sha256": "89ece8d8a43a2f0da8a6739cf6379e439c5a738185ba2fe0fb722ff42ede339b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-modal-red-390.png",
+      "sha256": "a6300df26556251d90963f6f1def62ba70af98864ecc758fedf18f4fd23d6e13"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-03.png",
+      "sha256": "1780d081ec0a40918abbdd48b747739a23d8c9fe4f6ffae56dec9e664c14e3fb"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle46-card-movement-01.png",
+      "sha256": "23f2cac023927fd2b5cded9ed215490dd46f1de8fb5306c4169a3bf99c3ba27f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-03.png",
+      "sha256": "2526cb40ab29355ae7fbbdd8ec07bff03147198b22196f7af3f9de6c7724b118"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/list-submit-97f3-list-order-return-768.png",
+      "sha256": "f77cedd0ab24c5d9927f8d35dd07f0dd5a7b1d66ad66c141b362f14c7151c885"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-02.png",
+      "sha256": "d9789573c96bb7c1067e08a61afe389bc597260b127beeb9576ff306f5156432"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-02.png",
+      "sha256": "9870feddc3a3bd548fbd14cd7608a7576fa77f4c84b7c36a94c6db8640f87d7d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-card-details-1280.png",
+      "sha256": "74c37d54c675a5b2a344e52da17c0f12f4a59dd24cd503d5f1a6b13ef62d54d5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-06.png",
+      "sha256": "5be1e96756e4645cf3789c6c08fad1cf2f1a1853fe7c47a51fa7c1ed2b337e3b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-12.png",
+      "sha256": "fcfd374f69b640ca116c91e392159e3964ac16d428dccf91ed909d3b8d1beddf"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-last-page-1280.png",
+      "sha256": "c59332865b9d7c3efdcb201990232532ed8a69f9047e309d29818aaa4ff15b0a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle139-org-admin-768-200.png",
+      "sha256": "0f611aa2ef67d3bde82342d8054c6f220523ca7d4d92521dc8925762f62a42fd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-12.png",
+      "sha256": "4f68541adf49274af934536a3118b79fd6162b758639b561ed28c97de0ca2b0d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle46-card-movement-04.png",
+      "sha256": "fcfd374f69b640ca116c91e392159e3964ac16d428dccf91ed909d3b8d1beddf"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle139-org-member-390.png",
+      "sha256": "0cbc35b2bd721cd16b5460d2672feeb3358f2bedeb0da55296fb0567b9692e42"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-06.png",
+      "sha256": "08a09cf9e02caf32bc47a8c1f9a90e8e5277bf81c431f9cf0123c13b513e5942"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-last-page-320.png",
+      "sha256": "11cf602dfe7fb9b40a969207475f73691d42e49c1adae75113cdb706f60716fe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-07.png",
+      "sha256": "e29b476aee2bb74db6b969200913b1ceb70eae3b01dab02a311b3d1a82c22709"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle103-1bceb-context-withdrawn.png",
+      "sha256": "91e300376bf284ee578f2c6f0e3f17a10378d924a3c229c88731f1352e418a93"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/star-history-retirement-320.png",
+      "sha256": "7231a7e4873c0e97b02c64f3af1cba492bcead8332820bcd6e1ffb7d90bf50c7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-account-refusal-390.png",
+      "sha256": "297131c72b1a1316ae6b2e736dce08ef2e5a9817d8a3d0393ca0814fcd772f54"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle-18-organization-actions-44-390.png",
+      "sha256": "6830d1a4e594f9b9713a0674c104c5fab4750b31c7f72e72cbb2cc9e3514e312"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-organization-work-1280.png",
+      "sha256": "ada70c0a627b5b2704049d7467c544374ded2514891c315812a0718c229de88f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-07.png",
+      "sha256": "8fa96064e8243df10dc6a4009515a1066784a0c0c628d69d9ecae7e8bc4fa476"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-to-card-return-768.png",
+      "sha256": "cba252a0801935b0e8e681e00eb9770ea1b37207b953107191d44bf87110d2d4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-11.png",
+      "sha256": "f92736b275de1b214eb6b9866deedf8da2fd526dbef7710abfa1f95a007abbfe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-05.png",
+      "sha256": "1c62a1ce103e0adedca53339d449891b571a5cf6dc512f2f0d9a75a6d7636e79"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle103-0563e-named-return.png",
+      "sha256": "90d28f715a4a7364c44163558653bddae6451535456e16f4e169f6c8b697d59a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-cover-red-390.png",
+      "sha256": "70645c848e906c7a54fdce7b2ae5ee8763fd3c3ec66b8c166b486d958fb2fc76"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-zoom-red-768.png",
+      "sha256": "c3b1f06efdb55bb3b89cbcf2cdadecf6ccd64dbc166966c72b419eece9c1b5fd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-05.png",
+      "sha256": "ed5860e09f8dc3cc7f5f51e2622dae3ca72d86cdaa938427826cb4cca9534eed"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-11.png",
+      "sha256": "e656c11b411733b7d038598b8d54e2b8a79f15ce27136e21c07b29bea928a5e1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-fixed-card-details-1280.png",
+      "sha256": "74c37d54c675a5b2a344e52da17c0f12f4a59dd24cd503d5f1a6b13ef62d54d5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-modal-red-1280.png",
+      "sha256": "f08a8ed26366d43bafc94ffbc5feb7ccf608f05cfbe4e2958dfbbfdd84e7d7ff"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/card-refusal-c055-1280.png",
+      "sha256": "a77cc5ac717ab26340db7dbbd3d2d76d0662a2b48b6ced05c9a891da14b93b72"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-10.png",
+      "sha256": "550e14ff3df51518c23287b17c12110806680e379dddf89c11627370e8a66b7e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-04.png",
+      "sha256": "ed30e2ad06f0844b2d05dbe0722976a9e57ff2a9f50671ce839e70ba9e5e7eed"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-to-card-return-390.png",
+      "sha256": "e8c53232a540017630299aac99b37f280eeb098334d7ca8624b3061cde1f02ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-04.png",
+      "sha256": "b90d982cb2fcb6a80b24be03ce218cf3394412b371b45c7f6f16b750f0fcf2b6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-10.png",
+      "sha256": "f3b6f84cc17afae8fbfabe75d6024c5991e4ccc1dbe30a0c938423c7b0fbdfa7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle-18-organization-actions-44-768.png",
+      "sha256": "86fb3e564fd41c3c213e6c1950da177648eba7b34ee227006deff4fbbfa62dc7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-card-return-1280.png",
+      "sha256": "b375593acdd665cbe5b6ea6d0c5579e9f40aa63abdf88dafa169ac7e9dffada7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-09.png",
+      "sha256": "f92736b275de1b214eb6b9866deedf8da2fd526dbef7710abfa1f95a007abbfe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/card-return-c055-320.png",
+      "sha256": "993cb7d52f86a8d8e6bcee9874852a8e0fa41736f4a730bc86bfa48052ac4552"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-organization-work-390.png",
+      "sha256": "65728f5d2e310fc33cd0812c93c16727c0bc604d24b0db0d176d4e50c8d2997a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/retention-editor-entry-320.png",
+      "sha256": "e9be76e5c7ee5cb6e152416e09f14c74afd40a2752e04e8e5a5e121c5f69f916"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-creation-draft-390.png",
+      "sha256": "99becace41eead17c207f6a7390f397e739dda2a8c94d8d98b56bc401b1a78d4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-09.png",
+      "sha256": "1b094d3f593d3b9b715d40c2b5472bec906e0572ab546e41878d4cc8a9163836"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/list-submit-97f3-list-rename-review-390.png",
+      "sha256": "01610d896421e97d6615e8f8e58e58ff08fc0696afbe8a31e1086e107e8429e1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle103-99582-named-card.png",
+      "sha256": "2d244ced96ecab88edbf1ecf85a414200db056315b2d035c75ac91c9bb88e713"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/merge17-tracking-earned-completion.log",
+      "sha256": "9914ad955a8519699931b5bedcd3c99d382d2be7120337368d257a5915e4687f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle44-work-navigation-08.png",
+      "sha256": "6db0942957d6903d540f0f62ab4d2ff5ad3edf437a95bbebfd89fac15736d3ea"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-recovered-board-draft-390.png",
+      "sha256": "386f0cc46f730a35186aef1c39a29f2595478f9a322d6734948f91d5b3398fc6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-work-board-standard-390.png",
+      "sha256": "09ac7d0a1188dea76dbbbf03bc631809e8683f0dfde199a0cc55f5d47d0eff57"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-01.png",
+      "sha256": "dfc28488bdf6bd77476ef8a18d85a1e7319d1737b2bf5d3cc28bbb4ed3b441e7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle48-touch-work-08.png",
+      "sha256": "d9943818d47cfa5d17209272ead9be4765f20ff20aa201bbc8eb0ad79bcd1202"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-creation-draft-768.png",
+      "sha256": "667be78381dfba888c0a667472f407976a7db9c19dc0583323b64e4d5d219857"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-full3-lifecycle-3.png",
+      "sha256": "51092cb6c14908313106325044fc79a8f72a113002059e829185149f5caa5e45"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-recovered-board-return-1280.png",
+      "sha256": "1bffcebe8971cfb8671a9054d3625d21181d4f764275a774fbd1567e49251759"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-03.png",
+      "sha256": "0d0f92e07e2463be3f087e42d9a7751c0d28f37c5d036cd4e927715a606a48f3"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/list-submit-97f3-list-rename-review-768.png",
+      "sha256": "7f87eaef8606927f3addccce82d1443b31a10ab6982408f594865b5ed0e03a61"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-board-zoom-directory-768.png",
+      "sha256": "8dafd205a5b532f566b55bc922e148617c448da8060c48194ab6bb9eceda6934"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/list-submit-97f3-list-order-return-1280.png",
+      "sha256": "29800020f3d02666b25722a07eff26597fac5a000ecbe447477e5490518af827"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-return-background-320.png",
+      "sha256": "a94da399830af2fb89d1cda8f4b75f961a7d1122e2c8cd9d012e22592c38b1e0"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-02.png",
+      "sha256": "37e9dd6b0d737e4c2f54a8dfafa1a7f76d8c1f0a3c8938de4ee92a5a0545d089"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-recovered-board-draft-768.png",
+      "sha256": "4ed6390dc48b71f1cdac955408bb8bd06da08a4bdea36a0b590e70dc93e76560"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/star-search-current-demo-saved-card.png",
+      "sha256": "2361f810054101d56b20411d3b3a9a17f66b047995f41152e07ac41b7eb5c82e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-06.png",
+      "sha256": "efaf2a43f97ef2432315632da2aa8afaf684353b698cb413c84118c0f3a3c4b2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/controlled-form-9ad-ux-form-error-768.png",
+      "sha256": "843843cb09278ef5afdba0fe4fa25009d05a1d5ef8031cef83bd320590f8cf1b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-recovered-board-return-320.png",
+      "sha256": "642b1619e04550696f7ee3af4a8aacb8a05f76055bb1f0e8b32635cf6a6ee341"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-account-replacement-refused-390.png",
+      "sha256": "b1bdf517d31603cd0f57bc9b785e8f148d783b02e9f81246b7b3124ca283c7ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-search-results-1280.png",
+      "sha256": "502f179b4aeaf1cafdf0bbecfe31754d6ef3ca0b41204d3de5720d7ec696b5fa"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-07.png",
+      "sha256": "753163c030267e58cd0d0657b4dac8a934eab4ddf8370e0ad7af8de32656b666"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-card-return-320.png",
+      "sha256": "097ed81d451f68fd77166856779d6069a208dfa702a3174465a81b8a11c2af10"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/controlled-form-9ad-ux-form-error-390.png",
+      "sha256": "2c0c386e411f0e5eb43556e1a3635adea22f369d34b2929e94461280c44d2ab8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-account-replacement-refused-1280.png",
+      "sha256": "ed30e2ad06f0844b2d05dbe0722976a9e57ff2a9f50671ce839e70ba9e5e7eed"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-05.png",
+      "sha256": "27518f40b060a3b1c839c6d592b3b417b453961af84a4f566dc5d07e6cedbb77"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-filter-paging-exit-red-390.png",
+      "sha256": "68610d2f706dd9c64e2533ff9fd98b39b3a04ad94b00cff1d32dd214737025ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/list-submit-97f3-list-rename-review-1280.png",
+      "sha256": "514172b8b0a5c8070069760c64f44c1bbb0ff3896746f270a1733c374dee3ca6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-121-metadata-red-390.png",
+      "sha256": "d270cfb1ac0655c40c7a44b619498d21140cda760a1d153760b778897f62c837"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle139-org-owner-1280.png",
+      "sha256": "0f54fbb866faf8789658610106b68cb9f59d696f28c2522fc99b9375b494a649"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-work-board-standard-1280.png",
+      "sha256": "ee6482a7092acc97ee141f2684f3e736ee5443880c5a9ceb90b79e8138a9604f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle57-first-use-200.png",
+      "sha256": "dd0de8ea3d875a23dabce96e4594cfbcf759c0e9d955bfda69d4fd360005c21d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-board-zoom-red-reload-768.png",
+      "sha256": "7d760cb744ccf0ca78a2a5e6bf0892441b5705e13fae47062ee2ff10e8e489f5"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-applied-reviewed-320.png",
+      "sha256": "9e5a3fd275c4fa80a8371c867330201daeb3534f633eadd84f056d96210983ec"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle43-card-baseline-04.png",
+      "sha256": "0fd489b37cbcfc020c3c04be0f28e7cb2c8c68d0a4bb7397da3561f00a1e6afc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle19-card-details-390.png",
+      "sha256": "fcfb6604a9dbb0fad95d91c22637b41418a84bd6aa32cec7e81c66fe9902c833"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-applied-reviewed-390.png",
+      "sha256": "0a1ef596e47c3fe770dc0983beb8cf24f9106ef04344245e274c2b71d7d2ecd3"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-creation-draft-1280.png",
+      "sha256": "872624aae19eb91dbe335059b0c86507442b7ff2706bbf0dc26066fa2fcbe26d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-card-return-768.png",
+      "sha256": "792ced042a556ea47ac8202c7acac22e770641c577aa2ad4472bd899aea6f68f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle100-y320-scroll-failure.png",
+      "sha256": "3c3100ad5c7ef2b88be031fc8a29d5f8c882e02722765fffc0a9f6862a93150e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-recovered-board-return-768.png",
+      "sha256": "69b5fa94b7418af5027161bd3b6395f7c1d62d5ae3859567a0dc32da94a502a7"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/controlled-form-9ad-ux-form-error-320.png",
+      "sha256": "1e56498a8806ebcce5095352dfed091ee736a9c5988c897045c36f6e5cc12bf2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/card-return-c055-1280.png",
+      "sha256": "807d5e9e92072299f69a9f081d0b5a21d1480301d2cc0e5e95fab2aec178df06"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle47b-touch-target-refusal.png",
+      "sha256": "7ea0929bc136fefe9d3cf86e126374acb0be9c22e057f8afb67ce89ac4c66925"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/invitation-enabled-bound-hosted-ready-form.png",
+      "sha256": "5f41e921cc083784763e07deb1474fb0f7a61c57c1709d7e1a5a78135b541f10"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-account-refusal-1280.png",
+      "sha256": "54932f5e2111a3f7cc4ac600e9e529e526a91944ec04387f4e4b989a6030d690"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-card-return-390.png",
+      "sha256": "2ff27bd9013c1089f6c94ff236849a37750cf1a573b6da4d87e3231432b0f21b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-applied-reviewed-768.png",
+      "sha256": "0fd49e40811417ed606c7d5b2da7b2d1d51fb65b383e9bf59506dc4d1f1d067d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-recovered-board-return-390.png",
+      "sha256": "d64df870146a6a96e6cebd0de8e6eb484840738462a58620f1ba2c267e092468"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-122-full3-actions-failure.png",
+      "sha256": "242f70c42630ff98f791b0f49f813e569b25d2c4b9fd664f7713fb0c8642034c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle20-tablet-return.png",
+      "sha256": "0a475e0a07497a66f748a3259c3bed9fcc730d676c9c3dd6db4d97d3a2dba838"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-board-zoom-canonical-768.png",
+      "sha256": "188f270b059114e552bf4db099b46990c068436e6ed94cf385905c5d886f22ac"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/star-history-retirement-1280.png",
+      "sha256": "38e1b221e3e797cae2ed639617164903340c08d4277e00e310d8438f6ca72d20"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-card-details-390.png",
+      "sha256": "5b095d84a24531945705d820e2b1bd311f4048956b7f1318c2c73fb25b792429"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-121-scroll-mouse-red-390.png",
+      "sha256": "fc84866430aaf47f69034b78cad657c6e115b33d71eb126dfc6f77af1152c2ec"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-return-background-390.png",
+      "sha256": "ed8310346d4bba0bfd2ee04d5ce41c7d9d7e5b4355ca2214c0ff43a22d5998ee"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/card-return-c055-768.png",
+      "sha256": "05622a04dc2178b955e86ab950db3cd23008bb494164ca7921fe6903ba002211"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-return-background-1280.png",
+      "sha256": "655039ab54ebe435626b710899aaf798436729c6e058320a2eef7e619000bf21"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/retention-editor-entry-768.png",
+      "sha256": "de5f92e7dc7df93dfdf958d51a126849d65afacc186ca95117845cd0cd90b0cc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-to-card-return-1280.png",
+      "sha256": "3f6f66c00ec2201d0bf3fac10eb0cc76f01fc63b58f85170eba94d415af3df4c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle-18-organization-actions-44-1280.png",
+      "sha256": "ab278451a01231fd4d305b66efeded8293e64d5ecf02faf097389f7354c7d4fd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/search-return-background-768.png",
+      "sha256": "768914e1307188515cb3c29ae3b91090c7e7a823a3e8a44995a2fb598d9f6275"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-recovered-board-draft-320.png",
+      "sha256": "c5846467a060bbefeb46a297703ef194df059ad26b38e2ec9a1b05270d714ec2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle41-recovered-board-draft-1280.png",
+      "sha256": "c9d845f918d3155f6a455e90de29eb81fb9f2ac6797e2d44cfeb908acc5d2257"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/list-submit-97f3-list-rename-review-320.png",
+      "sha256": "6f26506dcc43c1f9924fee8939973cee3b846f406509f505e11039758eba9687"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/trello-polish-detail-fixed-search-results-390.png",
+      "sha256": "d51a04f32d713b2f5d3530ca7343092a37b9ed2c26fb0c05ad38f9d0dfdc7a4d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/retention-editor-entry-390.png",
+      "sha256": "49e128d6ed7e224d898c9e4171cb38bb177f6c8fb52c103b64645b50344e0db4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/cycle42-list-creation-draft-320.png",
+      "sha256": "93d49776f93a8e48d460f548765ea7e5c709f07710ea5d09bb50569704e4fcfe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/card-return-c055-390.png",
+      "sha256": "60853b10fab5ebd7051d1bf5eb7a7a0817b68b71fce56e82a3df5ee330942409"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/browser.log",
+      "sha256": "3abda286840585fabb50d7b835c91a8ba0c1ebd175d262590a05532637270026"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/api.log",
+      "sha256": "41b5a417d3414b36195d92d02e65447b11de7e871e225c09a8fbae7f5bb6b285"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/directory-1280.png",
+      "sha256": "3545c986c3a935a8d44a7e848520a0c42f340825932fd1e2e588fcc3f56c8ad1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/rework-browser.log",
+      "sha256": "efbe995eeb6a01222c7211f80a562803a46b17b3d9a36cea4cdd8e9fa1005c0d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/delivery.log",
+      "sha256": "8a8da1ffa60d26f60306fbc1416946bcef798b3ab6b08c918cb9d6ff4b4c8275"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/directory-768.png",
+      "sha256": "6d3a6cfd710635d372f4aab48734f7c4fabdb823d1e9bcaf3aba200c968cd36d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/directory-390.png",
+      "sha256": "6bf48a55d2ad0685508d6e29a424aac96e79cf4f2b362d9c1323fe9635044a7c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/rework-build.log",
+      "sha256": "3e59b24db55768c1b9fd132faf2e4806eb44e9e72d8788beace15dafd40358d1"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/rework-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/rework-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/browserTypes.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/directory-320.png",
+      "sha256": "151598df37a45410637937da2c030af7b1a7885d548a79434d9d0b7792a33e42"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/build.log",
+      "sha256": "60bd4eb3ba18affb75ccb776ea70bdc9c660994ffcb4627e934d2518335bb092"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-live-final.log",
+      "sha256": "ff96e8da6f249bc3cdf6a93f19d55f793e5f1daafaf56443077c4e148668bd08"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt1.log",
+      "sha256": "9f29d07639245f91fe5575e05d47e29677606392683464884bf7d546b82d6f9a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt3.log",
+      "sha256": "dee4c68833c68b51383c4b6faa92063aff5bfd96da4089d3cb91b6482fca8c3c"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt2.log",
+      "sha256": "5ce1db44a926251c8335f1dabfeb26354388814b353bf1ae08d091f395b769a2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-attempt4.log",
+      "sha256": "5fa6e3f163f9374da71ff13e5142dd47cc785c965d7a33334fe10482911083b8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/development/prd28-browser-live.log",
+      "sha256": "0199fca82a28e38e8d84a4d8ecb2c6f7155fd4f827943d9fc4f5433d7633435b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts.log",
+      "sha256": "27b57a963d9a7ccd9df3922d45b8635f2e1e52c6bc94e2b8020778231a3cc081"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-verifier.log",
+      "sha256": "63bac35e63166692ad9596c2636f731b2aa4955293651b9300232fa02cb84d4b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/security-failure.log",
+      "sha256": "bb591035301acd7769461fb699dc4c5145c23477995800c0820fae6227b3f654"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-integration-coverage.log",
+      "sha256": "0bc779b0d8ab1b4f8dcbb06e1563d5c397159cc4e6f7b5ad5e6c6a5040bc18cb"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-delivery.log",
+      "sha256": "1c5f58e05a2a63fd24dc6f006bd7b395bb9c9c5e9440e18e14288c2597dc9857"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-image-build.log",
+      "sha256": "b50aa5824aaa7f9b4629714d91506a0cb96abcc001a01a20b529b13a27383b93"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-owner.png",
+      "sha256": "1a4540eca81b12c2f93290fe11fca3fb4e696ddfca9aa7584b7f5b29f1c62f09"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/browser-reproduction.log",
+      "sha256": "e859eb9d911ea196a155d2d16be3173b531d33af904306c84c16a08e3c21825e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-contention.log",
+      "sha256": "5a00f20e47bc0a303324067b3cad14d96bf8b88e3d4b6ade57260912577e4e40"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux-installed.log",
+      "sha256": "3b4a65634bad88c04f2bc92e55d3c87a948908a71981567ec1e18d417e51ffdc"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-nginx.log",
+      "sha256": "339e4ea8b4c56785f01817ba8839c78bc00ea87de8b45fcf30c0623c9df5aa1b"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser-types-initial.log",
+      "sha256": "35000f5f3cb60d9bf971c76cfa22a699f2e9c4d1c400ccb52d38fe44f9778881"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-python-linux.log",
+      "sha256": "b28ebdfadaa264f6443ce4e51eb3953b9c6e2a56ed4c3ac2ccc5e91c43354ede"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-config.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-conflict-green.log",
+      "sha256": "e37696b815a8e4c2db4299a3bea353ae921064032c827eb46b0f1048e1f412e8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-conflict-red.log",
+      "sha256": "0f0c7af688ec0c75fef6b79e79f88853cd68c0f4081e5439ec258e007e618d1f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-build.log",
+      "sha256": "7627bec9a3f90e8183c37eab50fe42d2ed2a831ea854f6d956a330337964017f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-native-admission.log",
+      "sha256": "66dd6c06de377126e01fdd6bb6829da54ddddaba2a091cdf39e12411da2cc132"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-hosted-failure.log",
+      "sha256": "eed52cbb10d2407c729236b52806bb914d90f424911f958fffcbb07066485760"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-verifier-scoped.log",
+      "sha256": "f76e694268ff5f6f28dc3af53896e523e168152eeefdabb3f842546b47a3691e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-package.log",
+      "sha256": "a38d7e3fe905d6c3612eeb33fec71c95b00e8bf9b2ad6ffea45d1d53cc4f72f2"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-green.log",
+      "sha256": "6e883281527e05c43b2160b06a3543ff323bf45b6622cf31ef7ace1d68e032cd"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-image-build.log",
+      "sha256": "7d269bab2cd8769e781d43414cfd475bb52bd11e1107375ff34884756f67dd7e"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux.log",
+      "sha256": "7bbae62c332ce85fbcd1876e737b03179b78c59b047373e4299f47a6094cbefa"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-create-red.log",
+      "sha256": "200740afd3281beda51206dfd2853eabab8860719ec2dbd4c18abf89ae1a9cd8"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-security-failure.log",
+      "sha256": "99e7a3975a26f02ad8a0570dd8e7146665c2d5c924ca683103a19865ef6ce0f4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-fixed-browser.log",
+      "sha256": "c6a6f780288b0146eb5a354e28a1450cf97f5a2cf3f00679b916d42fec470710"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-types-initial-failure.log",
+      "sha256": "90232595689240f245592f48d6f3933cdc236176f0408e613983d8648a028f2f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-integration-contracts.log",
+      "sha256": "5df0edb56912e29ba032e610ffba40367e74a72f37b585ff3ec14c06dbc66c43"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-clean-linux.log",
+      "sha256": "b6165012af87d099cf4611854e12fc938e516e477f05a56e0d21904185fcde78"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-final-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-image-build-initial.log",
+      "sha256": "616343072586db222203d97a459fb3d6c580a4de428d05cf60bb289384140d66"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-320.png",
+      "sha256": "efcebbf9399208b665eaf6e154723a02658bc5fa8c873518d97e45e555391d77"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-390.png",
+      "sha256": "574cb1608b6ce01961a5ac97799a51e7ef86da05277adc223fca025e5dbe172d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-linux-mounted.log",
+      "sha256": "826b8d1bb435d3fe894f574ef44de72a49ddb8506526dc40ea2e68a88d6ebd2d"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-hosted-failure.log",
+      "sha256": "548ed98864516e28530fb92e4dc5c3cfb5cf52e07d2162e7e2c4158676e12cfe"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-focus-failure-768.png",
+      "sha256": "b6d434ee0472088703d96c266ce0159af313c974f427bad1ab46e3f6cc2f09b6"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-keyboard-contracts.log",
+      "sha256": "6989ac2ff73be2ba589718678d7bcd7f4b03ad76b5b2960d33c640963ee79967"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser.log",
+      "sha256": "222fe999e86875501b79b41496504043263d84b66b2366378a18faaf78fe5327"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/restored-recovery-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/security-web-build.log",
+      "sha256": "cb7b41ebccdb855dda80653885ce06a0b7b87ba7a501c27a11b811e8c6365c97"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/foundation-dispatch-secondary.png",
+      "sha256": "f6a37e4c324e501e993293ad5cf0885b5d3de655cec7d9840a372de52ca875a4"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-browser.log",
+      "sha256": "6c1107f6889750265240a3a3bf480cfbe2f92b37ee70bb22e0f6a44a0afc4e3a"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/history-scroll-image-build.log",
+      "sha256": "f640c6b2b5102431f59986a0fd0d0798d7492a5eaacdbe96e1ae05bf5aa8952f"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-contracts-final-linux.log",
+      "sha256": "5856f80dfb797750641488323c6df23bed7121c466ddc4d546afb5d3b41fa675"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/build.log",
+      "sha256": "315ece7c74be8be712f215669e847d6a383cfa027b5d6a4d32b9092e49a7a953"
+    },
+    {
+      "path": "strataai-local/mention-picker-focus/canonical-snapshots/pending-pr139/docs/delivery/evidence/prd28-unit-directory/merge-review/collector-ingestion.log",
+      "sha256": "ae6432085ff9e0ad41de25c56292e4584b0cfc73d824712865b6b49006776f50"
+    }
+  ]
+}
