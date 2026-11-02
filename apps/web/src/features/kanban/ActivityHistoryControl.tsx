@@ -31,8 +31,10 @@ function History(props: Props) {
   const newer = useRef<HTMLButtonElement>(null); const newest = useRef<HTMLButtonElement>(null); const retry = useRef<HTMLButtonElement>(null);
   const close = useRef<HTMLButtonElement>(null);
   const focusOwner = useRef<HTMLElement | null>(null); const restoreFocus = useRef(false);
+  const focusDialog = useRef<HTMLElement | null>(null);
   const retainedFocus = useRef<HTMLButtonElement | undefined>(undefined);
-  function ownFocus(owner: HTMLElement) { retainedFocus.current = undefined; focusOwner.current = owner; restoreFocus.current = true; parkRecoveryFocus(owner); }
+  function ownFocus(owner: HTMLElement) { retainedFocus.current = undefined; focusOwner.current = owner;
+    focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner); }
   const invalidate = useCallback(() => {
     if (pending.current) { refreshQueued.current = true; return; }
     setAttempt(value => value + 1);
@@ -107,13 +109,15 @@ function History(props: Props) {
   const admitted = !props.unavailable && view?.epoch === epoch ? view : undefined;
   const message = !props.unavailable && notice?.epoch === epoch ? notice.message : undefined;
   useEffect(() => {
-    if (busy || pending.current || props.unavailable || !restoreFocus.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current)) return;
+    if (busy || pending.current || props.unavailable || !restoreFocus.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current, focusDialog.current)) return;
     const retained = retainedFocus.current;
     const target = navigation.denied ? close.current : retained?.isConnected && !retained.disabled ? retained : !opened ? primary.current : message ? retry.current : admitted?.page.nextCursor ? older.current : positions.length > 1 ? newer.current : newest.current;
-    if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = false; }
+    if (target && !target.disabled) {
+      target.focus(); target.scrollIntoView?.({ block: 'center', inline: 'nearest' }); restoreFocus.current = false;
+    }
   }, [busy, props.unavailable, opened, message, admitted, positions.length, navigation.denied]);
   const name = props.kind === 'BOARD' ? 'Board' : 'Card';
-  return <Stack spacing={1} sx={{ minWidth: 0 }} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current)) restoreFocus.current = false; }}>
+  return <Stack spacing={1} sx={{ minWidth: 0 }} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current, focusDialog.current)) restoreFocus.current = false; }}>
     <Button ref={primary} disabled={props.unavailable || busy || navigation.denied} onClick={event => { ownFocus(event.currentTarget); if (opened) { setPositions([{}]); setAttempt(value => value + 1); } else { activityEvent(props.kind === 'BOARD' ? 'board_disclosure' : 'card_disclosure', 'open'); setOpened(true); } }}>
       {opened ? `Refresh ${name} activity` : `Review ${name} activity`}
     </Button>
