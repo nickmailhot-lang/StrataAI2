@@ -1,0 +1,597 @@
+{
+  "schemaVersion": 1,
+  "kind": "Scoped canonical real-service regression evidence; documentation-only increment",
+  "source": "bacad858a073393def14301d568eb35466acd189",
+  "tree": "96e9d88ac7a34e84ec67fb2df043979233b60c59",
+  "at": "2026-11-02T01:53:02.366886+00:00",
+  "claim": "PRD15-HANDLE-CANONICAL-VALIDATION-02",
+  "result": "Passed",
+  "command": "node scripts/local/runtime.mjs with exact current-tree identity and selected original browser files; unchanged canonical feature-runtime shell bodies",
+  "run": "4c70e2f0-4223-4d9c-a69d-55a8c556e170",
+  "elapsedSeconds": 1207.856,
+  "platform": "Local linux/amd64 exact-tree images emulated on Apple Silicon; hosted immutable production qualification separate",
+  "sourceUnchanged": true,
+  "originalRuntimeSha256": "329ed3d34b0c6e8efdb63c3246ad6828a28c72673a8efe003ad0dfbbf5ef524a",
+  "originalWorkflowSha256": "03a75103797e3705bae1b5175a4dbb2cb7a0dc2dffab13f729341b261530fb9a",
+  "sourceBlobs": {
+    "scripts/local/runtime.mjs": "676d163f2e7c1e92d1b0dfd20b4a864b8a7f5970",
+    ".github/workflows/feature-runtime.yml": "fffb3e0dbffeaf461b85a0d5d54168d020456ac1",
+    "tests/browser/board.spec.ts": "40a562fa2e8d791cd4c3563d1f70dbe6ec59d499",
+    "tests/browser/account-mention-handle.spec.ts": "9081da72cd047c0989f06e9e3fcfa6e5aad607e4",
+    "tests/browser/comment-mentions.spec.ts": "1a6af9afb6b7c5a24f4ddc42e80be0fbfa133b00",
+    "tests/browser/scopedBoardWorker.ts": "00e738e84a7cde453905b3656724f96aa0bd4a55"
+  },
+  "browser": {
+    "originalFiles": [
+      "tests/browser/board.spec.ts",
+      "tests/browser/account-mention-handle.spec.ts",
+      "tests/browser/comment-mentions.spec.ts"
+    ],
+    "cases": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "workers": 1,
+    "reportedElapsed": "5.6m",
+    "handleViewports": [
+      1280,
+      390
+    ],
+    "boardBaseline": [
+      "desktop",
+      "tablet",
+      "mobile",
+      "narrow mobile",
+      "tablet 200% text"
+    ],
+    "scope": [
+      "Real cookies/API/PostgreSQL original handle command: normalized body, exactly two same-key/body writes after already committed reply is replaced503, persisted handle/account versions and one private profile event; concurrent account review, old receipt refusal and authentication withdrawal.",
+      "Real selected teammate revision refusal: reclaiming a handle does not restore selected handle revision; no comment/private notification created by refused change.",
+      "One persisted comment after same-key/body lost-reply recovery, exact selected identity revision, one created/read private inbox event and persisted delivery proof; private Board membership withdrawal removes inbox content.",
+      "Five original persisted Board authorization/navigation/isolation baseline cases; required scopedBoardWorker and finally restoration unchanged."
+    ],
+    "assertionsUnchanged": true,
+    "originalDeadlinesRetriesAndFixturesUnchanged": true,
+    "axe": "Original included handle dialog, Card comments and WCAG private inbox assertions passed; no manual screen-reader acceptance inferred."
+  },
+  "canonicalStages": [
+    "build-web",
+    "build-api",
+    "build-worker",
+    "pull-exact-runtime-platform-postgres",
+    "Start release topology",
+    "Apply release-database migrations",
+    "Provision least-privilege runtime database roles",
+    "Reject unsafe runtime database roles in exact images",
+    "Verify installed configuration identities, relationships and restricted capabilities",
+    "Retention policy schema and restricted capabilities",
+    "Health, readiness and SPA deep-link smoke tests",
+    "Verify embedded build identity and override resistance",
+    "Production does not expose demo reset",
+    "Verify production account defaults and prepare isolated auth fixture",
+    "Invitation-backed closed registration and atomic expiry against exact release API",
+    "Verified-email invitation discovery and retry-safe acceptance",
+    "Private board discovery and revoked membership against restricted PostgreSQL runtime",
+    "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+    "Board administrator demotion continuity and atomic recovery",
+    "Organization configuration tenant-scoped usage",
+    "Retention policy authorized commands and private history against exact release API",
+    "Prepare isolated identity mail transport and ephemeral signing keys",
+    "Restore isolated unverified-email account fixture for profile browser tests",
+    "Enable automatic Organization metadata and invitation authority routing for native browser acceptance",
+    "Selected feature browser acceptance against exact images",
+    "Authentication and invitation abuse limits on API and edge",
+    "runtime-diagnostics",
+    "stop-owned-runtime"
+  ],
+  "exactImages": {
+    "images": [
+      {
+        "service": "web",
+        "tag": "strataai-web:local-96e9d88ac7a34e84ec67fb2df043979233b60c59-4c70e2f0-4223-4d9c-a69d-55a8c556e170",
+        "id": "sha256:1de1c55a45942940614a343129413970647f931566249da04907779a8b4a71f0",
+        "os": "linux",
+        "architecture": "amd64",
+        "labels": {
+          "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>",
+          "org.opencontainers.image.created": "2026-11-02T01:32:55.255Z",
+          "org.opencontainers.image.revision": "96e9d88ac7a34e84ec67fb2df043979233b60c59",
+          "org.opencontainers.image.source": "https://github.com/nickmailhot-lang/StrataAI2",
+          "org.opencontainers.image.version": "0.1.0-local.t96e9d88ac7a34e84ec67fb2df043979233b60c59"
+        }
+      },
+      {
+        "service": "api",
+        "tag": "strataai-api:local-96e9d88ac7a34e84ec67fb2df043979233b60c59-4c70e2f0-4223-4d9c-a69d-55a8c556e170",
+        "id": "sha256:1bf5a30461544660aa2fa0d8008030d8af32a4719c93ced4e72bdb5c2dae6fce",
+        "os": "linux",
+        "architecture": "amd64",
+        "labels": {
+          "org.opencontainers.image.created": "2026-11-02T01:32:55.255Z",
+          "org.opencontainers.image.revision": "96e9d88ac7a34e84ec67fb2df043979233b60c59",
+          "org.opencontainers.image.source": "https://github.com/nickmailhot-lang/StrataAI2",
+          "org.opencontainers.image.version": "0.1.0-local.t96e9d88ac7a34e84ec67fb2df043979233b60c59"
+        }
+      },
+      {
+        "service": "worker",
+        "tag": "strataai-worker:local-96e9d88ac7a34e84ec67fb2df043979233b60c59-4c70e2f0-4223-4d9c-a69d-55a8c556e170",
+        "id": "sha256:64d54ef13ddfd0d1eb20dea4d94253ef9a84d224d86891b30b1176db4d095793",
+        "os": "linux",
+        "architecture": "amd64",
+        "labels": {
+          "org.opencontainers.image.created": "2026-11-02T01:32:55.255Z",
+          "org.opencontainers.image.revision": "96e9d88ac7a34e84ec67fb2df043979233b60c59",
+          "org.opencontainers.image.source": "https://github.com/nickmailhot-lang/StrataAI2",
+          "org.opencontainers.image.version": "0.1.0-local.t96e9d88ac7a34e84ec67fb2df043979233b60c59"
+        }
+      }
+    ],
+    "scope": "Local exact-tree linux/amd64 emulated runtime images; not hosted immutable production release qualification"
+  },
+  "cleanup": {
+    "at": "2026-11-02T01:54:23.205309+00:00",
+    "sourceUnchanged": true,
+    "runtimeLockAbsent": true,
+    "ownedWrapperAbsent": true,
+    "ownedRuntimeAbsent": true,
+    "ownedContainers": [],
+    "ownedVolumes": [],
+    "providerPort19090Absent": true
+  },
+  "retainedPreparationFailure": {
+    "artifact": "runtime-wrapper-preparation-failure.json",
+    "result": "Failed before runtime/helper statements executed",
+    "cause": "New private Python wrapper else1 token syntax error; original file retained, corrected to else 1 and AST parsed before first actual runtime launch.",
+    "functionalTestsExecutedDuringFailure": 0
+  },
+  "privateArtifactCatalog": [
+    {
+      "path": "exact-images-proof.json",
+      "sha256": "ef861bd0865abcfa8ce1905655ac8dd732d65159cee72f73cba33f7967a016a2",
+      "bytes": 2228,
+      "private": true
+    },
+    {
+      "path": "owned-cleanup-proof.json",
+      "sha256": "c56b08409d124b541058efbe1144a71f83f4beac868f883323ad9f9b27e885c6",
+      "bytes": 245,
+      "private": true
+    },
+    {
+      "path": "run-runtime-attempt1.py",
+      "sha256": "b24446e0dad9ca38e63c253098b8c15c5a8ccf14d89fcd766ca7cb40b1c557cf",
+      "bytes": 4470,
+      "private": true
+    },
+    {
+      "path": "run-runtime-preparation-failed.py",
+      "sha256": "066d906f9adf33f1018d04ef3189b701d228e8b11543cde0b872d5eedfcf7132",
+      "bytes": 4468,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/board-invitation-link-fixtures.json",
+      "sha256": "4db28024a2f23d5d78787929eb5e155c8d9f459cd694f285ef5a0fed67723d13",
+      "bytes": 998,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/board-member-directory-fixture.json",
+      "sha256": "a0893e83a31285d3467e3cb700f4528cfd8cafe84bf3758f3dee8471cf59e6c3",
+      "bytes": 2659,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/artifacts/browser-performance/kanban.json",
+      "sha256": "0cb446b94692cc01edca30a79d29b1ba2428437766bcdef81cc1f84015d93f71",
+      "bytes": 156,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/playwright-report/index.html",
+      "sha256": "0ef441b419104f03568cbc98ce435c79c9486023d87d2a13b000be094a52a58a",
+      "bytes": 610919,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/test-results/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+      "sha256": "b75f02aecb4e5ac708c0f649dc670994079986d4940d057ac5e6a963253b4a69",
+      "bytes": 59855,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+      "sha256": "819fea29d78f1244c9a96361b6b03abc21072e768d78217ab48956b7772639a7",
+      "bytes": 98325,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+      "sha256": "b828b2efe33c8c47aa33c9c9a953001ae0935dcbcbf28ce93efa3d472fd4f1f7",
+      "bytes": 60054,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+      "sha256": "24339b1b2e93895fc15dcf5b13b3e4bbbb3320f1b181696201c442c63603f5c9",
+      "bytes": 36252,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+      "sha256": "b507626c0e7f37d9d88ee32c5ced2e5d1650a5240456d2a229108412931172f4",
+      "bytes": 41776,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+      "sha256": "a0ab5cdb2ce03ec15d01da024826be6435bc2bcee1fabad0b1684128e1c38887",
+      "bytes": 30612,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/identity-provider.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/invitation-link-fixtures.json",
+      "sha256": "9e640f680e85e9dd6aa185cca09d7cc5c9a8763fd5da4c05645817fbf60db556",
+      "bytes": 800,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/invitation-signup-fixtures.json",
+      "sha256": "8c4ba6617219dab7870a174bf30e51e4617313b70e0503c7c211680b1f0c05ca",
+      "bytes": 835,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-0.log",
+      "sha256": "e7499d25126fa8790f6084041789fc844667322ca3ff23b320bad4d06f9bcaec",
+      "bytes": 3825,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-1.log",
+      "sha256": "ef876948d512833a2b7761fa1567724381495c43d9721181a11459714ab170b0",
+      "bytes": 14268,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-10.log",
+      "sha256": "b78330166ffd996e6a423e22ae85ccc7ce416e8d61e2a0e4eb74d7e5c1b1c021",
+      "bytes": 71,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-10.sh",
+      "sha256": "b4d5838a477e57b0190012e969131056803c2b621b58465235403d7ee300f222",
+      "bytes": 473,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-11.log",
+      "sha256": "82ea932f86ad6519f407212a708b202c356e5fc71e43a7272c3902ab505fd897",
+      "bytes": 95,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-11.sh",
+      "sha256": "b5e290e2debe34b0943ae7b15e700d4d0d674bd66ca63a17b3172c22d0792bdd",
+      "bytes": 33,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-12.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-12.sh",
+      "sha256": "256f5e71a8f66210943900c91a55f3c1715128f79df577a59de6cc3db163d1a0",
+      "bytes": 197,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-13.log",
+      "sha256": "32ffc96d5d5a901b54b9078c96f9f5c8eddcf908bed7050f97a7c5bebcab7a30",
+      "bytes": 1189,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-13.sh",
+      "sha256": "6d31c5ee014e79fff34b6d38c98a6cf4961375bb79aa33cb11429bf9eb9dc3db",
+      "bytes": 274,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-14.log",
+      "sha256": "bc369364491f715b9269f1463ad696d58cace7175f9507e4bb2851ddf4ed4f2b",
+      "bytes": 4177,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-14.sh",
+      "sha256": "578195dc202cfa64d8a11bbf87618c126aed50bcba286f90468b4f7ffb840232",
+      "bytes": 47,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-15.log",
+      "sha256": "d3846f2a3934b6a497e132f6610f5ddc1ede090511fa6dd8c0dee3210366f909",
+      "bytes": 3609,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-15.sh",
+      "sha256": "5ffe23e318f597981e651c6a13ea75ce5245bc1b9322d2135ce39a1f647ef82d",
+      "bytes": 44,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-16.log",
+      "sha256": "85d21d74667fcdbbf1c829e5e87ff18282085879b2e10d818db2a7458f2df920",
+      "bytes": 461,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-16.sh",
+      "sha256": "6240bf6f1ffa778b6795316d9a1fc8184a4409636a5dd87494e723696accda87",
+      "bytes": 34,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-17.log",
+      "sha256": "f5cf46c5bd75e2d099acd0e85fe8b903553cf2daa2b214e6fb37d5644883ef88",
+      "bytes": 163,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-17.sh",
+      "sha256": "3f12c62c33ec3cc77097fc89f4782b7ad00bf52be4041d2308169cee8f10f578",
+      "bytes": 47,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-18.log",
+      "sha256": "2597a72e92aede7f900c0f6e2e01aff0577730450c1e15d07b24945805b072a1",
+      "bytes": 552,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-18.sh",
+      "sha256": "3b0d2629e4c84002bf60ba0f629c1c591b2d97893cee422b0804e77f9fcc3223",
+      "bytes": 41,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-19.log",
+      "sha256": "56e1dc4dfee53f6859c0c8eb627fa8d426c3ce4b03adab7628cfcc739bf2bad5",
+      "bytes": 110,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-19.sh",
+      "sha256": "a9edbf008cadab6b96900f77f1d9e029abad959a0f29b30df49307e7fd216cd4",
+      "bytes": 56,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-2.log",
+      "sha256": "a7f95c9dfedc285d9c585c0d1abbeb04d04b49c2f0ebddf1c39a2df7eeb727a8",
+      "bytes": 14692,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-20.log",
+      "sha256": "d0891f71a4cfb5816cf9b18015bad6426e8be8b7a7b693adf586ded1306299cd",
+      "bytes": 105,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-20.sh",
+      "sha256": "a6dff798120c9ea5df54a0d2a4410c5aa0b58beba6840abbd13b8af1cfbccf55",
+      "bytes": 45,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-21.log",
+      "sha256": "c326351f1203f57a2116d5292afca5b68964c2424afefb6e1aafac644faa4404",
+      "bytes": 114,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-21.sh",
+      "sha256": "58b5183e631e64c10f89c37cd5b2c3705f9158386b417810e14867b74fc752d4",
+      "bytes": 453,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-22.log",
+      "sha256": "da501cb974ac7fcefc67fa1ea81ed0f914ace9bcc6669d3dfcd002e7998c76e4",
+      "bytes": 1402,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-22.sh",
+      "sha256": "7ac9027d72de2d780e510d7e0bb45319ccd2250948c2e361c911d6f3dc927fdd",
+      "bytes": 223,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-23.log",
+      "sha256": "e3bb570e5b945ccfe46f72b0eecc890d6277dff4e5859c9058a5e23fb361ee00",
+      "bytes": 792,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-23.sh",
+      "sha256": "6d0a4ca466a53b91274601c5db385d92e843133b3dad79e43248f47cf1da6a3c",
+      "bytes": 1007,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-24.log",
+      "sha256": "435f57c2bbf3165a64b29496d26455579cabffa256901708e0c254aa86af303c",
+      "bytes": 1441,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-24.sh",
+      "sha256": "af0293cfa6c6cc03fce06761bc47a8ecf154b43f36e01cf74469113dd48b74a9",
+      "bytes": 39,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-25.log",
+      "sha256": "5a01acf2e7ea913402849698a004d99dcfdcbd6f9404c723b1f2e654d7927762",
+      "bytes": 280,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-25.sh",
+      "sha256": "cedf95ad58535aff1edbad2e2bf505088761948e804b23e4252a0f13f64f4863",
+      "bytes": 123,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-26.log",
+      "sha256": "1658d41b8360608d7550cf732c3d0c20f8e47647a76acee446b882473689a63a",
+      "bytes": 3075973,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-27.log",
+      "sha256": "8a61b3f0ef036188ce5cadb6f033f310b56e1b72faae3e973c96a7d0281fa6bd",
+      "bytes": 2175,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-3.log",
+      "sha256": "4409438e618f0f742a9bdff547f653a67bf4780df6baaba1adbde0d187786173",
+      "bytes": 205,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-4.log",
+      "sha256": "dc35dba66a85e401370758bc38d8f4e5b75d741d81a3f90b456aa7c054d2f017",
+      "bytes": 4061,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-4.sh",
+      "sha256": "38b70d24fa5e686470a243112d5d72d9ddb11de6b311c44100116dcbbb0bc507",
+      "bytes": 496,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-5.log",
+      "sha256": "6a13d450654bd7ffe41bbd8bc30cdc6e05c330c92b24e677240da9b53f99d558",
+      "bytes": 26886,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-5.sh",
+      "sha256": "194df8b0951f9636b0a10ad9bc5706ed021066a81ca93dbcf26a73de22c5194c",
+      "bytes": 35,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-6.log",
+      "sha256": "a661ca16221bb5a8f8865835d5a68bcdb240017b9d808b9a7101d79b0d347981",
+      "bytes": 808,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-6.sh",
+      "sha256": "32078c14ac6aa40c10e4afeece6aadd4a47f874640aa34926d28370b8912dbf8",
+      "bytes": 42,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-7.log",
+      "sha256": "e1282c7ee74b3d0a49557c1d7235529d399f4b550f10afe2dd8badad64ca4266",
+      "bytes": 77,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-7.sh",
+      "sha256": "d4abbbaa1cf6c3551de2c71725fee9e36ab54214dabb17189ce8ecf48c1fca53",
+      "bytes": 44,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-8.log",
+      "sha256": "cedd8054062e982a6e2316e4f56cee3d0814b4b48b6ce6bf0e67a0a364926047",
+      "bytes": 105,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-8.sh",
+      "sha256": "9f772c2092618812430c686adda160ca85bc7ced7544863914f9ee19bb4a666e",
+      "bytes": 57,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-9.log",
+      "sha256": "e7fe50c9c60dbcc04fcea6a482dac3d6508fdc78737d63b6c579ec6c4bd76f4d",
+      "bytes": 84,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime-9.sh",
+      "sha256": "140b1ecefb6d3f84e8f97f0db4c25d034b799feba2d9a8b64e2a48e10a843760",
+      "bytes": 54,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1/runtime.env",
+      "sha256": "b1000c88fd230dee3409e102df49d5be89fc2d52a90e076c4636eebcd8f58257",
+      "bytes": 1170,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1-launch.log",
+      "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5",
+      "bytes": 1909,
+      "private": true
+    },
+    {
+      "path": "runtime-attempt1-status.completed.json",
+      "sha256": "ed7609bc242aa9fd9ac40557296485c82fb86f068750d11df3628ffa42e972a3",
+      "bytes": 3639,
+      "private": true
+    },
+    {
+      "path": "runtime-wrapper-preparation-failure.json",
+      "sha256": "f16decd752b7518cda8b22ddae0b35210a83a478ae31b2a29ca4579852e582b4",
+      "bytes": 459,
+      "private": true
+    }
+  ],
+  "recordReconciliation": {
+    "existingTask": "PRD-15-VS-02-T-02",
+    "existingTest": "PRD-15-VS-02-T-02-TEST-01",
+    "action": "Add scoped canonicalValidation only; keep existing implementation/localValidation/integration/history/state and broad testResult Not Run unchanged. No new implementation or duplicated task.",
+    "pendingBranches": "PR139/140/141/142 source and canonical histories preserved separately; this run tests mergedmain only, not their unmerged changes."
+  },
+  "limitations": [
+    "Selected real-service validation is not a complete full-sanity/nightly/exact-production qualification. Full nightly and mandatory exact-candidate suites remain unchanged.",
+    "Handle and selected-mention tests cover 1280/390 only; broader widths/200%/all roles/cross-tenant/Portal/manual assistive-technology acceptance remain separate.",
+    "No new handle validation-field/error-association assertion is inferred from these original guarded-recovery cases; earlier dedicated local field evidence is retained separately.",
+    "The original baseline captures are retained by digest; no new manual visual or screen-reader acceptance claimed.",
+    "No product/MVP/parent Done claim or automatic new PR merge."
+  ],
+  "productionQualified": false,
+  "productMvpAcceptance": false
+}

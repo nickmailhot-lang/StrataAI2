@@ -1,0 +1,1987 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-02T07:07:42.699408+00:00",
+  "sourceRevision": "eb9515e4545b6c51a5990e40714da2327a4cbcdf",
+  "sourceTree": "2c8ba7dd477ef6a448022e168551d6a0124eea17",
+  "baseRevision": "bf64639c81632e63eaecfe401f1a6f248f422b22",
+  "scope": "Owned PRD15 PR140-145 combined without copying pendingPR147. Preserve all original source/history/evidence; bounded history-focus indicator correction follows genuine native CSS red. Feature/scoped acceptance only.",
+  "incoming": [
+    {
+      "pr": 140,
+      "head": "d58944b6f1a54a50a5113ba43bab668039642509",
+      "tree": "ca98c3f504a53fa03b21edb91f891953f87c9781",
+      "changedPaths": [
+        "apps/web/src/features/kanban/CommentMentionPicker.focus.test.tsx",
+        "apps/web/src/features/kanban/CommentMentionPicker.tsx",
+        "docs/delivery/evidence/mention-picker-focus-20261101.json",
+        "docs/delivery/progress.json",
+        "docs/ux/delivery-report.md"
+      ]
+    },
+    {
+      "pr": 141,
+      "head": "19c3bda544678b7fc3ba9b9e71ee6ceacff6de50",
+      "tree": "edf308dc6505d4eba9e47f668a28f5b5f683a345",
+      "changedPaths": [
+        "apps/web/src/features/kanban/CardCommentsControl.tsx",
+        "apps/web/src/features/kanban/CardCommentsControl.validation.test.tsx",
+        "docs/delivery/evidence/comment-validation-20261101.json",
+        "docs/delivery/progress.json",
+        "docs/ux/delivery-report.md"
+      ]
+    },
+    {
+      "pr": 142,
+      "head": "a3f15a35e3295c8317905a282852507f1a3d7ebf",
+      "tree": "22f7e6529b0570866d6decee77e4c0cf66a3b531",
+      "changedPaths": [
+        "apps/web/src/features/kanban/ActivityHistoryControl.tsx",
+        "docs/delivery/evidence/activity-history-focus-20261101.json",
+        "docs/delivery/progress.json",
+        "docs/ux/delivery-report.md",
+        "tests/browser/activity-history-focus.spec.ts"
+      ]
+    },
+    {
+      "pr": 143,
+      "head": "86e7a54aea749fe956942c429192208bc05a053a",
+      "tree": "ad0b776297e396bf906436410312469958c87e07",
+      "changedPaths": [
+        "docs/delivery/evidence/mention-handle-canonical-20261102.json",
+        "docs/delivery/progress.json",
+        "docs/ux/delivery-report.md"
+      ]
+    },
+    {
+      "pr": 144,
+      "head": "7e5e5551efa05124b0bbf9311905c05fbdab7312",
+      "tree": "7986bf5224f7130e30a7e25c3d64fcf434cdca00",
+      "changedPaths": [
+        "docs/delivery/evidence/mention-handle-field-browser-20261102.json",
+        "docs/delivery/progress.json",
+        "docs/ux/delivery-report.md",
+        "tests/browser/account-mention-handle-validation.spec.ts"
+      ]
+    },
+    {
+      "pr": 145,
+      "head": "1677faef5f1cdf8328db3b756a8115cfdcfbc3dd",
+      "tree": "ef43841bd75cb260df8d871ecf0c1b1f9263af31",
+      "changedPaths": [
+        "docs/delivery/evidence/mention-handle-account-boundary-20261102.json",
+        "docs/delivery/progress.json",
+        "docs/ux/delivery-report.md"
+      ]
+    }
+  ],
+  "integration": "Every staged candidate qualified before its normal hooked two-parent merge; all ordered API parents/tree/blobs fetched and source/main ancestry retained. Lossless record/history/report unions; all6original heads remain ancestors. Target-main integration not yet performed.",
+  "correction": {
+    "requirement": "PRD15COMMENT-FR011/TC11/12; section16 visible keyboard focus; UXA03/04/05/06/08",
+    "originalFailure": "Initial20capture review found2missingoutlines; new native CSS diagnostic9pass1fail:768px200%Board active/nativefocusvisibletrue, MUIclassabsent, outline0px persists5026ms. FailedPNG/trace inspected.",
+    "implementation": "Existing owned DOM target/guards unchanged. MUI public ButtonBaseActions.focusVisible synchronized only when browser native :focus-visible alreadytrue. No layout/theme/requests/authority/target/pointer-policy changes.",
+    "nativeResult": "10completeoriginal Board/Card cases Passed16.3s, actual2pxsolid outline/center-hit/Axe/all4widths+tablet200%, exact4protectedreads/no businesswrites; all20actualcaptures viewed. Controlled HTTP/SignalR fixture, separate from canonical acceptance.",
+    "targeted": "35original cases3completefiles passed3.22s; web/browsertypes/lint/build passed; no test bodies removed."
+  },
+  "local": {
+    "run": "1793600855570-e4d9ba2a",
+    "passed": true,
+    "stages": 7,
+    "durationMs": 412582,
+    "webFiles": 232,
+    "passingCases": 3148,
+    "originalCapacityDeferred": 24,
+    "compiledSyntheticUI": 2,
+    "receiptSha256": "9801baaf5c687aded94d6a5f006289e69933956cf685b655ab628db42b101e7e"
+  },
+  "security": {
+    "completeFreshJSCodeQL": true,
+    "findings": 0,
+    "rules": 87,
+    "status": "codeql/prd15-focus-indicator-20261102/status.json"
+  },
+  "canonical": {
+    "run": "382c7bbe-e81a-414d-b92d-18eb4e4d05b3",
+    "durationSeconds": 1693.578,
+    "completeFiles": 6,
+    "passed": 24,
+    "skipped": 0,
+    "source": "Exact staged tree2c8 before normal commit; fetched API sourceeb9515e has identical tree. Not a fictitious committed revision during local runtime.",
+    "originalReportInventoryMatched": true,
+    "exactLinuxAMD64ImagesAndLiveBindingsVerified": true,
+    "ownedCleanupVerified": true,
+    "all16ActualCapturesViewed": true,
+    "securityRolesPermissionsAbuseAnd143UnsafeRoleRefusals": "Original checks unchanged and passed."
+  },
+  "retainedHistory": [
+    "All original PR140-145 histories/evidence/normal backups; current intermediate merge receipts/parents; oldbase advancement refusal and preserved pendingtree; strict lossless union/schema/refusal preparations.",
+    "Old004 combined CodeQL0/87/native10limited/canonical24 passes retained as historical scope; manual outlinefinding never erased.",
+    "CSSdiagnosticattempt1 importrefusal before anytests; correctedattempt2 genuine9pass1fail retained; no blindrerun/assertionweakening.",
+    "Earlier component/native setup failures and PR135-145 histories remain in imported public evidence and common private task directories.",
+    "New tracking serializer inlineSyntaxError refused BEFORE anyledgerwrite; originalbytes unchanged, private preparation record retained, corrected readablehelper syntaxchecked. Not a functional failure."
+  ],
+  "limitations": [
+    "Fresh hosted selectedCI/all5CodeQL/review diagnostic/artifact qualification and target normal merge still pending.",
+    "Feature/scoped real-service checks do not replace full nightly or each exact production-candidate immutable qualification.",
+    "Broad Test NotRun/criteriaUnverified/parentstates remain; no product/MVP/full acceptance inferred.",
+    "Pending peer PR147 source/records remain separate and unmerged.",
+    "Only hashes of private logs/traces/fixtures are public; no raw credentials or fixture environments."
+  ],
+  "immutablePrivateArtifacts": [
+    {
+      "path": "codeql/prd15-focus-indicator-20261102/full.sarif",
+      "bytes": 1054093,
+      "sha256": "72893ebb59a38b36e1c558f6ff8e77c5f3ae8c869e9374b5808ded2ca23a74de"
+    },
+    {
+      "path": "codeql/prd15-focus-indicator-20261102/launcher.log",
+      "bytes": 238180,
+      "sha256": "539859a211845e4d0c47395dc0497cfe8774150ea5da82ca8112f73e1bad69ea"
+    },
+    {
+      "path": "codeql/prd15-focus-indicator-20261102/status.json",
+      "bytes": 2573,
+      "sha256": "ede86e673ec729c65fb5cdad9eab849f13bfca98c92590c00fee3781f67e3b77"
+    },
+    {
+      "path": "codeql/prd15-polish-integration-20261102/full.sarif",
+      "bytes": 1054094,
+      "sha256": "332ddf010efc7f9e5e075fd3105526578f9ec77095fd90f4b61bffed43faf5d9"
+    },
+    {
+      "path": "codeql/prd15-polish-integration-20261102/launcher.log",
+      "bytes": 238191,
+      "sha256": "9fd6748d971ec51f34c0887a665bc2c2bd1b0452014867a81e7046d16c6748e0"
+    },
+    {
+      "path": "codeql/prd15-polish-integration-20261102/status.json",
+      "bytes": 2531,
+      "sha256": "6928fc409f61390a5bb28c9c0e67b1e59ac3d1e69ecbd8eede5085bd1d2cc600"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-html-report-proof.json",
+      "bytes": 7742,
+      "sha256": "62075e7f7d173999b47b925f9bd4aaf43e60e7a211ae708d4a6b2e39f13c3fe9"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-inventory-proof.json",
+      "bytes": 4833,
+      "sha256": "080c322815e013ba311f7e8385c96793e645542dcae17184b91718f61338eb6e"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-owned-cleanup-proof.json",
+      "bytes": 747,
+      "sha256": "5e18dfa02c4587912748e8f696828e6bf11693abd38d9264e234b06bca78af26"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/board-invitation-link-fixtures.json",
+      "bytes": 997,
+      "sha256": "9cba0475a8ba38baa93eec0fe248fa9393eafe2579712650d8a79eb92a5a10ff"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/board-member-directory-fixture.json",
+      "bytes": 2659,
+      "sha256": "0c67997b49ce8fcc3614fe6a3fc9b5deb0bd5f1626b79a7818ef7278e8aedf53"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/artifacts/browser-performance/kanban.json",
+      "bytes": 156,
+      "sha256": "4de5d71dcdf8cfe83f2f85149327b53d749fe81f37c94d3557be42a3dfedc895"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-228d8-te-save-and-return-at-390px/invalid-handle-field.png",
+      "bytes": 70221,
+      "sha256": "48e29d72872bc4c12b95da7117a15f92d5e0791eacea5ab483fbda043bdfb5c7"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-228d8-te-save-and-return-at-390px/persisted-handle-field.png",
+      "bytes": 71490,
+      "sha256": "8248223b9da1771e76bbb5c590bed7df4dafea29f2e74d19479df2c7d79b2851"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-277a4-te-save-and-return-at-320px/invalid-handle-field.png",
+      "bytes": 73816,
+      "sha256": "9df82c451dafc63da21faff92258328d74000533c8f2ef40c2a959a6b94f2c6f"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-277a4-te-save-and-return-at-320px/persisted-handle-field.png",
+      "bytes": 74912,
+      "sha256": "483b42c6f84aa131afc19a93257c890109b2c683488aa3442b470a44b16ba615"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-31cc1-e-save-and-return-at-1280px/invalid-handle-field.png",
+      "bytes": 95174,
+      "sha256": "c157be333f977127191101f481a86be1eac954ba0cfe05be9fd2eb96aae9605f"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-31cc1-e-save-and-return-at-1280px/persisted-handle-field.png",
+      "bytes": 96149,
+      "sha256": "219fc18882af7e315785cddd80c606fe9b836be9a1b015929342f6ac39978b48"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-41c8f-te-save-and-return-at-768px/invalid-handle-field.png",
+      "bytes": 82924,
+      "sha256": "6ec317e757a3bef8791d710ff0744af8f27b1d35271d6eb9ca3ab130102815dd"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-41c8f-te-save-and-return-at-768px/persisted-handle-field.png",
+      "bytes": 84226,
+      "sha256": "8bbdc60cafdee709312bd094659992dcb32c552c006336487082dd34c5f77f08"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-6afc6-turn-at-768px-with-200-text/invalid-handle-field.png",
+      "bytes": 169271,
+      "sha256": "cd7f5faf0826edeafb91c6feb3d4465c8b509a4cd5728fe0962218fe8d83cd0e"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-6afc6-turn-at-768px-with-200-text/persisted-handle-field.png",
+      "bytes": 170846,
+      "sha256": "a31ba909d519c165dc39ff786f6d195d6bc9a812e7b9e3ce3c4e8ec81128666b"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+      "bytes": 60501,
+      "sha256": "906814edae6d10d3ff803efba5c92b663c7cb4eb4dfae98e0b971b8c26dbd3e8"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+      "bytes": 98325,
+      "sha256": "819fea29d78f1244c9a96361b6b03abc21072e768d78217ab48956b7772639a7"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+      "bytes": 58746,
+      "sha256": "1ccbe50cb5e5cc9a3565c237b501c5dd885da16faaa8d285460539c9e11bd695"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+      "bytes": 34438,
+      "sha256": "cddf6da0f5aec459352ba974f3b2d50064b7f634f0989438d56af6259f587280"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+      "bytes": 41776,
+      "sha256": "b507626c0e7f37d9d88ee32c5ced2e5d1650a5240456d2a229108412931172f4"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+      "bytes": 30612,
+      "sha256": "a0ab5cdb2ce03ec15d01da024826be6435bc2bcee1fabad0b1684128e1c38887"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/identity-provider.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/invitation-link-fixtures.json",
+      "bytes": 794,
+      "sha256": "0831afa75ca988a9176efd162c9d0da5a3b3c1bcd4b8d273e8eebcd7080d5977"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/invitation-signup-fixtures.json",
+      "bytes": 833,
+      "sha256": "388a519132f558b23cbc61cfba5b49055801e8475fd91b86e0f5e6aa2e234f2c"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-0.log",
+      "bytes": 3898,
+      "sha256": "93f96fcb29c73c81a006bbf092721dd4c1edf16004f2e97e6637fec445a6798a"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-1.log",
+      "bytes": 14262,
+      "sha256": "a0ad407ec5ae7d35d02e4c78ba2a95a79205a2aa9aa37e0b620c902da1898460"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-10.log",
+      "bytes": 71,
+      "sha256": "b78330166ffd996e6a423e22ae85ccc7ce416e8d61e2a0e4eb74d7e5c1b1c021"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-11.log",
+      "bytes": 95,
+      "sha256": "82ea932f86ad6519f407212a708b202c356e5fc71e43a7272c3902ab505fd897"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-12.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-13.log",
+      "bytes": 1189,
+      "sha256": "2c02ebbaa1978abe87e40f0579f346e06f54366475fb1649e868aac68944d53f"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-14.log",
+      "bytes": 4177,
+      "sha256": "885a0885a34efedad6886da134564f3c61f4ca4012c338dfd0fff484571af018"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-15.log",
+      "bytes": 3609,
+      "sha256": "0055b345e48b4799643a72b7a21e92db36911593f2c972d563aeff3c8e16c93b"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-16.log",
+      "bytes": 461,
+      "sha256": "85d21d74667fcdbbf1c829e5e87ff18282085879b2e10d818db2a7458f2df920"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-17.log",
+      "bytes": 163,
+      "sha256": "f5cf46c5bd75e2d099acd0e85fe8b903553cf2daa2b214e6fb37d5644883ef88"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-18.log",
+      "bytes": 552,
+      "sha256": "2597a72e92aede7f900c0f6e2e01aff0577730450c1e15d07b24945805b072a1"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-19.log",
+      "bytes": 110,
+      "sha256": "56e1dc4dfee53f6859c0c8eb627fa8d426c3ce4b03adab7628cfcc739bf2bad5"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-2.log",
+      "bytes": 14697,
+      "sha256": "21817411695ae0686ef2bdedd2ec9d2281e9d8e4998f66f3584b230bf5530422"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-20.log",
+      "bytes": 105,
+      "sha256": "d0891f71a4cfb5816cf9b18015bad6426e8be8b7a7b693adf586ded1306299cd"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-21.log",
+      "bytes": 114,
+      "sha256": "bfd8ea10cf020016f0809d5d9c7f79f22af5e9678adcad43454090eb643e67e4"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-22.log",
+      "bytes": 1402,
+      "sha256": "a0cff1dce588f8e8430a82efeafb26bfcef6d0301fd96e7c6adc313b30fd57e1"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-23.log",
+      "bytes": 792,
+      "sha256": "c75486bbfa85d18b536e342b022dc02681e5aae1b63ad104bf713a64ee78ea8f"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-24.log",
+      "bytes": 3874,
+      "sha256": "534b56b3ece107ac462f84b5f87388a96c8058dd82b8247cb11a235c9debc921"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-25.log",
+      "bytes": 280,
+      "sha256": "5a01acf2e7ea913402849698a004d99dcfdcbd6f9404c723b1f2e654d7927762"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-26.log",
+      "bytes": 5718612,
+      "sha256": "e6e717e8064aa8c3f3fe997032375bacd614a0e76d6731643cd3664c9d308b34"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-27.log",
+      "bytes": 2175,
+      "sha256": "d1b38dcacadd219fdea49bac1656bcf9a9b2302b0b28620a8427fcaa1309938b"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-3.log",
+      "bytes": 205,
+      "sha256": "4409438e618f0f742a9bdff547f653a67bf4780df6baaba1adbde0d187786173"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-4.log",
+      "bytes": 4061,
+      "sha256": "8825451f1b54b83f36bb1c3ea3b7ac708b6b13cfab58565072aa8b2e230f35e6"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-5.log",
+      "bytes": 26886,
+      "sha256": "4038ef4069552ad5d452b15890ec3ca8e4fd7f7fd7193d35f612ac1968f8501c"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-6.log",
+      "bytes": 808,
+      "sha256": "a661ca16221bb5a8f8865835d5a68bcdb240017b9d808b9a7101d79b0d347981"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-7.log",
+      "bytes": 77,
+      "sha256": "e1282c7ee74b3d0a49557c1d7235529d399f4b550f10afe2dd8badad64ca4266"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-8.log",
+      "bytes": 105,
+      "sha256": "cedd8054062e982a6e2316e4f56cee3d0814b4b48b6ce6bf0e67a0a364926047"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-runtime-attempt1/runtime-9.log",
+      "bytes": 84,
+      "sha256": "e7fe50c9c60dbcc04fcea6a482dac3d6508fdc78737d63b6c579ec6c4bd76f4d"
+    },
+    {
+      "path": "prd15-polish-integration/canonical-visual-review.json",
+      "bytes": 6454,
+      "sha256": "70714a3afdd71aec787137a70fb7c4a46aa3f86c2f385e60bf6a22ac0b61c459"
+    },
+    {
+      "path": "prd15-polish-integration/combined-candidate.json",
+      "bytes": 2897,
+      "sha256": "69f1f4fe54f395a20dc74e5e8ac94c042111531dd05dc8e39051dfacd2118e66"
+    },
+    {
+      "path": "prd15-polish-integration/combined-security-status.json",
+      "bytes": 407,
+      "sha256": "2a1cccd7f86d03e2e8ebd259a4a5ff0c301b0a561ca982e3493680179dcb24a2"
+    },
+    {
+      "path": "prd15-polish-integration/combined-source-history-attempt1-schema-refusal/failure.json",
+      "bytes": 360,
+      "sha256": "50cd032a299df552d816f281159b558288356d570adeb6db9b86b584c62a24b3"
+    },
+    {
+      "path": "prd15-polish-integration/combined-source-history-proof.json",
+      "bytes": 6846,
+      "sha256": "858eb77a4f81cfd2d9fd5e8ce55b03ee83bfe822eb7a58550c9f66f07a5643e6"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-candidate.json",
+      "bytes": 2187,
+      "sha256": "409e2e21c510f76ce14952085f37993acd8f9edf737ec5c4b05d17e4354b3eca"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/board-invitation-link-fixtures.json",
+      "bytes": 1000,
+      "sha256": "7c7aa08cec5275cb954fc33e22c0dafeb176b55727ad36ce8ce577b0bdc48522"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/board-member-directory-fixture.json",
+      "bytes": 2657,
+      "sha256": "d6c576cd4532e3e98050921be457d2899f9ec03628e76cfece6d69a7fdb05ca2"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/artifacts/browser-performance/kanban.json",
+      "bytes": 156,
+      "sha256": "d89f2be2440510152891af639230c2afef10a6f6c4a0525f17cff830a37749d7"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-228d8-te-save-and-return-at-390px/invalid-handle-field.png",
+      "bytes": 71288,
+      "sha256": "eb934eb2db93ed7825562ec032eb139a94fd43a0a43673c30a8fb539db3c46ce"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-228d8-te-save-and-return-at-390px/persisted-handle-field.png",
+      "bytes": 72506,
+      "sha256": "c9d5047f3265f7ed6a66182fcc8ed1cd689e270d584cae4c01c13ac5622bcbe6"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-277a4-te-save-and-return-at-320px/invalid-handle-field.png",
+      "bytes": 74474,
+      "sha256": "0e592118f0089e6301d6d3ee0e10bbcece781378922049478a4c4b79641e66d3"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-277a4-te-save-and-return-at-320px/persisted-handle-field.png",
+      "bytes": 75335,
+      "sha256": "cbab5b487ea54a3ef5ce594782d9592817c8762a439f00b5d2466fa12b42df4d"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-31cc1-e-save-and-return-at-1280px/invalid-handle-field.png",
+      "bytes": 94890,
+      "sha256": "9cd0da59216264da3c83e424ac5dd93fd9da8694deaae2697034af599269b175"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-31cc1-e-save-and-return-at-1280px/persisted-handle-field.png",
+      "bytes": 96322,
+      "sha256": "618e51b1a9560220d35461e22f03216182d16d0cd8244b3e1600fe75b0247367"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-41c8f-te-save-and-return-at-768px/invalid-handle-field.png",
+      "bytes": 82700,
+      "sha256": "14abb122d72d098550b602bd2f0af6a2e6ce55054851754cb1948c4b053fac40"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-41c8f-te-save-and-return-at-768px/persisted-handle-field.png",
+      "bytes": 83996,
+      "sha256": "dfc06d856444e7ee50f5b10a2d31be71f87c69956b029eb44561e07556530d70"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-6afc6-turn-at-768px-with-200-text/invalid-handle-field.png",
+      "bytes": 166515,
+      "sha256": "811819c5c2a764e339c9c212955c1f0fb94dc8ee14a92a3d9bf392582e983853"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/account-mention-handle-val-6afc6-turn-at-768px-with-200-text/persisted-handle-field.png",
+      "bytes": 168369,
+      "sha256": "2355cd180af379ed3873bc66b30add32553c788db05bad8ef11fcabd0c48f634"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+      "bytes": 59738,
+      "sha256": "927ed2c9c2712fdacc9f2e45af979cd1ab7d2a2fe5ac9173034e521fc6235b49"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+      "bytes": 98325,
+      "sha256": "819fea29d78f1244c9a96361b6b03abc21072e768d78217ab48956b7772639a7"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+      "bytes": 58445,
+      "sha256": "9152a161029a8a5d79c9959be3a6419838053f4194e70e41a30b0b4f671153af"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+      "bytes": 34334,
+      "sha256": "3675e0298cdf084eda2c5cd54b347a1f79cb1c5971ae57659419eaac573087ae"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+      "bytes": 41776,
+      "sha256": "b507626c0e7f37d9d88ee32c5ced2e5d1650a5240456d2a229108412931172f4"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+      "bytes": 30612,
+      "sha256": "a0ab5cdb2ce03ec15d01da024826be6435bc2bcee1fabad0b1684128e1c38887"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/identity-provider.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/invitation-link-fixtures.json",
+      "bytes": 798,
+      "sha256": "faa5cb00221b64cb1efadf38d435e4bb2822868f78f828bdec0eabe36b35f529"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/invitation-signup-fixtures.json",
+      "bytes": 837,
+      "sha256": "091e3bc5d792fa2306a6cb785eeacee1fb4cc45f15b48e6a63a485164160a46a"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-0.log",
+      "bytes": 3830,
+      "sha256": "07cad7a960e6bb56e8a541d5bdebb7ffbc1d028f18a019b490796e932f8c2a90"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-1.log",
+      "bytes": 14257,
+      "sha256": "720900802148e338d2bf684e10e694be242350ae9ed982371214b5ea8055dab2"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-10.log",
+      "bytes": 71,
+      "sha256": "b78330166ffd996e6a423e22ae85ccc7ce416e8d61e2a0e4eb74d7e5c1b1c021"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-11.log",
+      "bytes": 95,
+      "sha256": "82ea932f86ad6519f407212a708b202c356e5fc71e43a7272c3902ab505fd897"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-12.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-13.log",
+      "bytes": 1189,
+      "sha256": "9e73e55258108b1134e8a3dd7679688d9ded0a67b5686d37527df2b007847067"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-14.log",
+      "bytes": 4177,
+      "sha256": "1b12f59209a1850fa64c1e3ed59ecc510f41870f2817013d3fae584a0d4ef3cb"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-15.log",
+      "bytes": 3609,
+      "sha256": "4faec146d3579fa5897926879ee237c5a26c45a57c25f2e31ce0dd93d27ee0c9"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-16.log",
+      "bytes": 461,
+      "sha256": "85d21d74667fcdbbf1c829e5e87ff18282085879b2e10d818db2a7458f2df920"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-17.log",
+      "bytes": 163,
+      "sha256": "f5cf46c5bd75e2d099acd0e85fe8b903553cf2daa2b214e6fb37d5644883ef88"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-18.log",
+      "bytes": 552,
+      "sha256": "2597a72e92aede7f900c0f6e2e01aff0577730450c1e15d07b24945805b072a1"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-19.log",
+      "bytes": 110,
+      "sha256": "56e1dc4dfee53f6859c0c8eb627fa8d426c3ce4b03adab7628cfcc739bf2bad5"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-2.log",
+      "bytes": 14697,
+      "sha256": "1df8b60c76c6588ca8b9da58a5c23851467af1403f1a7d8241e7f85041dc5ac2"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-20.log",
+      "bytes": 105,
+      "sha256": "d0891f71a4cfb5816cf9b18015bad6426e8be8b7a7b693adf586ded1306299cd"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-21.log",
+      "bytes": 114,
+      "sha256": "c923e9b5295dfee34d6b45acccaf6831d2bd23fb56c639f57effe6f6a4899bbc"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-22.log",
+      "bytes": 1402,
+      "sha256": "53a8971e4acdeb2700a44bf5aa8c128cc25df0f91111f7652b1e62ea399329c5"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-23.log",
+      "bytes": 792,
+      "sha256": "48a665588766825a62e2d48ea9d6d262b046af7c2f16224a78de4b42532a0fbd"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-24.log",
+      "bytes": 3872,
+      "sha256": "a12f1b00176bb5688fb5d0467fa0b6cce4c8ed39a13af441c438286e78bbbc52"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-25.log",
+      "bytes": 280,
+      "sha256": "5a01acf2e7ea913402849698a004d99dcfdcbd6f9404c723b1f2e654d7927762"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-26.log",
+      "bytes": 5649590,
+      "sha256": "4f2ae7aabddcade56231aeab1bcecae930668579189983e7c5225db4aaddd63c"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-27.log",
+      "bytes": 2175,
+      "sha256": "6590b55e69b03b8122490997e17c58d6d15095a00daf45d9a966f23cf949e97b"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-3.log",
+      "bytes": 205,
+      "sha256": "4409438e618f0f742a9bdff547f653a67bf4780df6baaba1adbde0d187786173"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-4.log",
+      "bytes": 4061,
+      "sha256": "dfa9195b6f89843222b057a5d8a6b635dc17b9556e44ba0fcd04abbd0063568a"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-5.log",
+      "bytes": 26886,
+      "sha256": "4038ef4069552ad5d452b15890ec3ca8e4fd7f7fd7193d35f612ac1968f8501c"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-6.log",
+      "bytes": 808,
+      "sha256": "a661ca16221bb5a8f8865835d5a68bcdb240017b9d808b9a7101d79b0d347981"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-7.log",
+      "bytes": 77,
+      "sha256": "e1282c7ee74b3d0a49557c1d7235529d399f4b550f10afe2dd8badad64ca4266"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-8.log",
+      "bytes": 105,
+      "sha256": "cedd8054062e982a6e2316e4f56cee3d0814b4b48b6ce6bf0e67a0a364926047"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-attempt1/runtime-9.log",
+      "bytes": 84,
+      "sha256": "e7fe50c9c60dbcc04fcea6a482dac3d6508fdc78737d63b6c579ec6c4bd76f4d"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-html-report-proof.json",
+      "bytes": 7744,
+      "sha256": "003964ccdd6a0686aff2f4d789502de2f44dbc8ceb2df5883dc2fecbee8d1e24"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-owned-cleanup-proof.json",
+      "bytes": 805,
+      "sha256": "4cd615f0f2ddf08f775871d4d78d6d2d6138fcf7e86c1e1ebcb9bf194ae05892"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-canonical-visual-review.json",
+      "bytes": 6293,
+      "sha256": "08b3adf9fc4f9ac56ea36696e20398e2686004fbe222dfc58169243a246c3f44"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-code-api-identity-proof.json",
+      "bytes": 897,
+      "sha256": "96637dd7b95c610ba92f687f53bb144bd65a053fc7acf3ecf4c8fe1d966459cc"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-code-manifest.json",
+      "bytes": 18672,
+      "sha256": "4dc4f94047e96ce745bf45a498cf98aac260976c2a81762623d888dfbd9fad9b"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnosis-plan.json",
+      "bytes": 2273,
+      "sha256": "852b933f853529d2e00d81510bb7b8f92559561f6cf2a9db7fa19cc7ec76dcfe"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt1/failure-evaluation.json",
+      "bytes": 466,
+      "sha256": "fe5e46770522a3aeb69acbb1de2f6e9382d47ac41cf7b0739495bf91724c3491"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt1/plan.json",
+      "bytes": 717,
+      "sha256": "a8e66c0359f4e28df46a193f3e09d6aba9ef176c1269805bdc8d0071cbef0b91"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt1/probe.log",
+      "bytes": 1761,
+      "sha256": "187d91acca0cb518e1819dda71fdbcf3ffb3726a10a3d88390da82787de0f517"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt1/report.json",
+      "bytes": 5417,
+      "sha256": "9d8e193d8fde825b3e58f4445b0eb90fbb34409052285ad5e67e4c4f8a6cc518"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt1/results/.last-run.json",
+      "bytes": 45,
+      "sha256": "e22df5d0991eb28c09093b1e678b3fa8cd1fab48185d38e67cf79fb6e63ad5ea"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt1/status.json",
+      "bytes": 577,
+      "sha256": "668989bdf52dc64822749bf42fa07a4a62872d50a7962570216a4c146b1de3d1"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/failure-evaluation.json",
+      "bytes": 12550,
+      "sha256": "2e9d78107a8d1544cfedca461ab02543fd316bbf3ee2ae3960ae4fc6c014805d"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/plan.json",
+      "bytes": 1191,
+      "sha256": "e008a9ddde26c78ab9e2f16a484398a8ac2e9d5af9df8ded78d3e54ade54ee8f"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/probe.log",
+      "bytes": 6832,
+      "sha256": "bb71ee3551436cf8c0640bb4408742d5ff8ea1228b5f79122a3bfc7a4441e75a"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/report.json",
+      "bytes": 38685,
+      "sha256": "479cdb20aa885ada6ac3ebe7c2cd8bdaed986a6b47d7dad9c3520cd815ca9a8a"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/.last-run.json",
+      "bytes": 96,
+      "sha256": "27d02526351a323491523bc3619676f50fdd100cf84b563709cc2c838984847c"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-3b7a1-aging-focus-at-390px-text1x/history-first-focus-CARD-390.png",
+      "bytes": 79386,
+      "sha256": "9071aafeb7a2a093e5d79845aed47e263322de86f9d2529efddf4313880212cd"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-3b7a1-aging-focus-at-390px-text1x/history-returned-focus-CARD-390.png",
+      "bytes": 79454,
+      "sha256": "5298a1798d9a314783232fc5844781dab0d87a77be4dd7830e7615993036a24f"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-3b7a1-aging-focus-at-390px-text1x/trace.zip",
+      "bytes": 1629923,
+      "sha256": "282c1f7eb9c76e66da54a2e4146eaf45e2830c880c1f1af4b9eb99ee16042123"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-49626-aging-focus-at-320px-text1x/history-first-focus-BOARD-320.png",
+      "bytes": 67665,
+      "sha256": "f9483f8ca7a36c10a2fc7bc30b4e4762d91ddb3d6742537a565a1a1385011919"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-49626-aging-focus-at-320px-text1x/history-returned-focus-BOARD-320.png",
+      "bytes": 67703,
+      "sha256": "5124f24d22f1618681177c69a5825a27b4af10c5f22ee19539b616eb617843db"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-49626-aging-focus-at-320px-text1x/trace.zip",
+      "bytes": 1879124,
+      "sha256": "b8286645d5a1e7d046fd120247b0bad7dd29adbe681a7cb2125e0614cb1df2c6"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-4ac4f-aging-focus-at-768px-text2x/history-first-focus-CARD-768.png",
+      "bytes": 100961,
+      "sha256": "5500c0005a148b8355be2afe4ba4b98ad8a73e110870eb33012c7d91edd7035d"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-4ac4f-aging-focus-at-768px-text2x/history-returned-focus-CARD-768.png",
+      "bytes": 101117,
+      "sha256": "b1bf9938db89f470c51b8c7c4d86f7c0931b945403886441895b39d3024d524a"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-4ac4f-aging-focus-at-768px-text2x/trace.zip",
+      "bytes": 2510716,
+      "sha256": "8db62431f0d167eabaa29c6e02c9858acbe2edb490c0b7a3b26384b5deb4bfa8"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-56456-ging-focus-at-1280px-text1x/history-first-focus-CARD-1280.png",
+      "bytes": 133445,
+      "sha256": "49e8e7f5505ebb847b50a630a30d545da4bcbfb1eb84352d61a28115b22c4baa"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-56456-ging-focus-at-1280px-text1x/history-returned-focus-CARD-1280.png",
+      "bytes": 133522,
+      "sha256": "17186454069634c1b4fde1beea85b552836e0f202012853fd9225bf8614ea769"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-56456-ging-focus-at-1280px-text1x/trace.zip",
+      "bytes": 2334221,
+      "sha256": "1edd67eb2f19054c6591c028d5967a0f1ca9adda011de4210db990c7a8b8e49a"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-5caf7-aging-focus-at-768px-text1x/history-first-focus-BOARD-768.png",
+      "bytes": 91827,
+      "sha256": "57f5c8815776aef69e1fd0297f771baef52c29570c676d8d828c8fb1fcf36e8b"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-5caf7-aging-focus-at-768px-text1x/history-returned-focus-BOARD-768.png",
+      "bytes": 91862,
+      "sha256": "eaa85d1391f5ba4cc7f8031a91719128437512e003fa7b9bccb5267632f27a30"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-5caf7-aging-focus-at-768px-text1x/trace.zip",
+      "bytes": 2224054,
+      "sha256": "c9af762bf9306a00791b6ca98ac2de625ce3e10972d15a273503882197a0ba89"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-5d6e7-aging-focus-at-390px-text1x/history-first-focus-BOARD-390.png",
+      "bytes": 76931,
+      "sha256": "5f2ac20d1716fe2a3fa7c9f2667a759b823f32a25ddc4b5aaac9a821a53ec513"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-5d6e7-aging-focus-at-390px-text1x/history-returned-focus-BOARD-390.png",
+      "bytes": 77017,
+      "sha256": "b730ef8916b9e5348c5408df5a3aa10ef156910166c5bd321b8ab3cc717d1742"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-5d6e7-aging-focus-at-390px-text1x/trace.zip",
+      "bytes": 1882288,
+      "sha256": "9d60006141d4d98fcbc012651033c43e285964bed300504b70c079b7ea4e96ea"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-66051-aging-focus-at-768px-text1x/history-first-focus-CARD-768.png",
+      "bytes": 91929,
+      "sha256": "030f8d163501cdf24dfa347c603d982d74ec87bce9e42f2e9e91aa996b9c03e3"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-66051-aging-focus-at-768px-text1x/history-returned-focus-CARD-768.png",
+      "bytes": 92001,
+      "sha256": "63bdf292c000bafb76f8f78fbf7a387159e5ca48404d06deb1561752a5fa1fe1"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-66051-aging-focus-at-768px-text1x/trace.zip",
+      "bytes": 1740494,
+      "sha256": "d39f28251b7f54babd5ff29e8cb7c661a433c6eed8aa8f428d23ce6c2a5a72b5"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-6c95f-ging-focus-at-1280px-text1x/history-first-focus-BOARD-1280.png",
+      "bytes": 94681,
+      "sha256": "95477567d7edf8911950dd38be7b8aed12af23bc0313beafbcbe7c42ccfeaf4c"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-6c95f-ging-focus-at-1280px-text1x/history-returned-focus-BOARD-1280.png",
+      "bytes": 94707,
+      "sha256": "31dcec50e6eb9f08a7a79385ccbf2b250d7b821330452367b135799a78073a4b"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-6c95f-ging-focus-at-1280px-text1x/trace.zip",
+      "bytes": 2190789,
+      "sha256": "3b9412a69453b6af025dbd00e6d0393bea925c3338b54c7f53fafc780c81a727"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-9e6cc-aging-focus-at-320px-text1x/history-first-focus-CARD-320.png",
+      "bytes": 66688,
+      "sha256": "cc505aaa78c157c67e05f1d7d73e66b1eeb143b00ddb107d2a52d83bd8f4311b"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-9e6cc-aging-focus-at-320px-text1x/history-returned-focus-CARD-320.png",
+      "bytes": 66690,
+      "sha256": "c0f6c895189b8056ae641fdd4bda19cb2fa0e23497f07f012cba76d3e78567e9"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-9e6cc-aging-focus-at-320px-text1x/trace.zip",
+      "bytes": 1672101,
+      "sha256": "306a41fce719e8cb138f8ceca1d6f18f56832fe969a1190cf3f8b0537541721e"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-fc279-aging-focus-at-768px-text2x/error-context.md",
+      "bytes": 12652,
+      "sha256": "cfa12a67eab1842fb6204d69d90d075aa0c9f5b01294345107fda7737ba2009f"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-fc279-aging-focus-at-768px-text2x/test-failed-1.png",
+      "bytes": 100788,
+      "sha256": "b38a6623bf41e7a6418ff62fd8eb231be919164773b2bf83340968c2423d3e29"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/results/activity-history-focus.css-fc279-aging-focus-at-768px-text2x/trace.zip",
+      "bytes": 655942,
+      "sha256": "d115ea77aca778ff2a3be22c8cd0414046da4aec747221ba78b6d2142a224820"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-diagnostic-attempt2/status.json",
+      "bytes": 559,
+      "sha256": "de6dab3fe054d288d48bdb1dd1dcdaf0be33a4da65405b7589277ee97e392ad6"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-explicit-prepush-before-api.log",
+      "bytes": 85,
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-explicit-prepush-before-create-commit.log",
+      "bytes": 85,
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-final-code-receipt.json",
+      "bytes": 64406,
+      "sha256": "9801baaf5c687aded94d6a5f006289e69933956cf685b655ab628db42b101e7e"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-final-local-attempt1.log",
+      "bytes": 1483,
+      "sha256": "714a547c081d57e5e861d713d44005017083c11c17a9f2fa03bd3b2b4e51dc1d"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-final-validation-status.json",
+      "bytes": 336,
+      "sha256": "3eaea437906bf33084cf670519dc3bec15f7539f4b2a9f047becaf9aba0dce22"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-final-validation-wrapper.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-fixed-candidate.json",
+      "bytes": 165,
+      "sha256": "ea258021ef822ce7e1bfe730df2ad9a0714fd49f7457d86dbb17e325cf6c7b4c"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-fixed-visual-review.json",
+      "bytes": 7169,
+      "sha256": "fd821a09ff9c5177a408cd9e455bdfbcbef17cea13b8bd9e1be3109ef6f93916"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/history-first-focus-BOARD-768.png",
+      "bytes": 102508,
+      "sha256": "904b8d87da8e6b833308a117cfee64f28b7fa4e399dd28c861cd97f219d33dac"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/history-returned-focus-BOARD-768.png",
+      "bytes": 102590,
+      "sha256": "b32f1d2b053677216af43f5b23ee95483f545e7536e290bf66b433008a13ab36"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-first-focus-CARD-320.png",
+      "bytes": 66621,
+      "sha256": "b5c6c5c3a0232276bd8b8fe6016011b4a51556a90e4866889e0311c9d97f0791"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-returned-focus-CARD-320.png",
+      "bytes": 66690,
+      "sha256": "c0f6c895189b8056ae641fdd4bda19cb2fa0e23497f07f012cba76d3e78567e9"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-first-focus-BOARD-1280.png",
+      "bytes": 94681,
+      "sha256": "95477567d7edf8911950dd38be7b8aed12af23bc0313beafbcbe7c42ccfeaf4c"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-returned-focus-BOARD-1280.png",
+      "bytes": 94704,
+      "sha256": "d28fc12c578e64529111232e6cba0d7cfd05af0c53a79a3a2361e0c419dd89b5"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-first-focus-BOARD-320.png",
+      "bytes": 67732,
+      "sha256": "427fe6f2122bb5105c60da0e8160aa744402305e820895d2569f88624b1ca1fd"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-returned-focus-BOARD-320.png",
+      "bytes": 67704,
+      "sha256": "01c198916468bc1b291fe7432a9cae8e823724205b55cbe168347c5f71f03c18"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-first-focus-CARD-390.png",
+      "bytes": 79386,
+      "sha256": "9071aafeb7a2a093e5d79845aed47e263322de86f9d2529efddf4313880212cd"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-returned-focus-CARD-390.png",
+      "bytes": 79454,
+      "sha256": "5298a1798d9a314783232fc5844781dab0d87a77be4dd7830e7615993036a24f"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-first-focus-BOARD-768.png",
+      "bytes": 91827,
+      "sha256": "57f5c8815776aef69e1fd0297f771baef52c29570c676d8d828c8fb1fcf36e8b"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-returned-focus-BOARD-768.png",
+      "bytes": 91862,
+      "sha256": "eaa85d1391f5ba4cc7f8031a91719128437512e003fa7b9bccb5267632f27a30"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-first-focus-CARD-768.png",
+      "bytes": 91929,
+      "sha256": "030f8d163501cdf24dfa347c603d982d74ec87bce9e42f2e9e91aa996b9c03e3"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-returned-focus-CARD-768.png",
+      "bytes": 92006,
+      "sha256": "06d7a3f1617068da288122f678f3bd4729606701cd3ab0a0adb915a3986b9116"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-first-focus-BOARD-390.png",
+      "bytes": 76931,
+      "sha256": "5f2ac20d1716fe2a3fa7c9f2667a759b823f32a25ddc4b5aaac9a821a53ec513"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-returned-focus-BOARD-390.png",
+      "bytes": 76964,
+      "sha256": "d91ddbf8c66f80f41f7b629f5717444bf9a2559a738ee84dedf92ee0899c45e2"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-first-focus-CARD-1280.png",
+      "bytes": 133445,
+      "sha256": "49e8e7f5505ebb847b50a630a30d545da4bcbfb1eb84352d61a28115b22c4baa"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-returned-focus-CARD-1280.png",
+      "bytes": 133510,
+      "sha256": "b9574688c9fb0a92e2b7eaaacc3087cd5dd1442cabd49b89f7322653863e44fe"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-first-focus-CARD-768.png",
+      "bytes": 100961,
+      "sha256": "5500c0005a148b8355be2afe4ba4b98ad8a73e110870eb33012c7d91edd7035d"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-native-fixed-attempt1/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-returned-focus-CARD-768.png",
+      "bytes": 101117,
+      "sha256": "b1bf9938db89f470c51b8c7c4d86f7c0931b945403886441895b39d3024d524a"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-normal-code-commit.log",
+      "bytes": 238,
+      "sha256": "e8e9d6c78e8a69ba573a0edec403de2025ed1ba2547b282df4577ae456ae4bfe"
+    },
+    {
+      "path": "prd15-polish-integration/focus-indicator-security-status.json",
+      "bytes": 407,
+      "sha256": "b83e1745dc99b995c871bba1de03c8ac1c380300c483ac50db57537fc02ccde6"
+    },
+    {
+      "path": "prd15-polish-integration/lossless-union-v2-contract-attempt1-refusal.json",
+      "bytes": 545,
+      "sha256": "b7a9957c80f92dd01fb50acbe0ab68ba52985cf9e4a86cea9f6444af340301a2"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/history-first-focus-BOARD-768.png",
+      "bytes": 102431,
+      "sha256": "2311b7de7f475964cb7efb4d0662dc13f8ae2de3b151d42f6524f3a1e17c2bfd"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/history-returned-focus-BOARD-768.png",
+      "bytes": 102533,
+      "sha256": "7a462d10ef97e9bc88ac213e75b7b3cbc79ac59d0f5b31ae2771f06e7202dd64"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-first-focus-CARD-320.png",
+      "bytes": 66559,
+      "sha256": "4588532148a77578fb0b697eaf242850f7b3cda10d9daaeb58db648e05e27190"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-returned-focus-CARD-320.png",
+      "bytes": 66695,
+      "sha256": "8a3a7374bf037a77faea75aa4cbbc8b3f117094a20d91aa7acc48103d3260bb0"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-first-focus-BOARD-1280.png",
+      "bytes": 94755,
+      "sha256": "ecb78e5bd1ee619b7784cfa0afece546509798afc99527e62a885f2a449d0caf"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-returned-focus-BOARD-1280.png",
+      "bytes": 94707,
+      "sha256": "31dcec50e6eb9f08a7a79385ccbf2b250d7b821330452367b135799a78073a4b"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-first-focus-BOARD-320.png",
+      "bytes": 66406,
+      "sha256": "b7c299ebe4c1fd4522a2af991ec7f1b86f0cc8cb092a92d9124ff75fa8cadb39"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-returned-focus-BOARD-320.png",
+      "bytes": 67712,
+      "sha256": "a4783b78c847f0b44ece32e892fd7d2e8f00a95257520274889d3f95d8732236"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-first-focus-CARD-390.png",
+      "bytes": 79386,
+      "sha256": "9071aafeb7a2a093e5d79845aed47e263322de86f9d2529efddf4313880212cd"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-returned-focus-CARD-390.png",
+      "bytes": 79454,
+      "sha256": "5298a1798d9a314783232fc5844781dab0d87a77be4dd7830e7615993036a24f"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-first-focus-BOARD-768.png",
+      "bytes": 91827,
+      "sha256": "57f5c8815776aef69e1fd0297f771baef52c29570c676d8d828c8fb1fcf36e8b"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-returned-focus-BOARD-768.png",
+      "bytes": 91933,
+      "sha256": "c688b6e6f04886c16785c83551d28ba71bdd764eeb4b721e4b3c0e1915aacd91"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-first-focus-CARD-768.png",
+      "bytes": 91861,
+      "sha256": "569bb3efa33dce12d9a098d5645f711d14ec8080ea50cefeba6dcc1bd95e9810"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-returned-focus-CARD-768.png",
+      "bytes": 92001,
+      "sha256": "63bdf292c000bafb76f8f78fbf7a387159e5ca48404d06deb1561752a5fa1fe1"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-first-focus-BOARD-390.png",
+      "bytes": 74803,
+      "sha256": "5084759099e362344ef08f3b69869e9b1cf1a5baa1bbf496cc449938bb800e1f"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-returned-focus-BOARD-390.png",
+      "bytes": 76964,
+      "sha256": "d91ddbf8c66f80f41f7b629f5717444bf9a2559a738ee84dedf92ee0899c45e2"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-first-focus-CARD-1280.png",
+      "bytes": 133386,
+      "sha256": "28332203fe4752d36adee473bfa03f6e024d4f873848ea088f1b467e8437b3a5"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-returned-focus-CARD-1280.png",
+      "bytes": 133522,
+      "sha256": "17186454069634c1b4fde1beea85b552836e0f202012853fd9225bf8614ea769"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-first-focus-CARD-768.png",
+      "bytes": 100908,
+      "sha256": "c02b4e5dd11ac0f212efc223d909d84f3062f6c4aba0b57827e0e4b47474a947"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-attempt1/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-returned-focus-CARD-768.png",
+      "bytes": 101084,
+      "sha256": "8eaafee6f5493a381a777ed294eac01089b096ac786243a3fc0e446245218c9b"
+    },
+    {
+      "path": "prd15-polish-integration/native-geometry-visual-review.json",
+      "bytes": 11828,
+      "sha256": "6e1e408886bcf5baaba4830ab1d46fea7b9f62f6dbc996dd8e5ef03bd5fa2ad5"
+    },
+    {
+      "path": "prd15-polish-integration/preparation-notes.json",
+      "bytes": 732,
+      "sha256": "3a64bd4fb33d7a64c808caa6dacb4033d6c8f9d81e70f91308ab5df5aa554566"
+    },
+    {
+      "path": "prd15-polish-integration/registry-before-reviewed-allocation.json",
+      "bytes": 152934,
+      "sha256": "7204f15797317c3729332d0ab0083c55dfb8dbc0ccb0b85f45166a7141b33c1a"
+    },
+    {
+      "path": "prd15-polish-integration/release-PRD15-ACTIVITY-HISTORY-FOCUS-03.json",
+      "bytes": 155016,
+      "sha256": "18f8260cc0c554e132339699572d4749e65744c6cb1206f763c6cb1ee9ca4df2"
+    },
+    {
+      "path": "prd15-polish-integration/release-PRD15-COMMENT-VALIDATION-03.json",
+      "bytes": 154320,
+      "sha256": "548bfbb783e66633797bcc3494393b63f964f8b48c0ed8a7274845f8a6fdebd9"
+    },
+    {
+      "path": "prd15-polish-integration/release-PRD15-HANDLE-FIELD-BROWSER-03.json",
+      "bytes": 155710,
+      "sha256": "e545cf1ec2b553de12cca8ebbcf6f4ce591a5bf52988946c062f3c5ec9ffead6"
+    },
+    {
+      "path": "prd15-polish-integration/release-PRD15-MENTION-PICKER-FOCUS-03.json",
+      "bytes": 153628,
+      "sha256": "fd1e1f5d23d5675241b85eb4e9957d16b4c558b2f902a3dea348c8de5c05b452"
+    },
+    {
+      "path": "prd15-polish-integration/release-account02.json",
+      "bytes": 156315,
+      "sha256": "e52377eb854edb02bec2420819183f6e7424c366c86527610693af088fc7ba4b"
+    },
+    {
+      "path": "prd15-polish-integration/release-integration01-for-target-main.json",
+      "bytes": 162843,
+      "sha256": "63f6aef1c014cfbf6ee4148a20ac7c66ba0fb27c0c8766e2699eb2bd801f9d43"
+    },
+    {
+      "path": "prd15-polish-integration/release-integration04-bf-target.json",
+      "bytes": 175263,
+      "sha256": "cad3b80dba55ac7eccf5192566ae2295b9ea58b813d010fdda07845511186d79"
+    },
+    {
+      "path": "prd15-polish-integration/reviewed-allocation-manifest.json",
+      "bytes": 3599,
+      "sha256": "65a7ad20105e469973ccfde936ef152cca7dd024a45b0251c6e2bc48ac8606a0"
+    },
+    {
+      "path": "prd15-polish-integration/runtime-preparation-syntax-refusal/failure.json",
+      "bytes": 462,
+      "sha256": "eac489b07544c50e9a0a00b8ccb9df02f31c63919d7561ad1a585b4061718f5b"
+    },
+    {
+      "path": "prd15-polish-integration/stage1-manifest-refusal.json",
+      "bytes": 414,
+      "sha256": "1438b41448fecc84d87d578875f1a701855ea5fe65c4fb27fd935a6a686df2dc"
+    },
+    {
+      "path": "prd15-polish-integration/stage1-merge-preparation.log",
+      "bytes": 66,
+      "sha256": "96bb6a194a796153cbd0c640642866371219451832063763d544b942a8d97c4e"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01-pr140/candidate.json",
+      "bytes": 460,
+      "sha256": "ab69d87573fad6dcb956df6cb103d500b8f4c0c5901ac6570f15629f9b137f84"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01-pr140/final-local.log",
+      "bytes": 1483,
+      "sha256": "d4ea5122a362fe6de21a7fd34a6189aed5d83bb9fdf7bcc570a3b5dbdacb147d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01-pr140/final-receipt.json",
+      "bytes": 56729,
+      "sha256": "d1976774e45722019fcb18de70dae8d945b71c6a44026eae10de007b24b3e889"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01-pr140/status.json",
+      "bytes": 524,
+      "sha256": "1dc67782598e7020f135af9b8a747fd9c0eac882c5e0af3a354494a10675b306"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/candidate.json",
+      "bytes": 320,
+      "sha256": "a5b33495724a9042627dd215a38f9945b004a1de250e78d81c2bad0a6ebefdb2"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/conflict-text/docs/delivery/progress.json",
+      "bytes": 5660822,
+      "sha256": "eb38766bfd60186bb8c31861ad020ab90c616c7af37a7048654c2fe70b89014c"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/conflict-text/docs/ux/delivery-report.md",
+      "bytes": 448616,
+      "sha256": "1a8a7ea90f4b261c563a1c62d7a74caab44c380c17a137121ed5f8a131b81737"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/final-local.log",
+      "bytes": 1312,
+      "sha256": "aa587b0ddc8a0e6212fe6dd79887f04bec698396984da5ecc74e2d75fc3b1504"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/merge-preparation.log",
+      "bytes": 278,
+      "sha256": "c48a768488658e59846b86fa1681fc607cf87d00d83cf42bbf79851fca8389e9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/stage1/docs/delivery/progress.json",
+      "bytes": 5645034,
+      "sha256": "9524cb31ce2126a29d9bae7ff005c9c1c90cc756d17c501f0c90665156d7433f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/stage1/docs/ux/delivery-report.md",
+      "bytes": 437534,
+      "sha256": "641c5e685f1f4058d1d6d00130a9714a411f094079788939116d7bc4b5708d8d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/stage2/docs/delivery/progress.json",
+      "bytes": 5653042,
+      "sha256": "b7eebaffae481928ae4039ed4e4f9bbbec3c7ae73e1e81f6f2df1478e99f67a4"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/stage2/docs/ux/delivery-report.md",
+      "bytes": 444196,
+      "sha256": "73f503da52b0dd39744291993f500c10a5c75e7ab995d5cc2c9d9938e52061d1"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/stage3/docs/delivery/progress.json",
+      "bytes": 5652538,
+      "sha256": "7bdb0a0d468891ee502fc047524ca2acd37f320e2c6b26cafa58038635ce758f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/stage3/docs/ux/delivery-report.md",
+      "bytes": 444078,
+      "sha256": "fbd5a75b6272319db2e9b358bbb485483d505d71f478efd4fb9095119390237b"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/status.json",
+      "bytes": 464,
+      "sha256": "03ddd366dec4062753477739f7e31be2c2e357d018238928e4ac9548c47d68f9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427/union-proof.json",
+      "bytes": 1185,
+      "sha256": "3bbd7e9d13e2f4720efe9662f9bd7779dba2c220c672e886d1a4e0aa976f3196"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427-attempt2/all-parent-api-identity-proof.json",
+      "bytes": 661,
+      "sha256": "296ae3d325f2e1796aff540b5d3257623a4b319efd7e8c7478eb0ee3fc09823a"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427-attempt2/candidate.json",
+      "bytes": 320,
+      "sha256": "a5b33495724a9042627dd215a38f9945b004a1de250e78d81c2bad0a6ebefdb2"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427-attempt2/final-local.log",
+      "bytes": 1483,
+      "sha256": "55e8362aab573561d69554af3802e0fe8c1c4070d0f3a1998614ebddee97e231"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427-attempt2/final-receipt.json",
+      "bytes": 57939,
+      "sha256": "c9300ea4d24e694b171ea63e0dbaa8d7690ceba2bb91f1e8e6248e3cfcf1ef00"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427-attempt2/historical-ancestor-identity-proof.json",
+      "bytes": 342,
+      "sha256": "742903e0376b0b59651e6a844942eeee69d20fabd18103af543209b0ac0dd511"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427-attempt2/publication-manifest.json",
+      "bytes": 50586,
+      "sha256": "84f00a5af4d90ac311c675aa43ce7f3b9efcb2f9188e8168b1378c50a8ab4f64"
+    },
+    {
+      "path": "prd15-polish-integration/stages/01b-main-c427-attempt2/status.json",
+      "bytes": 569,
+      "sha256": "591b868cde59c01125c92a4a5bc705ccf92aed6566c34b5d34b1074f525ca839"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/all-parent-api-identity-proof.json",
+      "bytes": 519,
+      "sha256": "676c105c660f201b6848db610d5906b7f6cf5f40d21fd995bbee00ef51ae6931"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/candidate.json",
+      "bytes": 412,
+      "sha256": "b9cf8709d7ba45883e03f9710d05d4df414b6facd0805e6a183074a67706a34f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/conflict-text/docs/delivery/progress.json",
+      "bytes": 5668911,
+      "sha256": "6425cef25d335d6f1d5633dd4579f2690351d4b86788fdb0661891463a0d0e5a"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/conflict-text/docs/ux/delivery-report.md",
+      "bytes": 455932,
+      "sha256": "e751c9658c06485eade1f30ecc150ba35e8940049d409b5421f455a18b4a52e2"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/final-local.log",
+      "bytes": 1483,
+      "sha256": "c8ebc353979d74a9127d02e01adf2bb077d3b2296bf2b16468b569f30143a011"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/final-receipt.json",
+      "bytes": 57430,
+      "sha256": "2ac822e20be635ef895d63f55f1ec160707c4e45dbfd5daa721727e6bcc0a123"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/merge-preparation.log",
+      "bytes": 278,
+      "sha256": "c48a768488658e59846b86fa1681fc607cf87d00d83cf42bbf79851fca8389e9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/publication-manifest.json",
+      "bytes": 62046,
+      "sha256": "1d9afa6d19f4c27bd9c66c3881fddd2f82cdf3ef5f9d1135de2b7d1159363144"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/stage1/docs/delivery/progress.json",
+      "bytes": 5645034,
+      "sha256": "9524cb31ce2126a29d9bae7ff005c9c1c90cc756d17c501f0c90665156d7433f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/stage1/docs/ux/delivery-report.md",
+      "bytes": 437534,
+      "sha256": "641c5e685f1f4058d1d6d00130a9714a411f094079788939116d7bc4b5708d8d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/stage2/docs/delivery/progress.json",
+      "bytes": 5660546,
+      "sha256": "33e85b199af45322786205b349edd59c103fb27f1a3abc98cca2271cc7299b58"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/stage2/docs/ux/delivery-report.md",
+      "bytes": 450740,
+      "sha256": "b52b5792b34fa655ed4cd4101587c2a28bd84fc98a5d1f4035936f76cf28ceb4"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/stage3/docs/delivery/progress.json",
+      "bytes": 5653123,
+      "sha256": "d87c62e13e85834eef72c6d3a74f3a05d758218dee9d0a22378e82cba5ea6148"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/stage3/docs/ux/delivery-report.md",
+      "bytes": 444782,
+      "sha256": "4cfbc68d62c67de8a1af4e27fa06b11fa87094db8e9f1d9f5452c4c3969a3ca6"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/status.json",
+      "bytes": 609,
+      "sha256": "a40a1e370360536bb1e8cbeb0f1e8d619c65c55606bb452f48a67fc1b02e235b"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02-pr141/union-proof.json",
+      "bytes": 948,
+      "sha256": "08e9adfe64c24f8c80589eb5a10974d92af81992fe21e45abeace72241e889cb"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/all-parent-api-identity-proof.json",
+      "bytes": 522,
+      "sha256": "2e85acbb048461338a79982917ad9de95900ec181ce2f8d8b65318955221fc04"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/candidate.json",
+      "bytes": 425,
+      "sha256": "1df7e80632e74a9896c3649107b1859bfa429bfe661906d0a4e353e74f1dc0e6"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/conflict-text/docs/delivery/progress.json",
+      "bytes": 5677424,
+      "sha256": "0ae5b6d12848bcf2fb86b59a043591401697410827388e6346a6e07cf30c2989"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/conflict-text/docs/ux/delivery-report.md",
+      "bytes": 462779,
+      "sha256": "9d58cfbf60aafd09e5a49fea93e4c63cc9a14516176233473b6fb53debf4cca3"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/final-local.log",
+      "bytes": 1483,
+      "sha256": "9e93742b32c6e9ad8510d4b321a90a47aefbf091d37aa8d32f4d7d0e35542faa"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/final-receipt.json",
+      "bytes": 58278,
+      "sha256": "5dd5a32e97e8431ddce4d5c1552ae24a7ff40e587dff4b347c539040acffd513"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/merge-preparation.log",
+      "bytes": 278,
+      "sha256": "c48a768488658e59846b86fa1681fc607cf87d00d83cf42bbf79851fca8389e9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/publication-manifest.json",
+      "bytes": 38206,
+      "sha256": "d7a1bb5e96d249785d971ade89ddbbba838ce759fdc9e76c2784b7aff7ac3c6f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/stage1/docs/delivery/progress.json",
+      "bytes": 5652538,
+      "sha256": "7bdb0a0d468891ee502fc047524ca2acd37f320e2c6b26cafa58038635ce758f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/stage1/docs/ux/delivery-report.md",
+      "bytes": 444078,
+      "sha256": "fbd5a75b6272319db2e9b358bbb485483d505d71f478efd4fb9095119390237b"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/stage2/docs/delivery/progress.json",
+      "bytes": 5668635,
+      "sha256": "4bf00096541db8a53296c6343751561564dbaef8091bc063cdfdf868b6a0188a"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/stage2/docs/ux/delivery-report.md",
+      "bytes": 457988,
+      "sha256": "fc93a6a5385038573b8cee3d1fa5adf0522884b9602f8b8c314be2a38eda2f25"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/stage3/docs/delivery/progress.json",
+      "bytes": 5659193,
+      "sha256": "f2f50ba9a5bf1410a0e7b51ba8e0e63d0e9540b6440f067e068ddb0d9c826cee"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/stage3/docs/ux/delivery-report.md",
+      "bytes": 450423,
+      "sha256": "c4cbd65f9f661c561303946796b417ebe5f99276ae88c76e22d92bae1afb27e6"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/status.json",
+      "bytes": 622,
+      "sha256": "9e2148317e2bf093313f2fccd4f0e3a5d1f72ad39800791da4501871f2961e14"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/union-attempt1-v2-refusal.log",
+      "bytes": 355,
+      "sha256": "498a11451d26e8321aa5d0c6be23e0b04c1bc5fbab5e06bde2d73fd2dc672e80"
+    },
+    {
+      "path": "prd15-polish-integration/stages/02b-main-bf/union-proof.json",
+      "bytes": 1513,
+      "sha256": "49855e9a3c09ef6eb79b756d428cad03288f132bd57d687b2ec1b5169c9dc5e8"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/candidate.json",
+      "bytes": 412,
+      "sha256": "e493b7632208da5f5779ee9c989b81e8f998e4760ad45035f101482b4dd507cd"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/conflict-text/docs/delivery/progress.json",
+      "bytes": 5677166,
+      "sha256": "82d2f5fe32667d057ca117c4747f64129718d29b53990f96ff55e58e5777dafe"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/conflict-text/docs/ux/delivery-report.md",
+      "bytes": 461866,
+      "sha256": "cc46b148942bb1824f2082a2d0eab1fe91fad71f0157ede48b72c748d437b7ed"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/final-local.log",
+      "bytes": 2474,
+      "sha256": "c3bde1bf1067a78b4f994219490602b58bb1cac6b611a03280f325a3f108d2e0"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/main-advance-during-freeze.json",
+      "bytes": 729,
+      "sha256": "f455d553ee05d85de3c45c4f545d7f03f34c8a7bc19ab12a30b017a9ae6de4aa"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/merge-preparation.log",
+      "bytes": 278,
+      "sha256": "c48a768488658e59846b86fa1681fc607cf87d00d83cf42bbf79851fca8389e9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/pending-candidate-preserved/proof.json",
+      "bytes": 897,
+      "sha256": "d9780ee16fa208b7944adcea91172da6c97c456a80e15492493f428ca4ca711a"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/stage1/docs/delivery/progress.json",
+      "bytes": 5645034,
+      "sha256": "9524cb31ce2126a29d9bae7ff005c9c1c90cc756d17c501f0c90665156d7433f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/stage1/docs/ux/delivery-report.md",
+      "bytes": 437534,
+      "sha256": "641c5e685f1f4058d1d6d00130a9714a411f094079788939116d7bc4b5708d8d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/stage2/docs/delivery/progress.json",
+      "bytes": 5668635,
+      "sha256": "4bf00096541db8a53296c6343751561564dbaef8091bc063cdfdf868b6a0188a"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/stage2/docs/ux/delivery-report.md",
+      "bytes": 457988,
+      "sha256": "fc93a6a5385038573b8cee3d1fa5adf0522884b9602f8b8c314be2a38eda2f25"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/stage3/docs/delivery/progress.json",
+      "bytes": 5653289,
+      "sha256": "e3a9aca645db5014c0189f56a423529eb3cc53aabda70f2094031f12edcbca12"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/stage3/docs/ux/delivery-report.md",
+      "bytes": 444285,
+      "sha256": "481e9859fea2398f66c07b402cc8886de8eb523a2321a22b60b48711e9c05973"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/status.json",
+      "bytes": 518,
+      "sha256": "9b5acb42b2e516f641e09e8f5a556c84c31864457f93f6b85120cd02c5a8e471"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142/union-proof.json",
+      "bytes": 948,
+      "sha256": "148d0644dfe4dabd5601a9010338ba11565ccb797e3da4df7ea787e8e23e370f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/all-parent-api-identity-proof.json",
+      "bytes": 519,
+      "sha256": "dd76c0de1333472a677081450e02157cf52a87d767bac52fbe41c5a5a22f842f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/candidate.json",
+      "bytes": 412,
+      "sha256": "965e49996a9774c6c030b80aa75b33d13e2d8223b22730dbf5202472e43d79ec"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/conflict-text/docs/delivery/progress.json",
+      "bytes": 5683821,
+      "sha256": "de6c2a45a7dce6a9ee4b682b46f30190442187f690c26df2869f0821bec6b571"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/conflict-text/docs/ux/delivery-report.md",
+      "bytes": 468141,
+      "sha256": "1fb8131e4c4d93401504fc4c836af07660448580ba6e130ef8a7300e080bda30"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/final-local.log",
+      "bytes": 1483,
+      "sha256": "a9a492da49d4a2cdb51fb882f388a25f63939d72738da5e3d857a17078e5e6c4"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/final-receipt.json",
+      "bytes": 63922,
+      "sha256": "ed8c8d0bf7c63fbcad25712b3a1f46a55437177e2084ec7a97dbbee02754447e"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/merge-preparation.log",
+      "bytes": 278,
+      "sha256": "c48a768488658e59846b86fa1681fc607cf87d00d83cf42bbf79851fca8389e9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/publication-manifest.json",
+      "bytes": 76225,
+      "sha256": "6dd50d1c996823881a4091970f7c87bb68e99744b86982aad7d0ff00d28acc15"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/stage1/docs/delivery/progress.json",
+      "bytes": 5645034,
+      "sha256": "9524cb31ce2126a29d9bae7ff005c9c1c90cc756d17c501f0c90665156d7433f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/stage1/docs/ux/delivery-report.md",
+      "bytes": 437534,
+      "sha256": "641c5e685f1f4058d1d6d00130a9714a411f094079788939116d7bc4b5708d8d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/stage2/docs/delivery/progress.json",
+      "bytes": 5675290,
+      "sha256": "5f335b2938a9885b1005577fef162fe6e7e60f408f670b959b6c54b90c9262de"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/stage2/docs/ux/delivery-report.md",
+      "bytes": 464333,
+      "sha256": "1cad2c1f40ea86da09cc94fa75455a99e544d29d995e9a5f148191fb43c35aa7"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/stage3/docs/delivery/progress.json",
+      "bytes": 5653289,
+      "sha256": "e3a9aca645db5014c0189f56a423529eb3cc53aabda70f2094031f12edcbca12"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/stage3/docs/ux/delivery-report.md",
+      "bytes": 444285,
+      "sha256": "481e9859fea2398f66c07b402cc8886de8eb523a2321a22b60b48711e9c05973"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/status.json",
+      "bytes": 618,
+      "sha256": "edd63d5e4b71823bce351f2adbf195959b6998e46a6707fd03ec0b0eb17ac335"
+    },
+    {
+      "path": "prd15-polish-integration/stages/03-pr142-attempt2/union-proof.json",
+      "bytes": 948,
+      "sha256": "593a9119edf40ee94b131e67ee4de281596dc42df226d1f9b247dbee6c7b8e79"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/all-parent-api-identity-proof.json",
+      "bytes": 519,
+      "sha256": "4d9ddcf492ec8eeb1c9da201158619f1754a9ff0a3a4857b08ff2ea90b1e3407"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/candidate.json",
+      "bytes": 442,
+      "sha256": "4ff6246637232bd84af41263a638819166f416e7d3f2a35d45a1a1df86a6cce4"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/conflict-text/docs/delivery/progress.json",
+      "bytes": 5687415,
+      "sha256": "1958d28ecf9bceef65668ad85f076300747b8050d88815abbf24e4b8fae08180"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/conflict-text/docs/ux/delivery-report.md",
+      "bytes": 475607,
+      "sha256": "e836a1bd9543404a8516f26bde1f2cb29c663bee90aebd2510bd23c0e84e77fc"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/executable-equality-proof.json",
+      "bytes": 435,
+      "sha256": "6c0417b8aa8af1865dc44265ade55259efbbaf08c220a0cf23637c329a90f21e"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/final-local.log",
+      "bytes": 1322,
+      "sha256": "5bed64a760b7b8b67fcf20911f3a1431bfb5eb32b0018d06bd64cdeece8502d9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/final-receipt.json",
+      "bytes": 19800,
+      "sha256": "46a019ec1d593428ff3054d089f36abee0ddff79e807c2a82f4dd46af3514d1d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/merge-preparation.log",
+      "bytes": 278,
+      "sha256": "c48a768488658e59846b86fa1681fc607cf87d00d83cf42bbf79851fca8389e9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/publication-manifest.json",
+      "bytes": 43939,
+      "sha256": "1ab646872b14ac3d0a3bc416a2af201211fa3b7f34fb917fc6a8ad29ad261fd2"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/stage1/docs/delivery/progress.json",
+      "bytes": 5645034,
+      "sha256": "9524cb31ce2126a29d9bae7ff005c9c1c90cc756d17c501f0c90665156d7433f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/stage1/docs/ux/delivery-report.md",
+      "bytes": 437534,
+      "sha256": "641c5e685f1f4058d1d6d00130a9714a411f094079788939116d7bc4b5708d8d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/stage2/docs/delivery/progress.json",
+      "bytes": 5683545,
+      "sha256": "e88cb0c6dbceeed17ca0e3542051604bad98c2a4eac817fb6273f040708f2a41"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/stage2/docs/ux/delivery-report.md",
+      "bytes": 471084,
+      "sha256": "03789b3fe1f38557c6cd4306e3421a68747ee8cb603bd506810a253b706bd93c"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/stage3/docs/delivery/progress.json",
+      "bytes": 5648766,
+      "sha256": "556f151c3b6fa0691c13915fc7ac5665631c82565a83a6ab0a81c1e446404d1f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/stage3/docs/ux/delivery-report.md",
+      "bytes": 443569,
+      "sha256": "ad2b0a7091fa75652cb619f75e1076c5f214d3747ab2d9b8b1767bee44d6ee9b"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/status.json",
+      "bytes": 637,
+      "sha256": "6ea143505fed3bd13615c2ceb35f3405023509db0f96ad1984da4c11b7c25e99"
+    },
+    {
+      "path": "prd15-polish-integration/stages/04-pr143/union-proof.json",
+      "bytes": 948,
+      "sha256": "935309259c10ddd28143d267cc787d83053904919c8e84dac2e77a39ee638900"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/all-parent-api-identity-proof.json",
+      "bytes": 519,
+      "sha256": "0bd7897a0a725c581511404c651d3366d0132b1f6e66a99c223d4260f43a3f16"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/candidate.json",
+      "bytes": 412,
+      "sha256": "eceee40cb693823049c4201a437ae8880c7a18bdf63e95995bb17c53ad09ca93"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/conflict-text/docs/delivery/progress.json",
+      "bytes": 5698089,
+      "sha256": "95f468a7f779a4320a6ab87822bc3aac00f4822e92a96418df1d40177d54299f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/conflict-text/docs/ux/delivery-report.md",
+      "bytes": 478866,
+      "sha256": "65774d4575ae2fd890e0535b0db624a4675e19f8e3a1fa24811f5e92c3bc66c4"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/final-local.log",
+      "bytes": 1483,
+      "sha256": "50319d4971ece4c05c538ce46fabab0675cf6419395d9c1fb891a49a40bc2534"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/final-receipt.json",
+      "bytes": 64328,
+      "sha256": "d790fe5b3488a8820f6eb7add71ff30979dc493517715beaa7fc69440ff45afb"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/merge-preparation.log",
+      "bytes": 278,
+      "sha256": "c48a768488658e59846b86fa1681fc607cf87d00d83cf42bbf79851fca8389e9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/publication-manifest.json",
+      "bytes": 73306,
+      "sha256": "5176132f8ab9ad9a04ac852d95dc077c3741a33bc429ee4e21cc00594e9fc060"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/stage1/docs/delivery/progress.json",
+      "bytes": 5645034,
+      "sha256": "9524cb31ce2126a29d9bae7ff005c9c1c90cc756d17c501f0c90665156d7433f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/stage1/docs/ux/delivery-report.md",
+      "bytes": 437534,
+      "sha256": "641c5e685f1f4058d1d6d00130a9714a411f094079788939116d7bc4b5708d8d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/stage2/docs/delivery/progress.json",
+      "bytes": 5687277,
+      "sha256": "a89f00a7468de2e53ee205f61e26b4407b85aa2aab80da36bd8f78d8a64ea4a2"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/stage2/docs/ux/delivery-report.md",
+      "bytes": 477119,
+      "sha256": "0b8eb8efbcc2fa4f9a746099aed13152812763345880dcf8c9bdba5caa4c1295"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/stage3/docs/delivery/progress.json",
+      "bytes": 5650486,
+      "sha256": "776834d89b7ac380c5359632cc3eddc1269e2ba2709e3f69668960fa66155f94"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/stage3/docs/ux/delivery-report.md",
+      "bytes": 443882,
+      "sha256": "e581ebc48f481474169b5b5e1db41fe9b4bbc0850b937e46cee8244d4e90d451"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/status.json",
+      "bytes": 609,
+      "sha256": "cbcb4431d12d1b5c6e0efe4a499d4c6b361214efa0116da803cd6f54426e51dd"
+    },
+    {
+      "path": "prd15-polish-integration/stages/05-pr144/union-proof.json",
+      "bytes": 948,
+      "sha256": "2275e806846c66a008b0135daab6436f36020d9512e4e6c2aa797e2b0820ac29"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/all-parent-api-identity-proof.json",
+      "bytes": 519,
+      "sha256": "cd3b6fc2c7ad5e48feda60d988d701ab503eb47efbe4b47b8b8f33cdcb202042"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/candidate.json",
+      "bytes": 442,
+      "sha256": "3bddbbaf52167594844bcfb73c772daa730257d188cbbc886c535df39bb2ca5f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/conflict-text/docs/delivery/progress.json",
+      "bytes": 5701591,
+      "sha256": "e94c172dbe5bb5230124619daa8c383c2c63e0c28aaaf73c9ce3de7c7984a77a"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/conflict-text/docs/ux/delivery-report.md",
+      "bytes": 484914,
+      "sha256": "724269d9a0394c3d3c74cd3792fa9fb2ea7c834e194279ad971b7e881d264efc"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/executable-equality-proof.json",
+      "bytes": 490,
+      "sha256": "7ebdcae3825d730022a95ca5a3616e47d90045b7e75cab293b1f3d589a93c3d8"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/final-local.log",
+      "bytes": 1322,
+      "sha256": "c76a705d6cd988b45ecee49e5d5221d58a4bd0d95386c9388d6ee7d7fff0fbfb"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/final-receipt.json",
+      "bytes": 19872,
+      "sha256": "301f53cbb7c2dee3beea25da503f66488a9c8807c27fca8a46aa0efac4d561fe"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/merge-preparation.log",
+      "bytes": 278,
+      "sha256": "c48a768488658e59846b86fa1681fc607cf87d00d83cf42bbf79851fca8389e9"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/publication-manifest.json",
+      "bytes": 49882,
+      "sha256": "15b1f08e296d63c38a0c8cceaf9a56e34dc13e95f6c987d913c054900a3110e8"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/stage1/docs/delivery/progress.json",
+      "bytes": 5645034,
+      "sha256": "9524cb31ce2126a29d9bae7ff005c9c1c90cc756d17c501f0c90665156d7433f"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/stage1/docs/ux/delivery-report.md",
+      "bytes": 437534,
+      "sha256": "641c5e685f1f4058d1d6d00130a9714a411f094079788939116d7bc4b5708d8d"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/stage2/docs/delivery/progress.json",
+      "bytes": 5692729,
+      "sha256": "e94c1a1c09eadd14ab7199c38fb284c9c26cff809dacefa821abbaaaf445a200"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/stage2/docs/ux/delivery-report.md",
+      "bytes": 483467,
+      "sha256": "a520c9f5b9a9c2eba5bb58faee2432e5dff5aaf404f8118fdc855049f337907e"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/stage3/docs/delivery/progress.json",
+      "bytes": 5648536,
+      "sha256": "e921e7b61af4776adfd4868c1249d6387e089de6cffbffd04e18363a823ceb4a"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/stage3/docs/ux/delivery-report.md",
+      "bytes": 443582,
+      "sha256": "2f6083db519c1a3e41bd1ee4c8f970e6767c28f39dd5dd799654defb2ded24ee"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/status.json",
+      "bytes": 637,
+      "sha256": "52cad05295c14a5b3b398ecf9dcdf068a19f5e50c72523039362f8c07afc94a8"
+    },
+    {
+      "path": "prd15-polish-integration/stages/06-pr145/union-proof.json",
+      "bytes": 948,
+      "sha256": "36ba60aa48b84c320830265f4bec3626532af9467d4104b17b363ea5ad16f110"
+    },
+    {
+      "path": "prd15-polish-integration/combined-tracking-preparation-attempt1.json",
+      "bytes": 596,
+      "sha256": "85e000f6e0a6cf47ebc32db169c839edc656f216df3cd33a64405295d43632e0"
+    }
+  ],
+  "productionQualified": false
+}

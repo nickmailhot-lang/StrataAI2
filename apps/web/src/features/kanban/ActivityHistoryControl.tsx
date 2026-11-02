@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Link, Stack, Typography } from '@mui/material';
+import type { ButtonBaseActions } from '@mui/material/ButtonBase';
 import { Link as RouterLink } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
@@ -30,9 +31,14 @@ function History(props: Props) {
   const primary = useRef<HTMLButtonElement>(null); const older = useRef<HTMLButtonElement>(null);
   const newer = useRef<HTMLButtonElement>(null); const newest = useRef<HTMLButtonElement>(null); const retry = useRef<HTMLButtonElement>(null);
   const close = useRef<HTMLButtonElement>(null);
+  const primaryAction = useRef<ButtonBaseActions>(null); const olderAction = useRef<ButtonBaseActions>(null);
+  const newerAction = useRef<ButtonBaseActions>(null); const newestAction = useRef<ButtonBaseActions>(null);
+  const retryAction = useRef<ButtonBaseActions>(null); const closeAction = useRef<ButtonBaseActions>(null);
   const focusOwner = useRef<HTMLElement | null>(null); const restoreFocus = useRef(false);
+  const focusDialog = useRef<HTMLElement | null>(null);
   const retainedFocus = useRef<HTMLButtonElement | undefined>(undefined);
-  function ownFocus(owner: HTMLElement) { retainedFocus.current = undefined; focusOwner.current = owner; restoreFocus.current = true; parkRecoveryFocus(owner); }
+  function ownFocus(owner: HTMLElement) { retainedFocus.current = undefined; focusOwner.current = owner;
+    focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner); }
   const invalidate = useCallback(() => {
     if (pending.current) { refreshQueued.current = true; return; }
     setAttempt(value => value + 1);
@@ -107,20 +113,31 @@ function History(props: Props) {
   const admitted = !props.unavailable && view?.epoch === epoch ? view : undefined;
   const message = !props.unavailable && notice?.epoch === epoch ? notice.message : undefined;
   useEffect(() => {
-    if (busy || pending.current || props.unavailable || !restoreFocus.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current)) return;
+    if (busy || pending.current || props.unavailable || !restoreFocus.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current, focusDialog.current)) return;
     const retained = retainedFocus.current;
     const target = navigation.denied ? close.current : retained?.isConnected && !retained.disabled ? retained : !opened ? primary.current : message ? retry.current : admitted?.page.nextCursor ? older.current : positions.length > 1 ? newer.current : newest.current;
-    if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = false; }
+    if (target && !target.disabled) {
+      target.focus();
+      // A retained DOM focus may not emit a new focus event after busy recovery.
+      // Synchronize MUI's indicator only when the browser already owns visible
+      // keyboard focus; pointer focus and unrelated controls stay independent.
+      if (target.matches(':focus-visible')) {
+        const action = [[primary, primaryAction], [older, olderAction], [newer, newerAction],
+          [newest, newestAction], [retry, retryAction], [close, closeAction]] as const;
+        action.find(([element]) => element.current === target)?.[1].current?.focusVisible();
+      }
+      target.scrollIntoView?.({ block: 'center', inline: 'nearest' }); restoreFocus.current = false;
+    }
   }, [busy, props.unavailable, opened, message, admitted, positions.length, navigation.denied]);
   const name = props.kind === 'BOARD' ? 'Board' : 'Card';
-  return <Stack spacing={1} sx={{ minWidth: 0 }} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current)) restoreFocus.current = false; }}>
-    <Button ref={primary} disabled={props.unavailable || busy || navigation.denied} onClick={event => { ownFocus(event.currentTarget); if (opened) { setPositions([{}]); setAttempt(value => value + 1); } else { activityEvent(props.kind === 'BOARD' ? 'board_disclosure' : 'card_disclosure', 'open'); setOpened(true); } }}>
+  return <Stack spacing={1} sx={{ minWidth: 0 }} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current, focusDialog.current)) restoreFocus.current = false; }}>
+    <Button ref={primary} action={primaryAction} disabled={props.unavailable || busy || navigation.denied} onClick={event => { ownFocus(event.currentTarget); if (opened) { setPositions([{}]); setAttempt(value => value + 1); } else { activityEvent(props.kind === 'BOARD' ? 'board_disclosure' : 'card_disclosure', 'open'); setOpened(true); } }}>
       {opened ? `Refresh ${name} activity` : `Review ${name} activity`}
     </Button>
     {opened && <Box component="section" aria-label={`${name} activity`} aria-busy={busy}>
       <Typography role="status" aria-live="polite">{props.unavailable ? 'Checking activity access…' : busy ? 'Loading activity…' : admitted ? `${admitted.page.items.length} activity events on this page.` : ''}</Typography>
       {message && <Alert severity="warning">{message}</Alert>}
-      {message && !navigation.denied && <Button ref={retry} disabled={busy} onClick={event => { ownFocus(event.currentTarget); activityEvent(props.kind === 'BOARD' ? 'board_read' : 'card_read', 'retry'); setAttempt(value => value + 1); }}>Retry activity page</Button>}
+      {message && !navigation.denied && <Button ref={retry} action={retryAction} disabled={busy} onClick={event => { ownFocus(event.currentTarget); activityEvent(props.kind === 'BOARD' ? 'board_read' : 'card_read', 'retry'); setAttempt(value => value + 1); }}>Retry activity page</Button>}
       {admitted && <>
         {admitted.page.items.length === 0 && <Typography>No activity to review yet. Authorized changes will appear here.</Typography>}
         <Box component="ol" sx={{ pl: 3, m: 0 }}>
@@ -133,13 +150,13 @@ function History(props: Props) {
           </Box>)}
         </Box>
       </>}
-      <Button ref={older} disabled={busy || props.unavailable || !admitted?.page.nextCursor} onClick={event => {
+      <Button ref={older} action={olderAction} disabled={busy || props.unavailable || !admitted?.page.nextCursor} onClick={event => {
         if (!admitted?.page.nextCursor) return; ownFocus(event.currentTarget);
         setPositions(previous => [...previous, { cursor: admitted.page.nextCursor!, before: admitted.page.items.at(-1) }]);
       }}>Older activity</Button>
-      <Button ref={newer} disabled={busy || props.unavailable || positions.length < 2} onClick={event => { ownFocus(event.currentTarget); setPositions(previous => previous.slice(0, -1)); }}>Newer activity</Button>
-      <Button ref={newest} disabled={busy || props.unavailable || navigation.denied} onClick={event => { ownFocus(event.currentTarget); setPositions([{}]); setAttempt(value => value + 1); }}>Newest activity</Button>
-      <Button ref={close} onClick={event => { ownFocus(event.currentTarget); pending.current?.abort(); setOpened(false); setView(undefined); setNotice(undefined); setPositions([{}]); setBusy(false); }}>Close activity</Button>
+      <Button ref={newer} action={newerAction} disabled={busy || props.unavailable || positions.length < 2} onClick={event => { ownFocus(event.currentTarget); setPositions(previous => previous.slice(0, -1)); }}>Newer activity</Button>
+      <Button ref={newest} action={newestAction} disabled={busy || props.unavailable || navigation.denied} onClick={event => { ownFocus(event.currentTarget); setPositions([{}]); setAttempt(value => value + 1); }}>Newest activity</Button>
+      <Button ref={close} action={closeAction} onClick={event => { ownFocus(event.currentTarget); pending.current?.abort(); setOpened(false); setView(undefined); setNotice(undefined); setPositions([{}]); setBusy(false); }}>Close activity</Button>
     </Box>}
   </Stack>;
 }

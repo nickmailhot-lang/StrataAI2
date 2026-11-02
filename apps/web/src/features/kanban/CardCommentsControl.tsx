@@ -24,6 +24,7 @@ function CommentsControl(props: CardCommentsProps) {
   const [review, setReview] = useState<Review>(); const [draft, setDraft] = useState<Draft>();
   const [intent, setIntent] = useState<Intent>(); const [blocked, setBlocked] = useState(false); const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string>(); const pending = useRef<AbortController | undefined>(undefined);
+  const [commentError, setCommentError] = useState<string>();
   const [acknowledged, setAcknowledged] = useState<CardCommentChange & { preferences: Preferences }>();
   const [mentionBusy, setMentionBusy] = useState(false);
   const [subject, setSubject] = useState<string>();
@@ -129,7 +130,7 @@ function CommentsControl(props: CardCommentsProps) {
   function stage(original: CardComment | null, deleting: boolean, owner: HTMLElement) {
     if (!review || disabled || draft || intent || blocked || !props.editable || !review.page.canComment || review.page.cardVersion !== props.version
       || original && (original.authorId.toLowerCase() !== review.actor.toLowerCase() || original.deletedAt !== null)) return;
-    focus(owner); setDraft({ actor: review.actor, version: review.page.cardVersion, original: original ? { ...original } : null,
+    focus(owner); setCommentError(undefined); setDraft({ actor: review.actor, version: review.page.cardVersion, original: original ? { ...original } : null,
       text: original?.content ?? '', deleting, confirmed: false, selections: [], cardGroup: false, boardGroup: false });
   }
   async function save(owner: HTMLElement) {
@@ -139,7 +140,8 @@ function CommentsControl(props: CardCommentsProps) {
       if (draft.boardGroup && !props.canAdminister) { setNotice('Board-wide mentions require current board administration rights. Review the latest Card.'); props.onRefresh(); return; }
       let text: string | undefined;
       try { text = draft.deleting ? undefined : normalizeComment(draft.text); }
-      catch { setNotice('Enter valid comment text, up to 10000 characters.'); editor.current?.focus(); return; }
+      catch { setNotice(undefined); setCommentError('Enter valid comment text, up to 10000 characters.'); editor.current?.focus(); return; }
+      setCommentError(undefined);
       const check: CommentIntent = { actor: draft.actor, cardVersion: draft.version, original: draft.original,
         content: text, deleting: draft.deleting, confirmed: draft.confirmed };
       let selections: CommentMentionSelection[] = [];
@@ -192,7 +194,7 @@ function CommentsControl(props: CardCommentsProps) {
       props.onRefresh();
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
   }
-  function reset(owner: HTMLElement) { focus(owner); refreshQueued.current = false; admittedPage.current = undefined; setSubject(undefined); setDraft(undefined); setIntent(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(false); setNotice(undefined); props.onRefresh(); }
+  function reset(owner: HTMLElement) { focus(owner); refreshQueued.current = false; admittedPage.current = undefined; setSubject(undefined); setDraft(undefined); setIntent(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(false); setNotice(undefined); setCommentError(undefined); props.onRefresh(); }
   const current = review?.page.cardVersion === props.version;
   return <Stack ref={container} component="section" aria-label="Card comments" spacing={1} sx={{ my: 2 }}>
     <Button ref={primary} data-comment-action="review" disabled={disabled || !!draft || !!intent || blocked} onBlur={blur} onClick={event => { activityEvent('comment_disclosure', 'open'); void load(event.currentTarget); }}>Review Card comments</Button>
@@ -227,8 +229,10 @@ function CommentsControl(props: CardCommentsProps) {
         {draft.deleting ? <FormControlLabel label="I confirm removal of my comment body" control={<Checkbox slotProps={{ input: { ref: consent } }} checked={draft.confirmed}
           disabled={disabled || !!intent || conflict} onChange={event => setDraft({ ...draft, confirmed: event.target.checked })} />} /> :
           <TextField label={draft.original ? 'Edit your comment' : 'New comment'} multiline minRows={3} inputRef={editor} value={draft.text}
-            disabled={disabled || !!intent || blocked || conflict || !props.editable} slotProps={{ htmlInput: { maxLength: 10000 } }}
-            onChange={event => setDraft({ ...draft, text: event.target.value, cardGroup: false, boardGroup: false })} />}
+            error={Boolean(commentError)} helperText={commentError}
+            disabled={disabled || !!intent || blocked || conflict || !props.editable}
+            slotProps={{ htmlInput: { maxLength: 10000 }, formHelperText: { role: commentError ? 'alert' : undefined } }}
+            onChange={event => { setCommentError(undefined); setDraft({ ...draft, text: event.target.value, cardGroup: false, boardGroup: false }); }} />}
         {!draft.deleting && !intent && <>
           {(declaredGroups.card || declaredGroups.board) && <Typography variant="body2">Group mentions stay plain text unless confirmed. New group deliveries are limited to three per board in ten minutes.</Typography>}
           {declaredGroups.card && <FormControlLabel label="Notify current teammates assigned to this Card (@card)" control={<Checkbox checked={draft.cardGroup}
@@ -245,7 +249,7 @@ function CommentsControl(props: CardCommentsProps) {
             const selections = [...draft.selections.filter(item => item.userId.toLowerCase() !== option.userId.toLowerCase()),
               { userId: option.userId, handle: option.handle, handleVersion: option.handleVersion }];
             if (selections.length > 20) { setNotice('Use at most 20 teammate mentions in a comment.'); return; }
-            setDraft({ ...draft, text, selections, cardGroup: false, boardGroup: false }); setNotice(undefined); editor.current?.focus();
+            setDraft({ ...draft, text, selections, cardGroup: false, boardGroup: false }); setNotice(undefined); setCommentError(undefined); editor.current?.focus();
           }} />}
         {intent ? <Button ref={retry} disabled={disabled} onBlur={blur} onClick={event => void save(event.currentTarget)}>Retry original comment change</Button> :
           <Button disabled={disabled || blocked || conflict || !props.editable || draft.deleting && !draft.confirmed} onBlur={blur}

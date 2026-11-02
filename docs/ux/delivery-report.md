@@ -2842,6 +2842,67 @@ HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components;
 
 
 
+## PRD-15 teammate lookup focus cycle — 2026-11-02T00:28:48.849398+00:00
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 77/1672 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2473. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 470 | 3 |
+| Task | 537 | 32 |
+| Test | 557 | 42 |
+
+Implemented but unvalidated: 113. Blocked: 0. Known MVP-critical outstanding: 103; unclassified records: 1343. Weighted progress: not measured.
+
+## 1. Work completed
+
+PR138 normally mergedbacad858 after fresh exact checks/reviews; fetched96e9/ordered6b0+21f944/source ancestry verified.
+Qualified bounded picker focus sourcec84ef9823fc73b1b04736ca2f724e7efa1b5aeb7; exact selected7stages154134ms/17files222pass;73targetedcases and20compiled native keyboard/Axe scenarios.
+
+## 2. Implemented, awaiting validation
+
+ARCH-11-VS-52, ARCH-11-VS-52-T-01, ARCH-11-VS-52-T-01-TEST-01, ARCH-11-VS-82, ARCH-11-VS-82-T-01, ARCH-11-VS-82-T-01-TEST-01, PRD-02-VS-02-T-01, PRD-02-VS-02-T-01-TEST-01, PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03, PRD-25-VS-02-T-03-TEST-01, PRD-06-VS-01-T-02, PRD-06-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02, PRD-03-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02-TEST-02, ARCH-11-VS-82-T-02, ARCH-11-VS-82-T-02-TEST-01, PRD-09-VS-01-T-04, PRD-09-VS-01-T-04-TEST-01, ARCH-11-VS-62-T-02, ARCH-11-VS-62-T-02-TEST-01, PRD-16-VS-01-T-03, PRD-16-VS-01-T-03-TEST-01, PRD-16-VS-01-T-04, PRD-16-VS-01-T-04-TEST-01, PRD-04-VS-02-T-02, PRD-04-VS-02-T-02-TEST-01, PRD-70-VS-01-T-02, PRD-70-VS-01-T-02-TEST-01, ARCH-11-VS-94-T-01, ARCH-11-VS-94-T-01-TEST-01, PRD-03-VS-01-T-03, PRD-03-VS-01-T-03-TEST-01, ARCH-11-VS-15-T-02, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-03, PRD-28-VS-01-T-03-TEST-01, PRD-28-VS-01-T-04, PRD-28-VS-01-T-04-TEST-01, PRD-28-VS-01-T-05, PRD-28-VS-01-T-05-TEST-01, PRD-25-VS-02-T-LOCAL-01, PRD-25-VS-02-T-LOCAL-01-TEST-01, PRD-25-VS-02-T-LOCAL-02, PRD-25-VS-02-T-LOCAL-02-TEST-01, PRD-25-VS-02-T-LOCAL-03, PRD-25-VS-02-T-LOCAL-03-TEST-01, PRD-25-VS-02-T-TIERS-01, PRD-25-VS-02-T-TIERS-01-TEST-01, PRD-25-VS-02-T-TIERS-02, PRD-25-VS-02-T-TIERS-02-TEST-01, PRD-09-VS-01-T-06, PRD-09-VS-01-T-06-TEST-01, PRD-15-VS-02-T-02, PRD-15-VS-02-T-02-TEST-01, PRD-15-VS-02-T-03, PRD-15-VS-02-T-03-TEST-01, PRD-15-VS-02-T-04, PRD-15-VS-02-T-04-TEST-01, PRD-15-VS-02-T-05, PRD-15-VS-02-T-05-TEST-01
+
+## 3. Current work in progress
+
+ARCH-01, ARCH-02, ARCH-03, ARCH-04, ARCH-05, ARCH-06, ARCH-07, ARCH-08, ARCH-09, ARCH-11, ARCH-12, PRD-01, PRD-02, PRD-02-VS-02, PRD-03, PRD-04, PRD-05, PRD-06, PRD-07, PRD-08, PRD-08-VS-01, PRD-08-VS-01-T-01, PRD-08-VS-01-T-01-TEST-01, PRD-09, PRD-09-VS-01, PRD-10, PRD-11, PRD-11-VS-01, PRD-12, PRD-13, PRD-14, PRD-15, PRD-15-VS-02, PRD-16, PRD-17, PRD-18, PRD-18-VS-01, PRD-21, PRD-22, PRD-24, PRD-25, PRD-25-VS-02, PRD-27, PRD-28, PRD-28-VS-01, PRD-28-VS-01-T-01, PRD-34, PRD-34-VS-01, PRD-34-VS-01-T-01, PRD-60, PRD-70, UX-001, UX-002, UX-003, UX-007-VS-02-T-01, PRD-08-VS-04, PRD-03-VS-06, PRD-03-VS-05, PRD-01-VS-05, ARCH-11-VS-62-T-02-TEST-01, ARCH-11-VS-94, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-02, PRD-28-VS-01-T-02-TEST-01, PRD-34-VS-01-T-02, PRD-34-VS-01-T-02-TEST-01
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Reconcile current operational MVP acceptance and select the smallest demonstrated gap.
+
+## 6. PRD progress changes
+
+Only bounded actual keyboard gap added; prior mainT02/T03/T04 records preserved. PendingPR139 source/tracking stays immutable separately for future tested union; no parent closure or source-path waiver.
+
+## 7. Completion evidence
+
+EVIDENCE-PRD15-MENTION-PICKER-FOCUS-20261101; EVIDENCE-PRD15-MENTION-PICKER-FOCUS-RED-20261101; docs/delivery/evidence/mention-picker-focus-20261101.json SHA256 8a481a3caf726792860ee409bca5789ac54685da157ed1eb92aa1a30d46ab4fc
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+
+
 ---
 
 # Incremental delivery progress
@@ -2901,6 +2962,70 @@ HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtim
 HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
 HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
 
+
+
+## PRD-15 comment editor validation cycle — 2026-11-02T00:45:25.993590+00:00
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 77/1672 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2473. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 470 | 3 |
+| Task | 537 | 32 |
+| Test | 557 | 42 |
+
+Implemented but unvalidated: 113. Blocked: 0. Known MVP-critical outstanding: 103; unclassified records: 1343. Weighted progress: not measured.
+
+## 1. Work completed
+
+PR140 ready/unmerged afterexactrequiredci/all5CodeQL/5originalZIPstrictvalidation; pendinghistorypreservedseparately.
+Boundedcommentfieldvalidation source11cbfd6ec89326fd40998303851163bc39c17e46 selectedfinal16files215cases/all7stages156422ms;62targeted/10nativekeyboard+Axecases.
+
+## 2. Implemented, awaiting validation
+
+ARCH-11-VS-52, ARCH-11-VS-52-T-01, ARCH-11-VS-52-T-01-TEST-01, ARCH-11-VS-82, ARCH-11-VS-82-T-01, ARCH-11-VS-82-T-01-TEST-01, PRD-02-VS-02-T-01, PRD-02-VS-02-T-01-TEST-01, PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03, PRD-25-VS-02-T-03-TEST-01, PRD-06-VS-01-T-02, PRD-06-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02, PRD-03-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02-TEST-02, ARCH-11-VS-82-T-02, ARCH-11-VS-82-T-02-TEST-01, PRD-09-VS-01-T-04, PRD-09-VS-01-T-04-TEST-01, ARCH-11-VS-62-T-02, ARCH-11-VS-62-T-02-TEST-01, PRD-16-VS-01-T-03, PRD-16-VS-01-T-03-TEST-01, PRD-16-VS-01-T-04, PRD-16-VS-01-T-04-TEST-01, PRD-04-VS-02-T-02, PRD-04-VS-02-T-02-TEST-01, PRD-70-VS-01-T-02, PRD-70-VS-01-T-02-TEST-01, ARCH-11-VS-94-T-01, ARCH-11-VS-94-T-01-TEST-01, PRD-03-VS-01-T-03, PRD-03-VS-01-T-03-TEST-01, ARCH-11-VS-15-T-02, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-03, PRD-28-VS-01-T-03-TEST-01, PRD-28-VS-01-T-04, PRD-28-VS-01-T-04-TEST-01, PRD-28-VS-01-T-05, PRD-28-VS-01-T-05-TEST-01, PRD-25-VS-02-T-LOCAL-01, PRD-25-VS-02-T-LOCAL-01-TEST-01, PRD-25-VS-02-T-LOCAL-02, PRD-25-VS-02-T-LOCAL-02-TEST-01, PRD-25-VS-02-T-LOCAL-03, PRD-25-VS-02-T-LOCAL-03-TEST-01, PRD-25-VS-02-T-TIERS-01, PRD-25-VS-02-T-TIERS-01-TEST-01, PRD-25-VS-02-T-TIERS-02, PRD-25-VS-02-T-TIERS-02-TEST-01, PRD-09-VS-01-T-06, PRD-09-VS-01-T-06-TEST-01, PRD-15-VS-02-T-02, PRD-15-VS-02-T-02-TEST-01, PRD-15-VS-02-T-03, PRD-15-VS-02-T-03-TEST-01, PRD-15-VS-02-T-04, PRD-15-VS-02-T-04-TEST-01, PRD-15-VS-01-T-02, PRD-15-VS-01-T-02-TEST-01
+
+## 3. Current work in progress
+
+ARCH-01, ARCH-02, ARCH-03, ARCH-04, ARCH-05, ARCH-06, ARCH-07, ARCH-08, ARCH-09, ARCH-11, ARCH-12, PRD-01, PRD-02, PRD-02-VS-02, PRD-03, PRD-04, PRD-05, PRD-06, PRD-07, PRD-08, PRD-08-VS-01, PRD-08-VS-01-T-01, PRD-08-VS-01-T-01-TEST-01, PRD-09, PRD-09-VS-01, PRD-10, PRD-11, PRD-11-VS-01, PRD-12, PRD-13, PRD-14, PRD-15, PRD-15-VS-01, PRD-15-VS-02, PRD-16, PRD-17, PRD-18, PRD-18-VS-01, PRD-21, PRD-22, PRD-24, PRD-25, PRD-25-VS-02, PRD-27, PRD-28, PRD-28-VS-01, PRD-28-VS-01-T-01, PRD-34, PRD-34-VS-01, PRD-34-VS-01-T-01, PRD-60, PRD-70, UX-001, UX-002, UX-003, UX-007-VS-02-T-01, PRD-08-VS-04, PRD-03-VS-06, PRD-03-VS-05, PRD-01-VS-05, ARCH-11-VS-62-T-02-TEST-01, ARCH-11-VS-94, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-02, PRD-28-VS-01-T-02-TEST-01, PRD-34-VS-01-T-02, PRD-34-VS-01-T-02-TEST-01
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Reconcile current operational MVP acceptance and select the smallest demonstrated gap.
+
+## 6. PRD progress changes
+
+Onlydemonstratedfieldassociation gap added; originalmainrecords/history retained. PendingPR139+140 separateunmergedsource/tracking keptimmutable; futureintegrationmustreconcileunion/qualifycombinedtree. No parentDone.
+
+## 7. Completion evidence
+
+EVIDENCE-PRD15-COMMENT-VALIDATION-20261101; EVIDENCE-PRD15-COMMENT-VALIDATION-RED-20261101; docs/delivery/evidence/comment-validation-20261101.json SHA256 15bbbabd46a24d9e62b64c96fe04cd1a16cef8b298c21d70bf6ec0a0f03c0b30
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+
+
+Evidence catalog finalization: the preliminary ledger-log label represented its empty pre-transition snapshot. Original preliminary manifest SHA256 15bbbabd46a24d9e62b64c96fe04cd1a16cef8b298c21d70bf6ec0a0f03c0b30 and exact empty bytes are retained privately; the final catalog separates that snapshot from the immutable completed CLI log. Corrected scoped evidence SHA256 7f4021001d5561e5b0e7268c4211de9d9849fd9ef844a5a0ee1690223cf19aee. No original test result, assertion, artifact, receipt, source or prior report bytes changed. Broad/full/product acceptance remains unverified.
 
 
 <!-- CYCLE-PRD02-VERIFY-EMAIL-LANDMARK-20261101 -->
@@ -2964,3 +3089,322 @@ HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtim
 HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
 HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
 
+
+
+## PRD-15 visible activity navigation cycle — 2026-11-02T01:17:23.667333+00:00
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 77/1672 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2473. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 470 | 3 |
+| Task | 537 | 32 |
+| Test | 557 | 42 |
+
+Implemented but unvalidated: 113. Blocked: 0. Known MVP-critical outstanding: 103; unclassified records: 1343. Weighted progress: not measured.
+
+## 1. Work completed
+
+PR141 ready/unmerged after exactrequiredci/all5CodeQL and fiveoriginalZIP strictverification; pending139/140/141history preserved separately.
+Qualified visible owned activity navigation source b796000d29f9bfd6df86d860df5745bfd55b5015;35unchangedtargetedcases/10routednativecases;exact7stage409320ms/228files3118pass24originaldeferred.
+
+## 2. Implemented, awaiting validation
+
+ARCH-11-VS-52, ARCH-11-VS-52-T-01, ARCH-11-VS-52-T-01-TEST-01, ARCH-11-VS-82, ARCH-11-VS-82-T-01, ARCH-11-VS-82-T-01-TEST-01, PRD-02-VS-02-T-01, PRD-02-VS-02-T-01-TEST-01, PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03, PRD-25-VS-02-T-03-TEST-01, PRD-06-VS-01-T-02, PRD-06-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02, PRD-03-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02-TEST-02, ARCH-11-VS-82-T-02, ARCH-11-VS-82-T-02-TEST-01, PRD-09-VS-01-T-04, PRD-09-VS-01-T-04-TEST-01, ARCH-11-VS-62-T-02, ARCH-11-VS-62-T-02-TEST-01, PRD-16-VS-01-T-03, PRD-16-VS-01-T-03-TEST-01, PRD-16-VS-01-T-04, PRD-16-VS-01-T-04-TEST-01, PRD-04-VS-02-T-02, PRD-04-VS-02-T-02-TEST-01, PRD-70-VS-01-T-02, PRD-70-VS-01-T-02-TEST-01, ARCH-11-VS-94-T-01, ARCH-11-VS-94-T-01-TEST-01, PRD-03-VS-01-T-03, PRD-03-VS-01-T-03-TEST-01, ARCH-11-VS-15-T-02, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-03, PRD-28-VS-01-T-03-TEST-01, PRD-28-VS-01-T-04, PRD-28-VS-01-T-04-TEST-01, PRD-28-VS-01-T-05, PRD-28-VS-01-T-05-TEST-01, PRD-25-VS-02-T-LOCAL-01, PRD-25-VS-02-T-LOCAL-01-TEST-01, PRD-25-VS-02-T-LOCAL-02, PRD-25-VS-02-T-LOCAL-02-TEST-01, PRD-25-VS-02-T-LOCAL-03, PRD-25-VS-02-T-LOCAL-03-TEST-01, PRD-25-VS-02-T-TIERS-01, PRD-25-VS-02-T-TIERS-01-TEST-01, PRD-25-VS-02-T-TIERS-02, PRD-25-VS-02-T-TIERS-02-TEST-01, PRD-09-VS-01-T-06, PRD-09-VS-01-T-06-TEST-01, PRD-15-VS-02-T-02, PRD-15-VS-02-T-02-TEST-01, PRD-15-VS-02-T-03, PRD-15-VS-02-T-03-TEST-01, PRD-15-VS-02-T-04, PRD-15-VS-02-T-04-TEST-01, PRD-15-VS-02-T-06, PRD-15-VS-02-T-06-TEST-01
+
+## 3. Current work in progress
+
+ARCH-01, ARCH-02, ARCH-03, ARCH-04, ARCH-05, ARCH-06, ARCH-07, ARCH-08, ARCH-09, ARCH-11, ARCH-12, PRD-01, PRD-02, PRD-02-VS-02, PRD-03, PRD-04, PRD-05, PRD-06, PRD-07, PRD-08, PRD-08-VS-01, PRD-08-VS-01-T-01, PRD-08-VS-01-T-01-TEST-01, PRD-09, PRD-09-VS-01, PRD-10, PRD-11, PRD-11-VS-01, PRD-12, PRD-13, PRD-14, PRD-15, PRD-15-VS-02, PRD-16, PRD-17, PRD-18, PRD-18-VS-01, PRD-21, PRD-22, PRD-24, PRD-25, PRD-25-VS-02, PRD-27, PRD-28, PRD-28-VS-01, PRD-28-VS-01-T-01, PRD-34, PRD-34-VS-01, PRD-34-VS-01-T-01, PRD-60, PRD-70, UX-001, UX-002, UX-003, UX-007-VS-02-T-01, PRD-08-VS-04, PRD-03-VS-06, PRD-03-VS-05, PRD-01-VS-05, ARCH-11-VS-62-T-02-TEST-01, ARCH-11-VS-94, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-02, PRD-28-VS-01-T-02-TEST-01, PRD-34-VS-01-T-02, PRD-34-VS-01-T-02-TEST-01
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Reconcile current operational MVP acceptance and select the smallest demonstrated gap.
+
+## 6. PRD progress changes
+
+Only demonstrated bounded focus gaps added; T05 reserved on pendingPR140, all prior main rows retained. Pending139/140/141 source/tracking remain immutable separately; future integration must reconcile union and qualify combined tree. No parentDone.
+
+## 7. Completion evidence
+
+EVIDENCE-PRD15-ACTIVITY-HISTORY-FOCUS-20261101; EVIDENCE-PRD15-ACTIVITY-HISTORY-FOCUS-RED-20261101; docs/delivery/evidence/activity-history-focus-20261101.json SHA256 cf0eb5621a299c6a4153e4f1c277a4474eb59c4d5597dd3b1b2803edb11849c9
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+
+
+---
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 77/1670 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2471. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 470 | 3 |
+| Task | 536 | 32 |
+| Test | 556 | 42 |
+
+Implemented but unvalidated: 111. Blocked: 0. Known MVP-critical outstanding: 103; unclassified records: 1341. Weighted progress: not measured.
+
+## 1. Work completed
+
+Scoped canonical regression on unchanged mergedmain bacad858:9original real-service browser cases Passed, no skips, original security/role/abuse fixture stages Passed;20m7.856s total local exact-image setup/runtime. No new implementation or Done claim.
+
+## 2. Implemented, awaiting validation
+
+ARCH-11-VS-52, ARCH-11-VS-52-T-01, ARCH-11-VS-52-T-01-TEST-01, ARCH-11-VS-82, ARCH-11-VS-82-T-01, ARCH-11-VS-82-T-01-TEST-01, PRD-02-VS-02-T-01, PRD-02-VS-02-T-01-TEST-01, PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03, PRD-25-VS-02-T-03-TEST-01, PRD-06-VS-01-T-02, PRD-06-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02, PRD-03-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02-TEST-02, ARCH-11-VS-82-T-02, ARCH-11-VS-82-T-02-TEST-01, PRD-09-VS-01-T-04, PRD-09-VS-01-T-04-TEST-01, ARCH-11-VS-62-T-02, ARCH-11-VS-62-T-02-TEST-01, PRD-16-VS-01-T-03, PRD-16-VS-01-T-03-TEST-01, PRD-16-VS-01-T-04, PRD-16-VS-01-T-04-TEST-01, PRD-04-VS-02-T-02, PRD-04-VS-02-T-02-TEST-01, PRD-70-VS-01-T-02, PRD-70-VS-01-T-02-TEST-01, ARCH-11-VS-94-T-01, ARCH-11-VS-94-T-01-TEST-01, PRD-03-VS-01-T-03, PRD-03-VS-01-T-03-TEST-01, ARCH-11-VS-15-T-02, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-03, PRD-28-VS-01-T-03-TEST-01, PRD-28-VS-01-T-04, PRD-28-VS-01-T-04-TEST-01, PRD-28-VS-01-T-05, PRD-28-VS-01-T-05-TEST-01, PRD-25-VS-02-T-LOCAL-01, PRD-25-VS-02-T-LOCAL-01-TEST-01, PRD-25-VS-02-T-LOCAL-02, PRD-25-VS-02-T-LOCAL-02-TEST-01, PRD-25-VS-02-T-LOCAL-03, PRD-25-VS-02-T-LOCAL-03-TEST-01, PRD-25-VS-02-T-TIERS-01, PRD-25-VS-02-T-TIERS-01-TEST-01, PRD-25-VS-02-T-TIERS-02, PRD-25-VS-02-T-TIERS-02-TEST-01, PRD-09-VS-01-T-06, PRD-09-VS-01-T-06-TEST-01, PRD-15-VS-02-T-02, PRD-15-VS-02-T-02-TEST-01, PRD-15-VS-02-T-03, PRD-15-VS-02-T-03-TEST-01, PRD-15-VS-02-T-04, PRD-15-VS-02-T-04-TEST-01
+
+## 3. Current work in progress
+
+Existing integrated handle Task/Test remain Review; preserve original implementation/localValidation/integration/history and add only scoped canonicalValidation.
+Qualify and publish documentation-only evidence with selected fast CI; pendingPR139/140/141/142 stay independent reviewable branches.
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Reviewable scoped canonical evidence publication; then next small demonstrated approved PRD15 gap without duplicate implementation.
+
+## 6. PRD progress changes
+
+No duplicate Task/Test or parent closure. Only additive canonicalValidation on existing PRD15VS02T02/Test, with prior records and acceptance unchanged.
+
+## 7. Completion evidence
+
+EVIDENCE-PRD15-HANDLE-CANONICAL-20261102; docs/delivery/evidence/mention-handle-canonical-20261102.json SHA256 52fb2d467eb205399c43325edc214c467ea70bb72e5203bd12b30230eac51783; EVIDENCE-PRD15-HANDLE-CANONICAL-PREPARATION-20261102 retains preparation-only failure.
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+
+
+---
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 77/1670 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2471. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 470 | 3 |
+| Task | 536 | 32 |
+| Test | 556 | 42 |
+
+Implemented but unvalidated: 111. Blocked: 0. Known MVP-critical outstanding: 103; unclassified records: 1341. Weighted progress: not measured.
+
+## 1. Work completed
+
+Added dedicated five-case canonical handle field browser coverage to existing integrated behavior; actual10case runtimePassed5.3m with original security/roles/abuse setup and owned cleanup, no original assertions changed.
+Qualified exact source60f67380bc8e08e38c2bd145abe2ff97bd3eef1a: complete JSCodeQL0findings/87rules; final selected7stages404555ms,228webfiles3118passed+24originalcapacitydeferrals/UI2. All10actual field captures inspected.
+
+## 2. Implemented, awaiting validation
+
+ARCH-11-VS-52, ARCH-11-VS-52-T-01, ARCH-11-VS-52-T-01-TEST-01, ARCH-11-VS-82, ARCH-11-VS-82-T-01, ARCH-11-VS-82-T-01-TEST-01, PRD-02-VS-02-T-01, PRD-02-VS-02-T-01-TEST-01, PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03, PRD-25-VS-02-T-03-TEST-01, PRD-06-VS-01-T-02, PRD-06-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02, PRD-03-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02-TEST-02, ARCH-11-VS-82-T-02, ARCH-11-VS-82-T-02-TEST-01, PRD-09-VS-01-T-04, PRD-09-VS-01-T-04-TEST-01, ARCH-11-VS-62-T-02, ARCH-11-VS-62-T-02-TEST-01, PRD-16-VS-01-T-03, PRD-16-VS-01-T-03-TEST-01, PRD-16-VS-01-T-04, PRD-16-VS-01-T-04-TEST-01, PRD-04-VS-02-T-02, PRD-04-VS-02-T-02-TEST-01, PRD-70-VS-01-T-02, PRD-70-VS-01-T-02-TEST-01, ARCH-11-VS-94-T-01, ARCH-11-VS-94-T-01-TEST-01, PRD-03-VS-01-T-03, PRD-03-VS-01-T-03-TEST-01, ARCH-11-VS-15-T-02, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-03, PRD-28-VS-01-T-03-TEST-01, PRD-28-VS-01-T-04, PRD-28-VS-01-T-04-TEST-01, PRD-28-VS-01-T-05, PRD-28-VS-01-T-05-TEST-01, PRD-25-VS-02-T-LOCAL-01, PRD-25-VS-02-T-LOCAL-01-TEST-01, PRD-25-VS-02-T-LOCAL-02, PRD-25-VS-02-T-LOCAL-02-TEST-01, PRD-25-VS-02-T-LOCAL-03, PRD-25-VS-02-T-LOCAL-03-TEST-01, PRD-25-VS-02-T-TIERS-01, PRD-25-VS-02-T-TIERS-01-TEST-01, PRD-25-VS-02-T-TIERS-02, PRD-25-VS-02-T-TIERS-02-TEST-01, PRD-09-VS-01-T-06, PRD-09-VS-01-T-06-TEST-01, PRD-15-VS-02-T-02, PRD-15-VS-02-T-02-TEST-01, PRD-15-VS-02-T-03, PRD-15-VS-02-T-03-TEST-01, PRD-15-VS-02-T-04, PRD-15-VS-02-T-04-TEST-01
+
+## 3. Current work in progress
+
+Existing PRD15VS02T02/Test remainReview; add only separately scoped canonicalFieldValidation without replacing prior implementation/localValidation/integration/history or broadNotRun.
+PendingPR139/140/141/142/143 source/tracking and canonical9case evidence retained immutable for later union reconciliation; no new merge authorized.
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Publish the exact qualified browser-test/evidence increment as a draft PR, verify fresh selected hostedchecks/artifacts/all5CodeQL/reviews, then continue next real approved bounded PRD15 work.
+
+## 6. PRD progress changes
+
+No new Task/Test/PRD, no lifecycle promotion, acceptance reset or parentclosure; existing implementation and all prior fields/criteria/evidence/history retained.
+
+## 7. Completion evidence
+
+EVIDENCE-PRD15-HANDLE-FIELD-BROWSER-20261102; docs/delivery/evidence/mention-handle-field-browser-20261102.json SHA256 8dec635d877912de1ca78bb54445c98ec82eae3963d2d56b965cd2f74eba1ac8; EVIDENCE-PRD15-HANDLE-FIELD-BROWSER-PREPARATION-20261102 retains preparation-only failures.
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+
+
+---
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 77/1670 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2471. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 470 | 3 |
+| Task | 536 | 32 |
+| Test | 556 | 42 |
+
+Implemented but unvalidated: 111. Blocked: 0. Known MVP-critical outstanding: 103; unclassified records: 1341. Weighted progress: not measured.
+
+## 1. Work completed
+
+Unchanged mergedmain bacad858 canonical account-replacement boundary validation: complete original8command cases plus5requiredBoard baselines Passed13/13 in6.4m;1183.635s total originalfixture/image/security/roles/abuse; ownedcleanup verified. No new app/test implementation.
+
+## 2. Implemented, awaiting validation
+
+ARCH-11-VS-52, ARCH-11-VS-52-T-01, ARCH-11-VS-52-T-01-TEST-01, ARCH-11-VS-82, ARCH-11-VS-82-T-01, ARCH-11-VS-82-T-01-TEST-01, PRD-02-VS-02-T-01, PRD-02-VS-02-T-01-TEST-01, PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03, PRD-25-VS-02-T-03-TEST-01, PRD-06-VS-01-T-02, PRD-06-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02, PRD-03-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02-TEST-02, ARCH-11-VS-82-T-02, ARCH-11-VS-82-T-02-TEST-01, PRD-09-VS-01-T-04, PRD-09-VS-01-T-04-TEST-01, ARCH-11-VS-62-T-02, ARCH-11-VS-62-T-02-TEST-01, PRD-16-VS-01-T-03, PRD-16-VS-01-T-03-TEST-01, PRD-16-VS-01-T-04, PRD-16-VS-01-T-04-TEST-01, PRD-04-VS-02-T-02, PRD-04-VS-02-T-02-TEST-01, PRD-70-VS-01-T-02, PRD-70-VS-01-T-02-TEST-01, ARCH-11-VS-94-T-01, ARCH-11-VS-94-T-01-TEST-01, PRD-03-VS-01-T-03, PRD-03-VS-01-T-03-TEST-01, ARCH-11-VS-15-T-02, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-03, PRD-28-VS-01-T-03-TEST-01, PRD-28-VS-01-T-04, PRD-28-VS-01-T-04-TEST-01, PRD-28-VS-01-T-05, PRD-28-VS-01-T-05-TEST-01, PRD-25-VS-02-T-LOCAL-01, PRD-25-VS-02-T-LOCAL-01-TEST-01, PRD-25-VS-02-T-LOCAL-02, PRD-25-VS-02-T-LOCAL-02-TEST-01, PRD-25-VS-02-T-LOCAL-03, PRD-25-VS-02-T-LOCAL-03-TEST-01, PRD-25-VS-02-T-TIERS-01, PRD-25-VS-02-T-TIERS-01-TEST-01, PRD-25-VS-02-T-TIERS-02, PRD-25-VS-02-T-TIERS-02-TEST-01, PRD-09-VS-01-T-06, PRD-09-VS-01-T-06-TEST-01, PRD-15-VS-02-T-02, PRD-15-VS-02-T-02-TEST-01, PRD-15-VS-02-T-03, PRD-15-VS-02-T-03-TEST-01, PRD-15-VS-02-T-04, PRD-15-VS-02-T-04-TEST-01
+
+## 3. Current work in progress
+
+Existing T02/Test remainReview; add only separately scoped canonicalAccountBoundaryValidation, preserving prior corefields/history/broadNotRun/Unverified criteria.
+Qualify/publish docs-only evidence with fresh selected hostedchecks/all5CodeQL/reviews; pending139-144 histories retained for futureunion.
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Reviewable scoped account-boundary documentation evidence; then next real approved small PRD15 gap without duplicated implementation.
+
+## 6. PRD progress changes
+
+No new Task/Test/PRD, parentclosure or lifecyclepromotion. Scope validates existing handle command under real account replacement; adjacent profile/logout/deactivate cases retained as complete originalfile.
+
+## 7. Completion evidence
+
+EVIDENCE-PRD15-HANDLE-ACCOUNT-BOUNDARY-20261102; docs/delivery/evidence/mention-handle-account-boundary-20261102.json SHA256 1ebf23911e4f60022cd83cd4e39e134a6f15bba6d384c567c62fe66a5978c8df
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+
+
+## 2026-11-02 — Combined PRD-15 polish and visible activity focus
+
+Implemented at `eb9515e4545b6c51a5990e40714da2327a4cbcdf` (tree `2c8ba7dd477ef6a448022e168551d6a0124eea17`): owned PR140–145 source/record/history unions, each tested before its ordered two-parent merge. All normal backups and prior failures remain. Pending peer PR147 is separate. A genuine native indicator failure was retained: browser keyboard focus remained visible by the native pseudo-class while MUI's indicator class/outline stayed absent for 5,026ms. Existing owned target/authority recovery now synchronizes MUI's public focus action only when native focus is already visible.
+
+Tested: 35 original activity/focus cases; 10 complete native Board/Card cases with actual 2px outline, viewport/center-hit/Axe checks at 320/390/768/1280 and tablet text 200%; all 20 captures inspected. The selected exact local gate passed 232 complete web files, 3,148 cases and 24 original capacity deferrals in 412,582ms; synthetic compiled UI two cases remain distinct. Fresh complete JS CodeQL: zero findings across 87 rules. New exact-image real-service run `382c7bbe-e81a-414d-b92d-18eb4e4d05b3` passed all 24 cases in six complete original consumer files, with original roles, security, permissions, migration refusals and abuse assertions; 1,693.578s total. Original report inventory, three live image bindings, 16 actual captures and owned cleanup verified.
+
+Acceptance: scoped evidence only. Fresh hosted qualification and authorized normal target merge remain pending. Broad Tests remain Not Run; criteria Unverified and parent states unchanged. Full nightly and every exact production candidate remain mandatory. No product/MVP/full completion is inferred. Original DOM-only geometry passes, genuine CSS failure, import preparation refusal and tracking serializer parse refusal are preserved separately. Public evidence: [combined qualification](../delivery/evidence/prd15-polish-integration-20261102.json).
+
+Generated ledger snapshot follows; counts are by hierarchy kind, not a combined completion percentage.
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 77/1680 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2481. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 470 | 3 |
+| Task | 541 | 32 |
+| Test | 561 | 42 |
+
+Implemented but unvalidated: 121. Blocked: 0. Known MVP-critical outstanding: 103; unclassified records: 1351. Weighted progress: not measured.
+
+## 1. Work completed
+
+All6ownedreviewedPR140-145 sources/records/history/report combined onecandidate atatime, each tested before normalordered2parentcommit; alloldbackups/evidence retained.
+Genuine nativefocusindicator failure corrected with publicMUIaction gatedbynativefocusvisible;35unit10native232file3148case fastgate/security0of87 and24realservicecasespassed; captures/images/cleanupverified.
+
+## 2. Implemented, awaiting validation
+
+ARCH-11-VS-52, ARCH-11-VS-52-T-01, ARCH-11-VS-52-T-01-TEST-01, ARCH-11-VS-82, ARCH-11-VS-82-T-01, ARCH-11-VS-82-T-01-TEST-01, PRD-02-VS-02-T-01, PRD-02-VS-02-T-01-TEST-01, PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03, PRD-25-VS-02-T-03-TEST-01, PRD-06-VS-01-T-02, PRD-06-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02, PRD-03-VS-01-T-02-TEST-01, PRD-03-VS-01-T-02-TEST-02, ARCH-11-VS-82-T-02, ARCH-11-VS-82-T-02-TEST-01, PRD-09-VS-01-T-04, PRD-09-VS-01-T-04-TEST-01, ARCH-11-VS-62-T-02, ARCH-11-VS-62-T-02-TEST-01, PRD-16-VS-01-T-03, PRD-16-VS-01-T-03-TEST-01, PRD-16-VS-01-T-04, PRD-16-VS-01-T-04-TEST-01, PRD-04-VS-02-T-02, PRD-04-VS-02-T-02-TEST-01, PRD-70-VS-01-T-02, PRD-70-VS-01-T-02-TEST-01, ARCH-11-VS-94-T-01, ARCH-11-VS-94-T-01-TEST-01, PRD-03-VS-01-T-03, PRD-03-VS-01-T-03-TEST-01, ARCH-11-VS-15-T-02, ARCH-11-VS-15-T-02-TEST-01, PRD-28-VS-01-T-03, PRD-28-VS-01-T-03-TEST-01, PRD-28-VS-01-T-04, PRD-28-VS-01-T-04-TEST-01, PRD-28-VS-01-T-05, PRD-28-VS-01-T-05-TEST-01, PRD-25-VS-02-T-LOCAL-01, PRD-25-VS-02-T-LOCAL-01-TEST-01, PRD-25-VS-02-T-LOCAL-02, PRD-25-VS-02-T-LOCAL-02-TEST-01, PRD-25-VS-02-T-LOCAL-03, PRD-25-VS-02-T-LOCAL-03-TEST-01, PRD-25-VS-02-T-TIERS-01, PRD-25-VS-02-T-TIERS-01-TEST-01, PRD-25-VS-02-T-TIERS-02, PRD-25-VS-02-T-TIERS-02-TEST-01, PRD-09-VS-01-T-06, PRD-09-VS-01-T-06-TEST-01, PRD-15-VS-02-T-02, PRD-15-VS-02-T-02-TEST-01, PRD-15-VS-02-T-03, PRD-15-VS-02-T-03-TEST-01, PRD-15-VS-02-T-04, PRD-15-VS-02-T-04-TEST-01, PRD-15-VS-02-T-05, PRD-15-VS-02-T-05-TEST-01, PRD-02-VS-05-T-02, PRD-02-VS-05-T-02-TEST-01, PRD-15-VS-01-T-02, PRD-15-VS-01-T-02-TEST-01, PRD-02-VS-01-T-02, PRD-02-VS-01-T-02-TEST-01, PRD-15-VS-02-T-06, PRD-15-VS-02-T-06-TEST-01
+
+## 3. Current work in progress
+
+Fresh hosted selectedCI/all5CodeQL/reviews/artifact verification then human-authorizedNORMAL combinedPRmerge.
+WorkitemsReview/broadNotRun/criteriaUnverified and full/production/product/MVP acceptance remain separate; pendingpeerPR147excluded.
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Publish one reviewable combinedcandidate, qualify exact hostedhead/base andnormallymerge; continue next small approved genuinePRD15gap without routineconfirmation.
+
+## 6. PRD progress changes
+
+No new Task/Test/PRD, parentclosure or contract/authority/fixture/assertion weakening. ExistingT06/Test legally reworked, all priorqualification preserved.
+
+## 7. Completion evidence
+
+EVIDENCE-PRD15-POLISH-INTEGRATION-20261102
+EVIDENCE-PRD15-HISTORY-INDICATOR-RED-20261102
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+
+
+Documentation preparation history: the first wrapper refused a missing explicit baseRef before launching any verifier; a subsequent attempt to replace an existing evidence hash was correctly refused by immutable history validation before ledger writes. Original proof/row bytes and the attempted variant are preserved. A separate new preparation evidence record retains both refusals; unique final-DOCS attempt3 uses the actual qualified source parent. No product test failed and no source qualification was rerun.
