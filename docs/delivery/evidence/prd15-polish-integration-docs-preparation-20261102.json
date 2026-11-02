@@ -1,0 +1,56 @@
+{
+  "at": "2026-11-02T07:14:09.965839+00:00",
+  "sourceRevision": "eb9515e4545b6c51a5990e40714da2327a4cbcdf",
+  "scope": "Documentation-only tooling preparation refusals; no app change or functional test failure. Immutable original qualification file and evidence rows retained.",
+  "failures": [
+    {
+      "phase": "FailedBeforeVerifierLaunch",
+      "error": "KeyError: baseRef in new wrapper candidate (localPlan returns baseSha; explicit baseRef was omitted from generatedcandidate)",
+      "helper": "run-combined-final-docs-attempt1.py",
+      "originalCandidate": "combined-final-docs-candidate.json",
+      "tree": "7f9faa4784ef3231cbfdc32173827afc694b94ea",
+      "noVerificationExecuted": true,
+      "noProductTestFailure": true,
+      "resolution": "Unique attempt2 helper/candidate/status/log/receipt with explicit qualified-source baseRef and required-key preflight; preserve originalattempt."
+    },
+    {
+      "phase": "RefusedBeforeLedgerWrite",
+      "error": "validateEvolution: Lost/rewritten evidence EVIDENCE-PRD15-POLISH-INTEGRATION-20261102",
+      "cause": "New preparation note was attempted as a replacement hash of an existing local evidence row; immutable-evidence guard correctly refused",
+      "originalLedgerUnchanged": true,
+      "changedUnpublishedFileVariantPreserved": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/prd15-polish-integration/combined-unpublished-evidence-preparation-variant.json",
+      "originalEvidenceBytesRestoredFromExactStagedTree": "7f9faa4784ef3231cbfdc32173827afc694b94ea",
+      "resolution": "Original proof/row remain byteexact; append a NEW preparation evidence file/ID, no waiver or oldrow replacement",
+      "followOn": "No attempt2 verifier/helper was created/launched; Pythonmissinghelper refused before testing."
+    }
+  ],
+  "immutableOriginalEvidenceSHA256": "0b4a6c1796e2309c514672549ddc113ae53567970c19dd68100f18662bbdea10",
+  "privateArtifacts": [
+    {
+      "path": "prd15-polish-integration/combined-final-docs-attempt1-preparation-failure.json",
+      "sha256": "776f9758ad594dcb71bb5a9f99fc77f5f070707cd8dcb526ca3bd282399fd807"
+    },
+    {
+      "path": "prd15-polish-integration/combined-docs-immutable-evidence-refusal.json",
+      "sha256": "314d94613ded0d22022567bbec5c757825f9b9ce7919dcb6ded056896dc593cc"
+    },
+    {
+      "path": "prd15-polish-integration/combined-unpublished-evidence-preparation-variant.json",
+      "sha256": "8fc1264c489df65c115d75d80a4383e9eabc68baaeb6093d70059048acaad51e"
+    },
+    {
+      "path": "prd15-polish-integration/run-combined-final-docs-attempt1.py",
+      "sha256": "b85f02913c807bcdfe87dc02b938d660251bc1baed2de1c4e02f975cb838862d"
+    },
+    {
+      "path": "prd15-polish-integration/combined-final-docs-candidate.json",
+      "sha256": "3a56c1707935f68cfe8bc56c66a7d0047bb5455abede9eccce1261f099da066e"
+    },
+    {
+      "path": "prd15-polish-integration/record-docs-preparation-failure-attempt1.mjs",
+      "sha256": "f15bc249409638d97684ec811143018937be139e10e19c6652e4978c962dd75f"
+    }
+  ],
+  "resolution": "Unique finalDOCSattempt3 supplies explicit actualqualifiedsource baseRef and appends new evidence instead of changing any existing immutable row. No verifier/test has run for refused preparations.",
+  "productionQualified": false
+}
