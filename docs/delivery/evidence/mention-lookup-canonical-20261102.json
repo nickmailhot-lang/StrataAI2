@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-02T13:48:28.407506+00:00",
+  "source": {
+    "revision": "5b0a8541af3b04cfde66325bb1388af68099c220",
+    "tree": "8fd9b0ad31ad4b12836754d0b51b9617232d2ac8",
+    "base": "d977719a5ee57b08b218aca5db31dd10afd29604",
+    "normalHookedBackup": "a32f40633ff38646f5370517bd4225e27a9f3523",
+    "paths": [
+      "tests/browser/comment-mention-lookup-focus.spec.ts"
+    ],
+    "scope": "Executable coverage only. Existing picker focus implementation c84ef982 remains unchanged; no application, API, authority, runtime or workflow change."
+  },
+  "requirements": [
+    "PRD-15/COMMENT-FR-005",
+    "PRD-15 sections16/17 TC03/11/12",
+    "UXA-02",
+    "UXA-03",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-07",
+    "UXA-08"
+  ],
+  "canonical": {
+    "run": "20cb3412-9c53-441a-a842-8f5cd77d2c10",
+    "durationSeconds": 1388.856,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "retries": 0,
+    "completeFiles": {
+      "board.spec.ts": 5,
+      "comment-mentions.spec.ts": 2,
+      "comment-mention-lookup-focus.spec.ts": 5
+    },
+    "viewports": [
+      "320",
+      "390",
+      "768",
+      "1280",
+      "768 with200% text/root32px"
+    ],
+    "capturesDirectlyViewed": 41,
+    "nativeCaptureStatePairsVerified": 15,
+    "scope": "Real production UI, cookies, API and PostgreSQL. Two deliberate normalized lookup GETs each use the actual backend200 response, held then fulfilled unchanged. Owned Find focus returns; a deliberately focused enabled Appearance summary keeps focus while Close retains its existing draft-disabled protection. Native active/viewport/center-hit/visible outline predicates and immediate postcapture state pass. One deliberate selected-mention POST binds original key/CSRF/exact body/author receipt plus independent persisted row, CardV2/commentV1, one private recipient inbox, native Card return/reopen, whole-dialog Axe and no overflow/errors.",
+    "retainedOriginals": "Complete Board5 and mention2 cases preserve selected handle revision, reclaimed handle, lost-reply recovery, private inbox and role withdrawal. Original migrations/restrictedroles/143unsafe-role refusals/permissions/privateBoard/auth/abuse passed unchanged.",
+    "provenance": "Three linuxamd64 built IDs/tree labels match live bindings. Actual observed workspace and only-owned containers/volumes/provider/Node/wrapper/lock absence verified."
+  },
+  "sourceQualification": {
+    "codeql": {
+      "version": "2.27.3",
+      "suite": "Complete JavaScript code scanning",
+      "findings": 0,
+      "rules": 87,
+      "sarifSha256": "16877e29dc4307e880b6b50205db9c6cc06accccfe3e45b2d32530c8534c6cd7"
+    },
+    "localRun": "1793626581089-e5ffa48c",
+    "stagesPassed": 7,
+    "durationMs": 412306,
+    "completeWebFiles": 232,
+    "passedCases": 3148,
+    "originalCapacityDeferred": 24,
+    "compiledUiSmokePassed": 2,
+    "receiptSha256": "c51ad8d202d95df72824ddefac2da7c3a2cb1e252fa16deab85d7558a76f2ebc"
+  },
+  "retainedHistory": {
+    "runtime1": {
+      "run": "225fc114-105c-4cb1-bb69-1628c9135fa3",
+      "tree": "9a000d184e24d5ee442e7306abe0fe026d268c22",
+      "durationSeconds": 1415.373,
+      "passed": 7,
+      "failed": 5,
+      "skipped": 0,
+      "cause": "My new test chose Close as the independent focus destination, but the production Card intentionally disables it while a comment draft exists. Original Board and mention cases passed; all five first lookup return checks passed. This was a test assumption error, not demonstrated application failure.",
+      "downstreamNotRun": [
+        "New-case independent preservation, selection, POST, persisted row, private inbox, Card return and Axe",
+        "Postbrowser abuse stage"
+      ],
+      "inspection": "All5failed PNGs, original320trace/source and all12 original HTML rows inspected. Failed source/logs/artifact hashes/tree ref and own failed volumes retained.",
+      "correction": "New test uses the existing enabled Appearance summary and adds a Close-disabled assertion. No app fix or relaxed assertion/budget/retry."
+    },
+    "runtime2": {
+      "run": "e7ceba67-2645-45ed-a129-4b1e7e9bc111",
+      "tree": "50efeb67ee12bdb21c44c577b7a444ac02868ee8",
+      "passed": 12,
+      "durationSeconds": 1402.106,
+      "visual": "Five independent-after captures lacked an outline despite the preceding native predicate passing. Original41PNGs and all results remain unchanged. Root cause was not proven; no app defect claimed.",
+      "followup": "Strengthened test records before/after capture state and requires immediate postcapture focus/indicator without refocusing results. Latest runtime3 passed and its captures agree. Prior visual evidence is not retroactively qualified."
+    },
+    "controlledDiagnostics": "Existing known Board/Profile stream protocol and exact extracted runtime web assets only; no rebuild. Probe1 fivePASS7.9s/10captures reviewed. Probe2 fivePASS7.8s/20captures retained but not directly visually reviewed, so no visual qualification claimed. Controlled HTTP evidence cannot replace the canonical real-service run.",
+    "preparation": "Initial unsupported browser-selection environment produced whole-directory collection stdout instead of usable JSON, not a canonical case execution. Explicit complete-file inventory correction retained. One premature status read occurred before the final wrapper wrote status; same wrapper continued, no relaunch or functional failure."
+  },
+  "pendingVariants": {
+    "pr150": {
+      "head": "e2b774d2e04218f5e83606e063ade313d120d1fe",
+      "tree": "c78739e5002a21e74144d2e94d6cab68d8e4f38b",
+      "status": "Ready/open/unmerged; no merge authorized.",
+      "files": [
+        {
+          "path": "docs/delivery/evidence/mention-prefix-canonical-20261102.json",
+          "sha256": "450404e6fb7a2e06704ab54ea494f0040eb75e85894f6cb353675680e09d14af",
+          "blob": "ec91d53521ed2736530cc0d97d3f3703c75fb0b3"
+        },
+        {
+          "path": "docs/delivery/progress.json",
+          "sha256": "9be390ff934cd376072bd17a4554ae6feda4418848a171bebedd8abd42ded282",
+          "blob": "7d5c03686d385955c220c563f582c6f1ad7eda34"
+        },
+        {
+          "path": "docs/ux/delivery-report.md",
+          "sha256": "62e07109cb65d2aff936ee70bbcc60039cfa7c06cfd5047ce2346bb4d543c00b",
+          "blob": "b333ae648fcb07b5d2c987f7fddeb615878c59f5"
+        },
+        {
+          "path": "tests/browser/comment-mention-prefix-validation.spec.ts",
+          "sha256": "c84d8112744cd93a3fc2a8146b66036d670e3a6fcf9dd0d249ebf6e53a3572ee",
+          "blob": "8d5b96338ecc915ce19c26b2955d0f29aa2989bc"
+        },
+        {
+          "privateEvidence": "hosted/final-qualification.json",
+          "sha256": "44e6b5012d8ebb8ebe824422cdca1347f2a63245930263cd0befd1b3ea1da0e6"
+        },
+        {
+          "privateEvidence": "review-handoff.json",
+          "sha256": "27a3aa6f41bc6ca0e3dc1420e0f4bf392438d5b4513470ea0c715383467aa0a4"
+        },
+        {
+          "privateEvidence": "code-publication-identity-proof.json",
+          "sha256": "f80224b882ad8b247813cb4f7f3913841416c92ed4428b6d4bcde99a1c04bc7b"
+        },
+        {
+          "privateEvidence": "final-publication-identity-proof.json",
+          "sha256": "2c184d8def9038e68f2ba8e9ff7c46d1633274eb5f909385fb8e9165b201dcbb"
+        }
+      ],
+      "snapshotManifestSha256": "6f6b1f90b3333181175243deedf4d2df80acf6d0acbb3c04fd0ca35fbb8d83f5",
+      "terminalProofSha256": "44e6b5012d8ebb8ebe824422cdca1347f2a63245930263cd0befd1b3ea1da0e6",
+      "sourceOnlyReviewClaim": "PRD15-MENTION-PREFIX-CANONICAL-03"
+    },
+    "pr149": {
+      "head": "3be4ebdd036c1bfd4a5ed1c769107dcda5d68ab9",
+      "priorSnapshotManifestSha256": "9900afd838eefb6ad8163d5e2f619a491baa28c5d5a001ccc8e1f1e36f7c9e21",
+      "sourceOnlyReviewClaim": "PRD15-COMMENT-FIELD-CANONICAL-04"
+    },
+    "pr147": {
+      "head": "88bbb17da8fee025a29aac757b67e64cd53ba894",
+      "status": "Existing source-only Review and snapshot chain retained."
+    },
+    "preservation": "All pending source/tracking/report/evidence variants are preserved separately for future lossless integration. None of their unmerged source or tracking is included or claimed integrated in this main-based branch."
+  },
+  "limitations": [
+    "Existing Task/Test remain Review; broad Test NotRun and criteria Unverified remain unchanged. No duplicate Task or implementation lifecycle promotion.",
+    "Hosted exact-head evidence, review and target integration pending at this source stage.",
+    "Feature evidence is not full nightly, exact production, release, product or MVP acceptance."
+  ],
+  "immutablePrivateEvidenceHashes": [
+    {
+      "path": "runtime-attempt3-status.completed.json",
+      "sha256": "b875802642f8880aab518bfe4d46549410e546cb275bb924f7d5c8312d853116"
+    },
+    {
+      "path": "runtime-attempt3-artifact-inventory.json",
+      "sha256": "bb8d7983bdf2ca5e5f217f4c766eb185220f151fd8d411aa164585a928ca4668"
+    },
+    {
+      "path": "runtime-attempt3-html-report-proof.json",
+      "sha256": "04e0ce651997d948f0a417f4f5f408c75a970287e5e146ccdaa4ff66857fef7c"
+    },
+    {
+      "path": "runtime-attempt3-live-image-binding.json",
+      "sha256": "6f8a072a15c571701a6787b40dbbf40962f0030ea0483a47a5af959a4363520f"
+    },
+    {
+      "path": "runtime-attempt3-owned-cleanup-proof.json",
+      "sha256": "224f4bf6f8f55dfa7e07611d089c640d391fda73f5f61c0966b19bf7121043cb"
+    },
+    {
+      "path": "runtime-attempt3-visual-review.json",
+      "sha256": "768c9cbc0ff678ba7320716d50ae408020c3ebece3e41217ab484f97064159d3"
+    },
+    {
+      "path": "runtime-attempt3-native-capture-state-proof.json",
+      "sha256": "7d39b08594cbdb7f67ce6caca72932cb24b7ab93589dcc997980a18be4c4e016"
+    },
+    {
+      "path": "runtime-attempt1-failure-evaluation.json",
+      "sha256": "8cdbf9ee0d1ad6b365ed122b40ae81eab7d0b3e3d48893a0e3b4a5f80c894962"
+    },
+    {
+      "path": "runtime-attempt1-artifact-inventory.json",
+      "sha256": "42861279e77ac79d7497e60d1f020ebdb9430f360dcd6073632265532ae4ef21"
+    },
+    {
+      "path": "runtime-attempt2-capture-timing-evaluation.json",
+      "sha256": "b0e7c562ced89c33b29cd48a1747ab4040e13fdf930cab72fca6ef8fa6ff4116"
+    },
+    {
+      "path": "runtime-attempt2-visual-review.json",
+      "sha256": "fd1ef7b901293d6b19967104c88fe05d491f6332ac00b604033c6aed7b003b60"
+    },
+    {
+      "path": "native-independent-focus-attempt1-visual-review.json",
+      "sha256": "02b27a1b307dd7f820cdec64dc3c10200f6860078a6dae09936bd062570d42fa"
+    },
+    {
+      "path": "native-independent-focus-attempt2.json",
+      "sha256": "cecfeddb310265f16329291d991c6cd64c53f214c014d3a438a7a80881839894"
+    },
+    {
+      "path": "inventory-preparation-evaluation.json",
+      "sha256": "6ce37717917a432babed9af56979099e9b1be73fb4b84687199e74810b380c1a"
+    },
+    {
+      "path": "initial-final-status-read-timing.json",
+      "sha256": "369b5aa9e645d0228ffb2ed05aca2ca700132a8a870e0da0103c918be98ffcdd"
+    },
+    {
+      "path": "final-code-attempt1-receipt.json",
+      "sha256": "c51ad8d202d95df72824ddefac2da7c3a2cb1e252fa16deab85d7558a76f2ebc"
+    },
+    {
+      "path": "final-validation-attempt1-status.completed.json",
+      "sha256": "a59a6a5bbdeac6a41149cfe154adf1873e3ed0c457901eade8c5fe206668ae80"
+    },
+    {
+      "path": "code-publication-identity-proof.json",
+      "sha256": "52482b9df9aaad0239c626267fbb10a1378fdf59dad241a37060ce650fb12895"
+    }
+  ],
+  "productionQualified": false
+}
