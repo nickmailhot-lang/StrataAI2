@@ -11,6 +11,8 @@ const org = id(1), board = id(2), actor = id(3), card = id(4);
 // mandatory; this fixture isolates native paging focus visibility, not persistence.
 async function visibleFocus(target: Locator) {
   await expect(target).toBeFocused(); await expect(target).toBeInViewport();
+  await expect(target).toHaveCSS('outline-style', 'solid');
+  await expect(target).toHaveCSS('outline-width', '2px');
   await expect.poll(() => target.evaluate(element => {
     const box = element.getBoundingClientRect(), x = box.x + box.width / 2, y = box.y + box.height / 2;
     return x >= 0 && y >= 0 && x < innerWidth && y < innerHeight && element.contains(document.elementFromPoint(x, y));
@@ -83,6 +85,7 @@ for (const [width, textZoom] of [[320, 1], [390, 1], [768, 1], [1280, 1], [768, 
     await expect(older).toBeFocused();
     await expect.poll(() => page.evaluate(() => document.getAnimations().filter(animation => animation.playState === 'running'
       && animation.effect?.getComputedTiming().iterations !== Infinity).length)).toBe(0);
+    await visibleFocus(older);
     await page.screenshot({ path: info.outputPath(`history-first-focus-${kind}-${width}.png`) });
     await visibleFocus(older);
     await older.press('Enter'); await expect(history.getByRole('listitem')).toHaveCount(1);
