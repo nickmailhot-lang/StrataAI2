@@ -1,0 +1,717 @@
+{
+  "schemaVersion": 1,
+  "status": "Scoped local qualification; fresh hosted/review/full/product acceptance pending",
+  "source": "b796000d29f9bfd6df86d860df5745bfd55b5015",
+  "tree": "d89f2f717642e2105ae95db8168ef922d74eb5e5",
+  "base": "bacad858a073393def14301d568eb35466acd189",
+  "requirements": [
+    "PRD-15 COMMENT-FR-011; sections16/17; TC11/12",
+    "UXA03/04/05/06/08"
+  ],
+  "implementationPaths": [
+    "apps/web/src/features/kanban/ActivityHistoryControl.tsx",
+    "tests/browser/activity-history-focus.spec.ts"
+  ],
+  "behavior": "Capture the existing Dialog identity for owned focus after a control retires. After existing current-scope focus ownership checks, reveal the retained paging/return target using native centered scrolling. Reuses unchanged focusRecovery helper; no new navigation or data behavior.",
+  "unchanged": [
+    "Original protected profile-before/after reads, identity recovery, authorization/denial, cursor/positions, immutable history and actor attribution.",
+    "No changes to commands, APIs/events/schema, role/tenant/Portal boundaries, original delivery/Worker fixtures, shared shell/theme or helper implementation.",
+    "All original component/parser/recovery and production real-service activity-history assertions remain unchanged. Original30s scenario/5000ms results/zero retries/Axe rules preserved.",
+    "Full nightly and exact production-candidate qualification remain mandatory; fixed24functional/24capacitydeferred and3Domainloaddeferrals unchanged."
+  ],
+  "results": {
+    "originalNative": {
+      "result": "Failed",
+      "scope": "Actual production router/theme at390px, first50successful history rows and Older focused but below viewport. Original5000ms viewport assertion failed; screenshot/errorcontext/trace inspected. Initial fixture protocol left unrelated recovery notices; retained separately."
+    },
+    "healthyOriginalNative": {
+      "result": "Failed",
+      "scope": "Correct navigation context acknowledgment and Board/identity initial SignalR heads; existing approved focusAdmittedControl establishes preactivation focus, then one Enter. Older is focused after50rows but originalviewport assertion still fails; healthy screenshot/trace inspected."
+    },
+    "targeted": {
+      "result": "Passed",
+      "files": 3,
+      "cases": 35,
+      "scope": "Complete unchanged ActivityHistoryControl, activityHistory and focusRecovery component/parser/helper tests."
+    },
+    "nativeAttempt1": {
+      "result": "Failed",
+      "cases": 10,
+      "cause": "New fixture assumed three history reads; original healthy trace independently shows the existing identity profile-head handoff performs a second initial protected read. All paging focus/viewport/Axe assertions before the count check passed.",
+      "resolution": "Preserve exact four queries: empty, empty, after=older-page, empty; zero business writes. No original product test changed."
+    },
+    "nativeAttempt2": {
+      "result": "Failed",
+      "passed": 4,
+      "failed": 6,
+      "cause": "Five Card-history Close returns lost focus when the owner retired inside the existing Dialog; Board768px200% Newer focus was obscured by sticky header. Actual screenshots/traces inspected.",
+      "resolution": "Capture same Dialog fallback using unchanged helper and center native scroll only after current owned focus. Keep every original failure/assertion/budget."
+    },
+    "nativeFinal": {
+      "result": "Passed",
+      "cases": 10,
+      "stats": {
+        "startTime": "2026-11-02T01:05:03.386Z",
+        "duration": 16885.606,
+        "expected": 10,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "scope": "Actual production router/theme, Board/Card at320/390/768/1280 and768200% text. First50/older1/newer50 exact paging; current focused targets visible with unobscured center hit, keyboard Close return; exact4historyqueries/currentcursor;0businesswrites/0pageerrors/0Axe/0documentoverflow. SyntheticHTTP/SignalR fixture distinct from canonical persistence."
+    },
+    "browserTypesLintBuild": {
+      "result": "Passed"
+    },
+    "exactLocal": {
+      "result": "Passed",
+      "run": "1793581685340-6996bcf3",
+      "durationMs": 409320,
+      "summary": {
+        "result": "Passed",
+        "files": 228,
+        "passed": 3118,
+        "existingDeferred": 24,
+        "productionQualified": false
+      },
+      "scope": "All7 selected stages: complete228webfiles3118pass+24originalcapacitydeferrals, web/browsertypes/lint/build/UI2/contracts/ledger/inventory/drift/Python/secrets."
+    }
+  },
+  "preparationFailures": [
+    {
+      "result": "FailedBeforeActivation",
+      "scope": "Healthy protocol original fixture attempt1",
+      "cause": "Foreground/live read retired the initially focused opener before first activation. No viewport assertion ran in that attempt.",
+      "resolution": "Reuse existing preactivation-only focusAdmittedControl, then one activation. Original failed output preserved."
+    },
+    {
+      "result": "Failed",
+      "scope": "Targeted intermediate candidate",
+      "cases": 35,
+      "passed": 21,
+      "failed": 14,
+      "errors": 14,
+      "cause": "JSDOM lacks native scrollIntoView; unconditional call threw.",
+      "resolution": "Use optional-native call pattern already in BoardFilter/BoardStarHistory/ListPositionControls. No original test/mocks changed; real browser viewport/center-hit assertions remain required."
+    },
+    {
+      "result": "FailedReadOnly",
+      "scope": "Source lookup preparation",
+      "cause": "Guessed boardLive/boardSync feature paths did not exist.",
+      "resolution": "Read actual apps/web/src/api/boardLive.ts and existing navigation/identity protocol parsers; no source changed from failed reads."
+    }
+  ],
+  "visualReview": "Ten returned-paging captures directly inspected across both surfaces/all4widths+200%; visible unobscured focus. Original offscreen and intermediate sticky-header/Card-close failures inspected. Close return focus/viewport/center-hit verified automatically in all10cases. Manual screen-reader/canonical production acceptance remains unverified.",
+  "coordination": {
+    "main": "bacad858a073393def14301d568eb35466acd189",
+    "at": "2026-11-02T01:16:22.009992+00:00",
+    "policy": "Independent bounded branch adds only to verified main. PendingPR139/140/141 source/tracking retained separately; no copying unmerged source or source-path waiver. Future integration must reconcile union and qualify actual combined tree.",
+    "pendingPR141": {
+      "head": "19c3bda544678b7fc3ba9b9e71ee6ceacff6de50",
+      "items": [
+        "PRD-15-VS-01-T-02",
+        "PRD-15-VS-01-T-02-TEST-01"
+      ],
+      "cycle": "CYCLE-PRD15-COMMENT-VALIDATION-20261101",
+      "records": [
+        {
+          "path": "docs/delivery/progress.json",
+          "sha256": "d87c62e13e85834eef72c6d3a74f3a05d758218dee9d0a22378e82cba5ea6148",
+          "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/activity-history-focus/canonical-snapshots/pending-pr141/docs/delivery/progress.json"
+        },
+        {
+          "path": "docs/ux/delivery-report.md",
+          "sha256": "4cfbc68d62c67de8a1af4e27fa06b11fa87094db8e9f1d9f5452c4c3969a3ca6",
+          "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/activity-history-focus/canonical-snapshots/pending-pr141/docs/ux/delivery-report.md"
+        },
+        {
+          "path": "docs/delivery/evidence/comment-validation-20261101.json",
+          "sha256": "7f4021001d5561e5b0e7268c4211de9d9849fd9ef844a5a0ee1690223cf19aee",
+          "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/activity-history-focus/canonical-snapshots/pending-pr141/docs/delivery/evidence/comment-validation-20261101.json"
+        }
+      ]
+    },
+    "priorPendingPR139And140": {
+      "manifest": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/comment-validation-polish/canonical-transfer.json",
+      "sha256": "32a9d80eac05a36f4329223a3f9d770292127cc2202a1708405f6fac7ca04d62",
+      "references": {
+        "at": "2026-11-02T00:44:42.303762+00:00",
+        "main": "bacad858a073393def14301d568eb35466acd189",
+        "policy": "Independent boundedsource branch startsverifiedmain; pendingPR139+140 source/tracking keptimmutableinbranches/snapshots, no copyingunmergedsource/no sourcepathwaiver. Futureintegrationmust reconcileunionandqualifyactualcombinedtree.",
+        "pendingPR139": {
+          "head": "7d5a17cf17c2380604581434612532500a38b17a",
+          "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/mention-picker-focus/canonical-transfer-snapshot.json",
+          "sha256": "7a6f40feb39e7ccbda2a6b51549bf30a3c8d209620b0869f7db06a1b07b0bdeb"
+        },
+        "pendingPR140": {
+          "head": "d58944b6f1a54a50a5113ba43bab668039642509",
+          "items": [
+            "PRD-15-VS-02-T-05",
+            "PRD-15-VS-02-T-05-TEST-01"
+          ],
+          "cycle": "CYCLE-PRD15-MENTION-PICKER-FOCUS-20261101",
+          "records": [
+            {
+              "path": "docs/delivery/progress.json",
+              "sha256": "b7eebaffae481928ae4039ed4e4f9bbbec3c7ae73e1e81f6f2df1478e99f67a4",
+              "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/comment-validation-polish/canonical-snapshots/pending-pr140/docs/delivery/progress.json"
+            },
+            {
+              "path": "docs/ux/delivery-report.md",
+              "sha256": "73f503da52b0dd39744291993f500c10a5c75e7ab995d5cc2c9d9938e52061d1",
+              "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/comment-validation-polish/canonical-snapshots/pending-pr140/docs/ux/delivery-report.md"
+            },
+            {
+              "path": "docs/delivery/evidence/mention-picker-focus-20261101.json",
+              "sha256": "8a481a3caf726792860ee409bca5789ac54685da157ed1eb92aa1a30d46ab4fc",
+              "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/comment-validation-polish/canonical-snapshots/pending-pr140/docs/delivery/evidence/mention-picker-focus-20261101.json"
+            }
+          ]
+        },
+        "releasedPaths": [
+          "docs/delivery",
+          "docs/ux/delivery-report.md"
+        ],
+        "fromClaim": "PRD15-MENTION-PICKER-FOCUS-02",
+        "toClaim": "PRD15-COMMENT-VALIDATION-02",
+        "humanCoordinationAuthorized": true
+      }
+    },
+    "releasedPaths": [
+      "docs/delivery",
+      "docs/ux/delivery-report.md"
+    ],
+    "fromClaim": "PRD15-COMMENT-VALIDATION-02",
+    "toClaim": "PRD15-ACTIVITY-HISTORY-FOCUS-02",
+    "humanCoordinationAuthorized": true
+  },
+  "limitations": [
+    "Fresh public-head selected hostedCI/all5CodeQL/reviews pending.",
+    "Synthetic routed HTTP/SignalR proof is not real persisted history/roles/tenant/Portal or screen-reader/full/product/MVP acceptance.",
+    "Unrelated controlled fixture widgets may show unavailable states; no broad acceptance inferred.",
+    "Pending PR139/140/141 source/tracking stay immutable separately; future integration must reconcile union and requalify combined source."
+  ],
+  "productionQualified": false,
+  "sourceBlobHashes": {
+    "apps/web/src/features/kanban/ActivityHistoryControl.tsx": "a364b85d1a171d5629e1dbbb3ec39b2c3b31da38",
+    "tests/browser/activity-history-focus.spec.ts": "e340fd97384d592bc0618e182f83ba1a370eca0d"
+  },
+  "privateArtifacts": [
+    {
+      "path": "strataai-local/activity-history-focus/targeted-attempt2.log",
+      "sha256": "aff9cff475514bab54d3c8be4e3052d41153436746a069ed369e2f69c6a9e7e2"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/intermediate-default-focus-ActivityHistoryControl.tsx",
+      "sha256": "cfbd988d55c92ea330e8b9862c3cc30c1b48a335955f354689db0231b79baea8"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/targeted-final.log",
+      "sha256": "f788b2a2bd2c133d4227bc865fba5bc9596853ee661d8e4c97fcd6920e2e6556"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original.log",
+      "sha256": "80ddabbd76ad20e709e65e6ef962048da9bc2405a2d33683b9c82ff21d52a143"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/lint.log",
+      "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/npm-ci.log",
+      "sha256": "58fe8dea768724d11b3ebf13f9cfe03af151b6f1188cbcc8d8666106e927a456"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/targeted-attempt1.log",
+      "sha256": "adbf9bafe432d93af6ee5b9bf1a98da9f5adc2f217e0705b46c530559192c284"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-types.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/original-ActivityHistoryControl.tsx",
+      "sha256": "fa6477b8376fb08385e0084bd305b7e8c8842e09a50fbad3f3e23b4df1360613"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-types-final.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/intermediate-unguarded-scroll-ActivityHistoryControl.tsx",
+      "sha256": "e661ec6aae86c4493bed224147a641490439fa3de1287bde6f1f04573e79a121"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-attempt2.log",
+      "sha256": "2b1358dfed6bb2bdde0fd6836aa59d394019ac1c639128485d2b5b04cd35ac81"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/canonical-transfer.json",
+      "sha256": "41bf4ad558ed2b40bbc4597086d800ffe5e5f292c458457f6f7e35075cc156c4"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/final-build.log",
+      "sha256": "6dca0cb540d2298ea627942e062c0232f8d75a9c1830f28b07ee4c06649164f3"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-attempt1.spec.ts",
+      "sha256": "6f4087764519f4c99078abbd0dec7fb07ea5678592b71adf3ad5c555d0a2c75c"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-attempt3.log",
+      "sha256": "72ae409aac60d557f71d21dbce44bf19782a5ce74965ad48bf311ec7aa3d7495"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-attempt1.log",
+      "sha256": "00c11ab39c193c34944b923305f40fada9924857ae1f46d85fa65918b3c60e8d"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/original-build.log",
+      "sha256": "340d9ac23a1e39a9034bee4e73116331e4c0740383a227e2eb61589b7befa583"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/final-local-attempt1.log",
+      "sha256": "a8e3dc1c213aab377b1049a2bee4c9abfcea02eaf87a393ec687ca4c5b4e871d"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-healthy.log",
+      "sha256": "5a84bea6b4cafb6a21a61a83d5c5aab7b95e772c08b92e7334f741fc5eba7b9f"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/explicit-code-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/code-commit.log",
+      "sha256": "751ea5f1288088a60fca3425bfcfbdc58dd0fec9c7c83c59623a487fece14761"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-attempt3-candidate.json",
+      "sha256": "acad9a43b36247211a38415378768c27f84420700325d66562991b66b8d0b04a"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/hooks.log",
+      "sha256": "d0b46f0b13f71617c92646326f00b0939834d908a71b03806ae4d54633fb2acb"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-attempt2.spec.ts",
+      "sha256": "8db7e63176127c3fe76d111342d06f660611415407b93dc7c17a48d734ac6a17"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/original-healthy-attempt1.spec.ts",
+      "sha256": "d77ce343cd05b85f43219cc55192d5ec0266aa414936185a5583616913db1188"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/original-admitted-regression.spec.ts",
+      "sha256": "d9d36428750e05ad263bd657d8b40c2ba193e7273e6250ef195ccf96471fb95b"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/final-code-receipt.json",
+      "sha256": "632251f7637b752bbed0494fd15932d7a03d2e019ca10f6e93339c250a8d5f2d"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/fixed-build.log",
+      "sha256": "84d4a46a7f679647eaa1986703524d24d219b2940395082aee0450ec487f4059"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/original-regression.spec.ts",
+      "sha256": "e69d0bd0a3381b7bf02cbc3733de2e45c0491c468a3f3f25a74dff36a9c32de6"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-admitted.log",
+      "sha256": "5a194b59ca9806667d38233727c7d6ca274402b59d9bcb6e68575dd628848243"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-results/activity-history-focus-PRD-febe9-story-paging-focus-at-390px/test-failed-1.png",
+      "sha256": "9d59b07780bd21a7dfd5eb66f765638168d8e3b6c5751029a944c952a7096b72"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-results/activity-history-focus-PRD-febe9-story-paging-focus-at-390px/trace.zip",
+      "sha256": "27335fc6d360e515bf34215faf0a4e68b57e6bf5d3e9ecddc0cb28fe1d9d42e2"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-results/activity-history-focus-PRD-febe9-story-paging-focus-at-390px/history-first-focus-BOARD-390.png",
+      "sha256": "9d59b07780bd21a7dfd5eb66f765638168d8e3b6c5751029a944c952a7096b72"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-admitted-results/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/test-failed-1.png",
+      "sha256": "a2f9ad474867b52b2a670c517dda8326d2cf6d1d9d98b47e639983b9bafc6e34"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-admitted-results/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/trace.zip",
+      "sha256": "dcc8ce73626eb91f8f2cfa19077b2aeaade7e50a99a89a4298c080e3f33394ef"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-admitted-results/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-first-focus-BOARD-390.png",
+      "sha256": "a2f9ad474867b52b2a670c517dda8326d2cf6d1d9d98b47e639983b9bafc6e34"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-first-focus-BOARD-768.png",
+      "sha256": "57f5c8815776aef69e1fd0297f771baef52c29570c676d8d828c8fb1fcf36e8b"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-returned-focus-BOARD-768.png",
+      "sha256": "c688b6e6f04886c16785c83551d28ba71bdd764eeb4b721e4b3c0e1915aacd91"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-first-focus-CARD-1280.png",
+      "sha256": "49e8e7f5505ebb847b50a630a30d545da4bcbfb1eb84352d61a28115b22c4baa"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-returned-focus-CARD-1280.png",
+      "sha256": "b9574688c9fb0a92e2b7eaaacc3087cd5dd1442cabd49b89f7322653863e44fe"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-returned-focus-BOARD-320.png",
+      "sha256": "01c198916468bc1b291fe7432a9cae8e823724205b55cbe168347c5f71f03c18"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-first-focus-BOARD-320.png",
+      "sha256": "b7c299ebe4c1fd4522a2af991ec7f1b86f0cc8cb092a92d9124ff75fa8cadb39"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-returned-focus-CARD-320.png",
+      "sha256": "c0f6c895189b8056ae641fdd4bda19cb2fa0e23497f07f012cba76d3e78567e9"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-first-focus-CARD-320.png",
+      "sha256": "b5c6c5c3a0232276bd8b8fe6016011b4a51556a90e4866889e0311c9d97f0791"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-returned-focus-CARD-390.png",
+      "sha256": "5298a1798d9a314783232fc5844781dab0d87a77be4dd7830e7615993036a24f"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-first-focus-CARD-390.png",
+      "sha256": "4117842686a8341f6c7e3ac6bfa559ec021e10ae92baf7403946b74d3087eeeb"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-returned-focus-CARD-768.png",
+      "sha256": "63bdf292c000bafb76f8f78fbf7a387159e5ca48404d06deb1561752a5fa1fe1"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-first-focus-CARD-768.png",
+      "sha256": "030f8d163501cdf24dfa347c603d982d74ec87bce9e42f2e9e91aa996b9c03e3"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-returned-focus-CARD-768.png",
+      "sha256": "8eaafee6f5493a381a777ed294eac01089b096ac786243a3fc0e446245218c9b"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-first-focus-CARD-768.png",
+      "sha256": "c02b4e5dd11ac0f212efc223d909d84f3062f6c4aba0b57827e0e4b47474a947"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-first-focus-BOARD-390.png",
+      "sha256": "5f2ac20d1716fe2a3fa7c9f2667a759b823f32a25ddc4b5aaac9a821a53ec513"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-returned-focus-BOARD-390.png",
+      "sha256": "b730ef8916b9e5348c5408df5a3aa10ef156910166c5bd321b8ab3cc717d1742"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/history-first-focus-BOARD-768.png",
+      "sha256": "b38a6623bf41e7a6418ff62fd8eb231be919164773b2bf83340968c2423d3e29"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/history-returned-focus-BOARD-768.png",
+      "sha256": "b32f1d2b053677216af43f5b23ee95483f545e7536e290bf66b433008a13ab36"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-first-focus-BOARD-1280.png",
+      "sha256": "95477567d7edf8911950dd38be7b8aed12af23bc0313beafbcbe7c42ccfeaf4c"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt3/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-returned-focus-BOARD-1280.png",
+      "sha256": "01c5b5d9f45cd9e5efd4833e96c96415764fe665bfb19e400119a0c40b441694"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-first-focus-BOARD-768.png",
+      "sha256": "e5aba01d94fc929f5a3b51662afeb74553b7166d7bddeeecec0eb9994cb5c246"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-returned-focus-BOARD-768.png",
+      "sha256": "633260153031e632fa3acd33484b59dcdbaeade0f6a69463d5ff06d13083201a"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/test-failed-1.png",
+      "sha256": "0ee314c9dfb53ee4b3ab000b0c99e867fe237e4a9af3ce4b68b019f150b11924"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/trace.zip",
+      "sha256": "e8e91535ed18f921687e9ee9eaa7f022702145fbbd019d39e70b25e39b720f27"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-first-focus-CARD-1280.png",
+      "sha256": "49e8e7f5505ebb847b50a630a30d545da4bcbfb1eb84352d61a28115b22c4baa"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-returned-focus-CARD-1280.png",
+      "sha256": "b9574688c9fb0a92e2b7eaaacc3087cd5dd1442cabd49b89f7322653863e44fe"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-returned-focus-BOARD-320.png",
+      "sha256": "01c198916468bc1b291fe7432a9cae8e823724205b55cbe168347c5f71f03c18"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-first-focus-BOARD-320.png",
+      "sha256": "f9483f8ca7a36c10a2fc7bc30b4e4762d91ddb3d6742537a565a1a1385011919"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/test-failed-1.png",
+      "sha256": "97cd084feb31c58c530bfb81d3ca44ce748e7e680400f4e6504f4e0a44de4fbc"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-returned-focus-CARD-320.png",
+      "sha256": "c0f6c895189b8056ae641fdd4bda19cb2fa0e23497f07f012cba76d3e78567e9"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/trace.zip",
+      "sha256": "2675705b219fb070cb6266b21e4fca81a7afbd6084f9c31472c9775569be0e1d"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-first-focus-CARD-320.png",
+      "sha256": "b5c6c5c3a0232276bd8b8fe6016011b4a51556a90e4866889e0311c9d97f0791"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/test-failed-1.png",
+      "sha256": "0bab376c71734d1470fefd5cdbc6f938bec177a84063cb79d951246dd92e7add"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-returned-focus-CARD-390.png",
+      "sha256": "cf3769ad8491b92fae9edf4456df68d459ec8961a5f72ef6d5619f4134078515"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/trace.zip",
+      "sha256": "fed8a5e14a926518578857b34107a4f4b16307d1c204ad0ef33e88b6b5538095"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-first-focus-CARD-390.png",
+      "sha256": "9071aafeb7a2a093e5d79845aed47e263322de86f9d2529efddf4313880212cd"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-returned-focus-CARD-768.png",
+      "sha256": "63bdf292c000bafb76f8f78fbf7a387159e5ca48404d06deb1561752a5fa1fe1"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/test-failed-1.png",
+      "sha256": "e85e6c50b37e9026a5eb5970351711b3e2db872a1a00a604c5c0c477db1c561f"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/trace.zip",
+      "sha256": "db64401230e9b0d35c96107561cd6fd99530136f0838ab3871772d97e1e10dc6"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-first-focus-CARD-768.png",
+      "sha256": "569bb3efa33dce12d9a098d5645f711d14ec8080ea50cefeba6dcc1bd95e9810"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-returned-focus-CARD-768.png",
+      "sha256": "8eaafee6f5493a381a777ed294eac01089b096ac786243a3fc0e446245218c9b"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/test-failed-1.png",
+      "sha256": "42e55adbe9b3753f344e4a2e9ee627837717d9b1a5e25d2275d535fc3ee876de"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/trace.zip",
+      "sha256": "27398a57137ec544dd5266eb380916d8d32c1c30ea25e21a73b16ab52ad09de6"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-first-focus-CARD-768.png",
+      "sha256": "5ea236b1cb2f21b9972317db6b05cd728c206b0c6cc28a444caa160b537f5390"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-first-focus-BOARD-390.png",
+      "sha256": "5084759099e362344ef08f3b69869e9b1cf1a5baa1bbf496cc449938bb800e1f"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-returned-focus-BOARD-390.png",
+      "sha256": "d91ddbf8c66f80f41f7b629f5717444bf9a2559a738ee84dedf92ee0899c45e2"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/test-failed-1.png",
+      "sha256": "32f5dc168ebe87658639f3db61d4df93ac3dabef8f1dc2067fef69a763de3586"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/trace.zip",
+      "sha256": "80cea4e2ed650ea0a43750a86a6a38b83b6c6a4f6a830c84f65e0402e712fdce"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/history-first-focus-BOARD-768.png",
+      "sha256": "b38a6623bf41e7a6418ff62fd8eb231be919164773b2bf83340968c2423d3e29"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-first-focus-BOARD-1280.png",
+      "sha256": "945271744752c8c148b4dd5216863c731ac6d9afa1e66ac4b75a2649aa4b5692"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt2/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-returned-focus-BOARD-1280.png",
+      "sha256": "5ffef5817efa6860ffb456d2b5492e4c858fa1d2f979a51a7377866078ef6db3"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/test-failed-1.png",
+      "sha256": "55d614e93bf9ac6ac74a71e743af842acb98f4139f7fe693ecd45bb808b57df1"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/trace.zip",
+      "sha256": "fab07f3889a6384f2d8846695d9b1e665af2950ad1db5d171c2c021db721124d"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-first-focus-BOARD-768.png",
+      "sha256": "57f5c8815776aef69e1fd0297f771baef52c29570c676d8d828c8fb1fcf36e8b"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-798b5-aging-focus-at-768px-text1x/history-returned-focus-BOARD-768.png",
+      "sha256": "f6362470b71e25dc8656d12b338573d8b38e219bef08f9d58a1b598da4086ece"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/test-failed-1.png",
+      "sha256": "31933ae8eb2ada2408bc687f410c599d8d8a59a67357c3b0ba939ab525363b60"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/trace.zip",
+      "sha256": "4acb989c25fab2937fbfdef902362efb8dcbf5fae2802641560c7444e5b6eadd"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-first-focus-CARD-1280.png",
+      "sha256": "49e8e7f5505ebb847b50a630a30d545da4bcbfb1eb84352d61a28115b22c4baa"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-ce6a8-ging-focus-at-1280px-text1x/history-returned-focus-CARD-1280.png",
+      "sha256": "17186454069634c1b4fde1beea85b552836e0f202012853fd9225bf8614ea769"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/test-failed-1.png",
+      "sha256": "c641838bd989dfeeaa706ea233661f206b491677f8e2ba405087681c4572ae21"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/trace.zip",
+      "sha256": "ac8a9793c4ca01b384ea636169b3f442c14cd9fe35c5fc6e9c22d935d8c077a7"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-returned-focus-BOARD-320.png",
+      "sha256": "5124f24d22f1618681177c69a5825a27b4af10c5f22ee19539b616eb617843db"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-48850-aging-focus-at-320px-text1x/history-first-focus-BOARD-320.png",
+      "sha256": "c8a4710e6bbb415389728df3a81a38935d1eb839e94d3ef325150d5c88d88092"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/test-failed-1.png",
+      "sha256": "8a3a7374bf037a77faea75aa4cbbc8b3f117094a20d91aa7acc48103d3260bb0"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-returned-focus-CARD-320.png",
+      "sha256": "c0f6c895189b8056ae641fdd4bda19cb2fa0e23497f07f012cba76d3e78567e9"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/trace.zip",
+      "sha256": "4b06f5e935cd2acd45e91e4b2e50c8c20c8100f08751437678be885fd99d86cd"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-0ced7-aging-focus-at-320px-text1x/history-first-focus-CARD-320.png",
+      "sha256": "b5c6c5c3a0232276bd8b8fe6016011b4a51556a90e4866889e0311c9d97f0791"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/test-failed-1.png",
+      "sha256": "13b26bd8cd20cc8a443bfac58a5e7a64fb2f73a4e367046625112152f7cb4e58"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-returned-focus-CARD-390.png",
+      "sha256": "5298a1798d9a314783232fc5844781dab0d87a77be4dd7830e7615993036a24f"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/trace.zip",
+      "sha256": "642fc7d6fc19c1fd6fbe36f869ec3453511bbf7a2e46a6346953f8d9bd883bdf"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-52209-aging-focus-at-390px-text1x/history-first-focus-CARD-390.png",
+      "sha256": "9071aafeb7a2a093e5d79845aed47e263322de86f9d2529efddf4313880212cd"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-returned-focus-CARD-768.png",
+      "sha256": "63bdf292c000bafb76f8f78fbf7a387159e5ca48404d06deb1561752a5fa1fe1"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/test-failed-1.png",
+      "sha256": "13d89bdabc8ff3d59c8ff7d88aa6729a77e10d74b3b8a8d2b725989f2dcef460"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/trace.zip",
+      "sha256": "eb99109234b2c17a29d5f2baa70a77d009853adcbf64cd2b2bc23fe09ca38978"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-9e466-aging-focus-at-768px-text1x/history-first-focus-CARD-768.png",
+      "sha256": "030f8d163501cdf24dfa347c603d982d74ec87bce9e42f2e9e91aa996b9c03e3"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-returned-focus-CARD-768.png",
+      "sha256": "b1bf9938db89f470c51b8c7c4d86f7c0931b945403886441895b39d3024d524a"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/test-failed-1.png",
+      "sha256": "e389089c90ce05c6b4f213be4ac826c82165aa6460a8910d4a02ffb0eb3aa6e9"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/trace.zip",
+      "sha256": "1236a3c6fcc11de7f68bcbfa5beb5036d23cb0f2e9e3ce41cfa7f46777a7d838"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-e61c9-aging-focus-at-768px-text2x/history-first-focus-CARD-768.png",
+      "sha256": "c02b4e5dd11ac0f212efc223d909d84f3062f6c4aba0b57827e0e4b47474a947"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/test-failed-1.png",
+      "sha256": "72a678f7db6a20bdae78cce50dbb3f221ea6c08d18495f14609d0b6f027f53b1"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/trace.zip",
+      "sha256": "90590172a2e855a4ed5144a6adc291d5dbefe59e05d8541bee2e52813051088e"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-first-focus-BOARD-390.png",
+      "sha256": "3640fa2acc840f0266122e89aa94dbf544a49bc34ac599482a2bdbcfa9e42164"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/history-returned-focus-BOARD-390.png",
+      "sha256": "8ace9fb2ecb78884d70a1c97c26507ed44de7b2189ba9a01402f1c40afbdb306"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/test-failed-1.png",
+      "sha256": "32f5dc168ebe87658639f3db61d4df93ac3dabef8f1dc2067fef69a763de3586"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/trace.zip",
+      "sha256": "d871900a44e7f295062b1462fc3cc8289af198035cd7401d39a565b82ace9f09"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-0263a-aging-focus-at-768px-text2x/history-first-focus-BOARD-768.png",
+      "sha256": "2311b7de7f475964cb7efb4d0662dc13f8ae2de3b151d42f6524f3a1e17c2bfd"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/test-failed-1.png",
+      "sha256": "5ffef5817efa6860ffb456d2b5492e4c858fa1d2f979a51a7377866078ef6db3"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/trace.zip",
+      "sha256": "8b86bf1308e4141c0792b53fd8fb640efad8a753916d42bb654e1350f71def50"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-first-focus-BOARD-1280.png",
+      "sha256": "6ce85f47c5662a90f0bf5d08aa7e05fc65f4b2ca06b07e2a70b43e786e97f669"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/browser-results-attempt1/activity-history-focus-PRD-2e5da-ging-focus-at-1280px-text1x/history-returned-focus-BOARD-1280.png",
+      "sha256": "d28fc12c578e64529111232e6cba0d7cfd05af0c53a79a3a2361e0c419dd89b5"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-healthy-results/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/test-failed-1.png",
+      "sha256": "14d11030de6b1ac34d68910df1515aec30aeed4b8648cd322379b8dcea947822"
+    },
+    {
+      "path": "strataai-local/activity-history-focus/native-original-healthy-results/activity-history-focus-PRD-bfbe4-aging-focus-at-390px-text1x/trace.zip",
+      "sha256": "3a90fc501ddf7219f0811eb1c6f6c1b6e01c1553dfd19d726cecf0be6c324873"
+    }
+  ]
+}
