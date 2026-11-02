@@ -22,7 +22,7 @@ export function PasswordRecoveryPage() {
     else setError(result.status === 429 ? 'Too many requests. Please wait and retry.'
       : recoveryError(result.value, 'The request could not be confirmed. Your email is preserved; please retry.'), result.reference);
   }
-  return <Container maxWidth="sm" sx={{ py: 6 }}><Paper variant="outlined" sx={{ p: 3 }}>
+  return <Container component="main" maxWidth="sm" sx={{ py: 6 }}><Paper variant="outlined" sx={{ p: 3 }}>
     <Stack component="form" onSubmit={submit} spacing={3} aria-label="Request password reset" aria-busy={busy}>
       <Typography variant="h4" component="h1">Reset your password</Typography>
       {error ? <Alert severity="error"><span>{error.message}</span>{error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}</Alert> : null}
