@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "scope": "Existing VerifyEmailPage semantic main landmark only; one existing MUI Container component=main. No auth/token/request/route/layout behavior change.",
+  "owningRequirement": {
+    "issue": 2,
+    "prd": "PRD-02",
+    "slice": "PRD-02-VS-01",
+    "support": [
+      "AUTH-FR-001",
+      "AUTH-FR-009",
+      "section16",
+      "PRD-02-TC-07",
+      "PRD-02-TC-11",
+      "PRD-02-TC-12",
+      "UXA-03",
+      "UXA-04",
+      "UXA-05",
+      "UXA-06",
+      "UXA-07",
+      "UXA-08"
+    ]
+  },
+  "source": {
+    "revision": "2a6863462d643a94743596d51d3502fb2b1b0d05",
+    "tree": "bc4cab93a4e06f0e5b0a9ea299caaad35e8452c1",
+    "base": "c42727fe1ce867b52876ac4e9edf0b3f00c4340a",
+    "normalHookedBackup": "bcc708950395c3808cfdcd21a3e1c105838c9534",
+    "paths": [
+      "apps/web/src/features/auth/VerifyEmailPage.tsx",
+      "apps/web/src/features/auth/VerifyEmail.landmark.test.tsx"
+    ]
+  },
+  "retainedFailures": [
+    {
+      "scope": "Original source dedicated landmark tests",
+      "result": "Failed",
+      "cases": 5,
+      "cause": "Existing public verification page container had no main landmark.",
+      "correction": "Only existing container semantic component=main. Original test assertions retained.",
+      "owner": "integrator"
+    },
+    {
+      "scope": "Read-only preparation ledger inspection",
+      "result": "Failed before qualification",
+      "cause": "Initial helper used nonexistent workItems key; corrected inspection to actual items schema. No source or ledger mutation, test execution or pass inferred."
+    }
+  ],
+  "localValidation": {
+    "result": "Passed",
+    "runId": "1793592132492-e8c6a930",
+    "stages": 7,
+    "elapsedMs": 127815,
+    "selectedWeb": {
+      "files": 10,
+      "passed": 136,
+      "existingDeferred": 0
+    },
+    "checks": [
+      "repository-contracts",
+      "ledger",
+      "integration-inventory",
+      "runtime-drift",
+      "selected-web-feature",
+      "python-contracts",
+      "secret-scan"
+    ],
+    "targeted": {
+      "files": 3,
+      "passed": 42,
+      "durationSeconds": 2.49
+    },
+    "browser": {
+      "result": "Passed",
+      "cases": 10,
+      "durationSeconds": 11.1,
+      "widths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "textZoom": "768px at200%",
+      "retries": 0,
+      "scenarioTimeoutMs": 30000,
+      "expectTimeoutMs": 5000,
+      "source": "actual freshly compiled verification page + real MUI/appTheme/router",
+      "http": "synthetic explicitly intercepted local responses",
+      "assertions": [
+        "one main/h1/form/outcome/return",
+        "no auto verification consumption, query token refused and fragment scrubbed",
+        "resend429->202 and confirmation503->200 preserve exactly2samekey/bodyPOSTs",
+        "safe uniform status/no returned token DOM",
+        "explicit nativeEnter",
+        "zeroAxe/pageerrors/overflow",
+        "return sign-in"
+      ],
+      "visualInspection": [
+        "390resend",
+        "390verified",
+        "768at200%resend"
+      ]
+    }
+  },
+  "acceptance": {
+    "implemented": "Scoped semantic change at exact recorded code revision.",
+    "tested": "Scoped local and compiled syntheticHTTP consumer checks only.",
+    "fullProduction": "Not run; nightly/exactcandidate mandatory.",
+    "productUXMVP": "Unverified; no parentDone or broad authentication acceptance.",
+    "notCertified": [
+      "realmaildelivery",
+      "real token consumption or server persistence",
+      "real session/account/tenant/Portal/revocation",
+      "manual screenreader review"
+    ]
+  },
+  "history": "All original verification/recovery tests unchanged; mergedPR139 records/backups/proofs retained. No auth or idempotency/assertion/deadline/retry change. PendingPRD15history remains in separate qualified branches/snapshots; futureunion needs exactcombinedqualification.",
+  "privateArtifacts": [
+    {
+      "path": "verify-email-landmark/original-red.log",
+      "sha256": "8a8e04c4c17722d7815e683e0ec68afbf539bcb4dc00c98cabbbe32c015e05b3"
+    },
+    {
+      "path": "verify-email-landmark/targeted.log",
+      "sha256": "dfaec4f8ccc3d6c8ed87aca40408b07d7165aba56abab9c3ddecd44c3c876604"
+    },
+    {
+      "path": "verify-email-landmark/final-source.log",
+      "sha256": "f2b472af9f71ad1c5cd13c967216dd3da78a75a652bf9153d42b815881279122"
+    },
+    {
+      "path": "verify-email-landmark/final-source-receipt.json",
+      "sha256": "15ae55bdf55b257d81161cc6fc574f34f01e1407ed3c7d640f9ea70dac5bcd5f"
+    },
+    {
+      "path": "verify-email-landmark/final-source-status.json",
+      "sha256": "84bd5a32358b5fe597680354866c1846ad044bd23bede59cd8c1c6a5ecc4be69"
+    },
+    {
+      "path": "verify-email-landmark/browser.log",
+      "sha256": "6470d28e90516a65c6b2f09a5b0e8d707ef5fb6c39b37fab432aeac1aecfecb6"
+    },
+    {
+      "path": "verify-email-landmark/browser.config.mjs",
+      "sha256": "f97b05e5fe28af675aa078d7ca9b720e542ce3e589a19c07fe0eb9deb6f5d19a"
+    },
+    {
+      "path": "verify-email-landmark/verification.spec.mjs",
+      "sha256": "98437a2a490531b95dedcba43aa9ae3f4583809257257697def4ec767cf197db"
+    },
+    {
+      "path": "verify-email-landmark/source-commit.log",
+      "sha256": "4f73edd0e8dfeaa5ef9a226b8b7fa879e59e21b32bab4f392a9883e7f419cda6"
+    },
+    {
+      "path": "verify-email-landmark/source-explicit-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "verify-email-landmark/source-publication-proof.json",
+      "sha256": "38e0b9fe03b8a6e2631ab87922bdf6dd4e395c6fd42d812a280bc7700dddd9a8"
+    },
+    {
+      "path": "verify-email-landmark/live-prd02.json",
+      "sha256": "7506c94aaaedb1dec5bc8b2477318c69ad961de3b166229d9022e6eb9dfa71d0"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-confirmation-main-1280px-text1x/verified-outcome.png",
+      "sha256": "9ca83e2f6223d1b93c953e21d640cc58f2a861caf1c5ccf5272ac3d88a04ec34"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-confirmation-main-320px-text1x/verified-outcome.png",
+      "sha256": "e361e20edc858176e27e0bc717cb7a8de56632b5aace1ed48dc99eced8f7695a"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-confirmation-main-390px-text1x/verified-outcome.png",
+      "sha256": "d53372078a39b44aa0dfb701c95f85860fceebf9acbcdf66891b661be811b6ce"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-confirmation-main-768px-text1x/verified-outcome.png",
+      "sha256": "3747da9474ff5f906d31f73289b67ba7bd58e101b3c48b039e17aa47d8483f5b"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-confirmation-main-768px-text2x/verified-outcome.png",
+      "sha256": "aa409df263dc2a369c90c4b67c26066d9d6a98fe9ffcfc64af088465084ef6ff"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-resend-main-1280px-text1x/resend-outcome.png",
+      "sha256": "ea4d0df206af3ffb781d8a2810c0165f989c52491473797992aa1429016b13fc"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-resend-main-320px-text1x/resend-outcome.png",
+      "sha256": "9fd08aedc124f11c636bb97159b1f063914be63c2863194056e00d3a5f606652"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-resend-main-390px-text1x/resend-outcome.png",
+      "sha256": "8723caa1dc6960e2811b43924122fe39057d001c4c4c68aecc09121d41ca098d"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-resend-main-768px-text1x/resend-outcome.png",
+      "sha256": "dbf70370858d30e74be332f824a9e81970da4479b32c38331002004d38a06342"
+    },
+    {
+      "path": "verify-email-landmark/browser-results/verification-verification-resend-main-768px-text2x/resend-outcome.png",
+      "sha256": "11e83bd99ae68785d2d422daaff725584a74d1e9664d552e7a45bc8d528654ed"
+    }
+  ],
+  "publicPrivacy": "Only hashes/scope/counters; raw traces, test artifacts and credentials are not published."
+}
