@@ -1,0 +1,964 @@
+{
+  "schemaVersion": 1,
+  "kind": "Dedicated canonical browser test extension for existing PRD15 handle-field validation; app implementation unchanged",
+  "source": "60f67380bc8e08e38c2bd145abe2ff97bd3eef1a",
+  "tree": "3af933e264083379eff3ec169a4517e0063d6b02",
+  "sourceBase": "bacad858a073393def14301d568eb35466acd189",
+  "at": "2026-11-02T02:41:23.446113+00:00",
+  "implementationPaths": [
+    "tests/browser/account-mention-handle-validation.spec.ts"
+  ],
+  "appSourceChanged": false,
+  "sourceBlob": "f68139ea3265560891b27e7d22522bdd3bca9208",
+  "requirements": [
+    "PRD15 COMMENT-FR005, accessibility/error sections16/17, TC03/11/12",
+    "UXA03/04/05/06/07/08; current MUI profile/Dialog and original handle policy/authority preserved"
+  ],
+  "canonicalRuntime": {
+    "result": "Passed",
+    "run": "a0b13ccd-560a-412d-8749-de8823cb07df",
+    "elapsedSeconds": 1198.647,
+    "tree": "3af933e264083379eff3ec169a4517e0063d6b02",
+    "sourceBase": "bacad858a073393def14301d568eb35466acd189",
+    "candidateKind": "Uncommitted staged tree including dedicated browser test; source commit qualification follows separately",
+    "sourceUnchanged": true,
+    "originalRuntimeSha256": "329ed3d34b0c6e8efdb63c3246ad6828a28c72673a8efe003ad0dfbbf5ef524a",
+    "originalWorkflowSha256": "03a75103797e3705bae1b5175a4dbb2cb7a0dc2dffab13f729341b261530fb9a",
+    "browserCases": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "reportedBrowserElapsed": "5.3m",
+    "selectedFiles": [
+      "tests/browser/board.spec.ts",
+      "tests/browser/account-mention-handle-validation.spec.ts"
+    ],
+    "scope": "Five new actual productionUI/realcookie/API/PostgreSQL field cases plus original five persistedBoard baselines; original full fixture setup/security/roles/abuse stages unchanged and passed.",
+    "fieldCases": {
+      "viewports": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "textZoom": "768 at200% with actual32px root font assertion",
+      "invalidValues": [
+        "",
+        "_invalid",
+        "board"
+      ],
+      "assertions": [
+        "Native Enter refusal associates aria-invalid/exact accessible description/alert, retained literal value and focused unobscured center-hit field; zero account reads or handle writes for every invalid value.",
+        "Editing clears local validation without requests; deliberate normalized native Enter emits exactly one real PATCH with original key/expectedsubject/exact userVersion/handleVersion body.",
+        "Actual canonical setting/userVersion2/handleVersion2 and one USER_PROFILE_UPDATED event verified; Close returns visible unobscured focus, reopening reads the persisted handle.",
+        "Original unchanged Axe rules, documentoverflow and zero pageerror assertions;120s scenario budget and existing globalretry/deadline configuration unchanged."
+      ]
+    },
+    "fixtures": "No route interception or supplied account/handle/receipt data. Existing release pacing and Board scopedWorker/finally unchanged.",
+    "exactImagesProof": [
+      {
+        "service": "web",
+        "id": "sha256:36989703894c68d64307521aa39d04967e645015e9b104e7796190aa7dbc3fee",
+        "tag": "strataai-web:local-3af933e264083379eff3ec169a4517e0063d6b02-a0b13ccd-560a-412d-8749-de8823cb07df",
+        "os": "linux",
+        "architecture": "amd64",
+        "labels": {
+          "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>",
+          "org.opencontainers.image.created": "2026-11-02T02:03:37.874Z",
+          "org.opencontainers.image.revision": "3af933e264083379eff3ec169a4517e0063d6b02",
+          "org.opencontainers.image.source": "https://github.com/nickmailhot-lang/StrataAI2",
+          "org.opencontainers.image.version": "0.1.0-local.t3af933e264083379eff3ec169a4517e0063d6b02"
+        }
+      },
+      {
+        "service": "api",
+        "id": "sha256:dd415c05d83e48a0b1462559898662713fadce70c8224c25461d3baa2c6580e5",
+        "tag": "strataai-api:local-3af933e264083379eff3ec169a4517e0063d6b02-a0b13ccd-560a-412d-8749-de8823cb07df",
+        "os": "linux",
+        "architecture": "amd64",
+        "labels": {
+          "org.opencontainers.image.created": "2026-11-02T02:03:37.874Z",
+          "org.opencontainers.image.revision": "3af933e264083379eff3ec169a4517e0063d6b02",
+          "org.opencontainers.image.source": "https://github.com/nickmailhot-lang/StrataAI2",
+          "org.opencontainers.image.version": "0.1.0-local.t3af933e264083379eff3ec169a4517e0063d6b02"
+        }
+      },
+      {
+        "service": "worker",
+        "id": "sha256:ee9e5f792324e7026f428cd0488547c12c7e49d7a718d2e3ba197064702bc789",
+        "tag": "strataai-worker:local-3af933e264083379eff3ec169a4517e0063d6b02-a0b13ccd-560a-412d-8749-de8823cb07df",
+        "os": "linux",
+        "architecture": "amd64",
+        "labels": {
+          "org.opencontainers.image.created": "2026-11-02T02:03:37.874Z",
+          "org.opencontainers.image.revision": "3af933e264083379eff3ec169a4517e0063d6b02",
+          "org.opencontainers.image.source": "https://github.com/nickmailhot-lang/StrataAI2",
+          "org.opencontainers.image.version": "0.1.0-local.t3af933e264083379eff3ec169a4517e0063d6b02"
+        }
+      }
+    ],
+    "ownedCleanup": {
+      "at": "2026-11-02T02:25:28.283254+00:00",
+      "runtimeLockAbsent": true,
+      "ownedContainers": [],
+      "ownedVolumes": [],
+      "providerPort19090Absent": true,
+      "wrapperAbsent": true,
+      "runtimeAbsent": true
+    }
+  },
+  "visualReview": {
+    "at": "2026-11-02T02:25:28.481880+00:00",
+    "captures": [
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-228d8-te-save-and-return-at-390px/invalid-handle-field.png",
+        "sha256": "032352dbfabc918d8bcb4b614a47644ddd1c6fdda972812b9cfaad41110e7898"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-228d8-te-save-and-return-at-390px/persisted-handle-field.png",
+        "sha256": "b00b225b8aaa9384c11ca6be106f2f1f92401268b29b459f7f08bdcf3a59c8b6"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-277a4-te-save-and-return-at-320px/invalid-handle-field.png",
+        "sha256": "c44fe2a6606c5c9da6bda9b8da1ccb59866c3625a940bc4fc19507874439acfa"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-277a4-te-save-and-return-at-320px/persisted-handle-field.png",
+        "sha256": "3f95edecb28024b891d7b44a666d9478dc6a98cb517c92ee0d39b05d58ef984b"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-31cc1-e-save-and-return-at-1280px/invalid-handle-field.png",
+        "sha256": "986695975dd1cabfe64d1ccc335426eb44cc22bb61d292541811d326d15a78c2"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-31cc1-e-save-and-return-at-1280px/persisted-handle-field.png",
+        "sha256": "badcd9b4fb8317d581b813358854c36c8a924bf80aacc8e756f11d15ee4cc2bf"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-41c8f-te-save-and-return-at-768px/invalid-handle-field.png",
+        "sha256": "203360d3a50f1a76ec89f282b471ad987b79cea56d9f2572d0d140d9a320868a"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-41c8f-te-save-and-return-at-768px/persisted-handle-field.png",
+        "sha256": "8fded9100c08aacae56b2e0fafbd51a09dcbf9d7b92222fbcd7a0d95cefeaf03"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-6afc6-turn-at-768px-with-200-text/invalid-handle-field.png",
+        "sha256": "92809c6e8ebb83b8fe28b7348cbbaf36812d30fd8fcdbee898711c71efabbe77"
+      },
+      {
+        "path": "runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-6afc6-turn-at-768px-with-200-text/persisted-handle-field.png",
+        "sha256": "06264a1e57cb2406ef55cf0c72de06b3c56abcd0eb1f0a4985b6c318d460362f"
+      }
+    ],
+    "review": "All10 actual invalid/persisted captures viewed: existing MUI dialog field error/helper text readable at320/390/768/1280 and768200%; persisted values reopened with field focus. Long single-line320 value retains ordinary input horizontal scrolling; document overflow and actual viewport/unobscured center-hit checks passed. Full-page captures do not independently prove viewport geometry; native assertions supply that evidence. No app layout/style changes, no manual screen-reader/product/MVP acceptance."
+  },
+  "security": {
+    "completeJavascriptCodeql": "Passed",
+    "findings": 0,
+    "rules": 87,
+    "sarifSha256": "87285b49d3720c1030d85f5e541664f871bb5fee5319d64489efd01a88e22b74",
+    "runtimePlatform": "Explicit linux/arm64 source scan; runtime exactimages linux/amd64 emulated on Mac separate.",
+    "productionQualified": false
+  },
+  "finalSelectedLocal": {
+    "result": "Passed",
+    "runId": "1793586554818-4ca7ac9b",
+    "tree": "3af933e264083379eff3ec169a4517e0063d6b02",
+    "stages": 7,
+    "durationMs": 404555,
+    "receiptSha256": "81285009e53bf193deb2e0791d82d26f99728d2f8665e88ea9903d3e79ea575a",
+    "webFiles": 228,
+    "webPassed": 3118,
+    "existingCapacityDeferred": 24,
+    "compiledFixtureUiCases": 2,
+    "scope": "Types/lint/build/complete selected units/compiled syntheticUI/contracts/ledger/inventory/drift/Python/secrets. Separate from canonical10case result and full/nightly release acceptance."
+  },
+  "preparationFailures": [
+    {
+      "result": "Failed before registry mutation or source edits",
+      "cause": "Fresh checkout agent CLI imported typescript before npmci. Original empty output/details retained; one locked npmci then actual allocation verified.",
+      "functionalTestsExecuted": 0
+    },
+    {
+      "result": "Failed before typecheck/test execution",
+      "cause": "New command guessed tests/browser/tsconfig.json, TS5058. Retained original log; corrected existing npm run typecheck:browser passed and actual Playwright inventory lists five cases.",
+      "functionalTestsExecuted": 0
+    }
+  ],
+  "historicalCanonicalEvidence": {
+    "pr": "https://github.com/nickmailhot-lang/StrataAI2/pull/143",
+    "source": "86e7a54aea749fe956942c429192208bc05a053a",
+    "proof": "https://github.com/nickmailhot-lang/StrataAI2/blob/86e7a54aea749fe956942c429192208bc05a053a/docs/delivery/evidence/mention-handle-canonical-20261102.json",
+    "sha256": "52fb2d467eb205399c43325edc214c467ea70bb72e5203bd12b30230eac51783",
+    "scope": "Original9case realservice guarded recovery/private notification evidence on mergedmain; retained separately on pendingPR143 and snapshot chain, not a current rerun or acceptance claim for this10case tree."
+  },
+  "recordReconciliation": "Reuse existing PRD15VS02T02/Test; preserve original implementation/localValidation/integration/state/history/broadNotRun/Unverified criteria. Add separately scoped canonicalFieldValidation with exact newtestsource. Pending139/140/141/142/143 records retained for future union reconciliation; no duplicateTask or parentclosure.",
+  "privateArtifactCatalog": [
+    {
+      "path": "codeql/mention-handle-field-browser-20261102/full.sarif",
+      "sha256": "87285b49d3720c1030d85f5e541664f871bb5fee5319d64489efd01a88e22b74",
+      "bytes": 1050300,
+      "private": true
+    },
+    {
+      "path": "codeql/mention-handle-field-browser-20261102/launcher.log",
+      "sha256": "1db5561bc7e9c056e8d147afb0e1417ecf7cc4348f440b59886b934ae410c0c0",
+      "bytes": 236985,
+      "private": true
+    },
+    {
+      "path": "codeql/mention-handle-field-browser-20261102/status.json",
+      "sha256": "7a9c64d9a91e3ada538de32363b7710eb7c5548d31dbd64339a38336642953f9",
+      "bytes": 1721,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/allocation-canonical02-release.json",
+      "sha256": "4a3daa7e7c833fcede3743e120ce044ac2364a85e13c71abf0f1955e6cd414d8",
+      "bytes": 138242,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/allocation-canonical03-claim.json",
+      "sha256": "a6720fac3cda7ab1cb267effa6de358ed6abf1cd731a05ed93c60ad68bd120dd",
+      "bytes": 138954,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/allocation-canonical03-handoff.json",
+      "sha256": "1cbf601490c42265dd3d4b22e3f31b9bf6df882cb47dc09034be7ac0049d6c0e",
+      "bytes": 141163,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/allocation-field01-release.json",
+      "sha256": "5311124d77dd486beff7f8c1735bc07d872045f59cd23eb803fc338f3afbd61b",
+      "bytes": 141760,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/allocation-field02-claim.json",
+      "sha256": "c1fe369a4a1132c6e0de03268d627b1a6716c3cc1c9a8318da548b13699a6a1f",
+      "bytes": 142500,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/browser-inventory-attempt1.log",
+      "sha256": "66375667c11be65cbe8e64cbdda1b1257637dd0157d3499fb77090468e807393",
+      "bytes": 696,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/browser-types-attempt1.log",
+      "sha256": "dcd512602213643e69b67c66c649b0a7ce6ebc91e0f4347c2971cd139824d337",
+      "bytes": 80,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/browser-types-attempt2.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34",
+      "bytes": 69,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/canonical-snapshots/pending-pr143/docs/delivery/evidence/mention-handle-canonical-20261102.json",
+      "sha256": "52fb2d467eb205399c43325edc214c467ea70bb72e5203bd12b30230eac51783",
+      "bytes": 23389,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/canonical-snapshots/pending-pr143/docs/delivery/progress.json",
+      "sha256": "556f151c3b6fa0691c13915fc7ac5665631c82565a83a6ab0a81c1e446404d1f",
+      "bytes": 5648766,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/canonical-snapshots/pending-pr143/docs/ux/delivery-report.md",
+      "sha256": "ad2b0a7091fa75652cb619f75e1076c5f214d3747ab2d9b8b1767bee44d6ee9b",
+      "bytes": 443569,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/canonical-transfer.json",
+      "sha256": "f88c84d212505037696a54f76b016e93a3c5d72452ae4bb01b92ca90cc3d3c6c",
+      "bytes": 2185,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/claim-attempt2.json",
+      "sha256": "2476d84714d92dda03ed1dfa453887ea905f8ee99d6e9d0b05702bfca06be531",
+      "bytes": 135423,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/claim-preparation-failure.json",
+      "sha256": "7c1fbbd2beada89159167d6e6ad6a780170ce5a6b74e5d9f7ddaba80c216f26b",
+      "bytes": 595,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/code-publication-identity-proof.json",
+      "sha256": "a20b43aa7212475dc998b9d783a396a71f4969cb9b45a6abfd73a1167c17295e",
+      "bytes": 505,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/exact-images-proof.json",
+      "sha256": "8e7fd6ce9cc556159156c0c08bc287d7c86ff8c18a906497da3012d944665597",
+      "bytes": 2008,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/final-candidate.json",
+      "sha256": "daf95f087dd850dcdb006af72f407c76453f9d71b2dddbdb112a5e8a2f980325",
+      "bytes": 42745,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/final-code-receipt.json",
+      "sha256": "81285009e53bf193deb2e0791d82d26f99728d2f8665e88ea9903d3e79ea575a",
+      "bytes": 55694,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/final-local-attempt1.log",
+      "sha256": "49507b12a009c2a34c32782515a7c8ef070626d9e5817cf69e60194080ca4c83",
+      "bytes": 1483,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/final-validate-attempt1.py",
+      "sha256": "1aee5e55f5f40530f25ba153ca726b3346a087eef3ddf06f3b06ff96cb3de4fe",
+      "bytes": 6224,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/final-validation-status.json",
+      "sha256": "117db0a9c2727f469df11bd32fcb1fbfb6829ce9f8d8ac118d66f66673926fa9",
+      "bytes": 355,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/final-validation-wrapper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/npm-ci.log",
+      "sha256": "6d136384e628eeb72d5b792de6d782f4dd41a84c74b18b616a5618164be261d4",
+      "bytes": 269,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/owned-cleanup-proof.json",
+      "sha256": "f255e1af232714ececd4d85dcdd216dd4063681b568dbe30fce88c48d41226f6",
+      "bytes": 208,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/publication-manifest.mjs",
+      "sha256": "bc11090cefa5cc4e0c8b614ff34bda078ac1358bc7855a62919ee406978c5c48",
+      "bytes": 2235,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/run-runtime-attempt1.py",
+      "sha256": "165c0a89fa86fec7a24ec3230afcde667ab4851256b14b3801ed0641376e954b",
+      "bytes": 4820,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/board-invitation-link-fixtures.json",
+      "sha256": "438005f2d18f0ebcd6ef51795f046fcc0a992cdb795c449722dd8d4a5649d947",
+      "bytes": 1000,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/board-member-directory-fixture.json",
+      "sha256": "fd328f97e2a3b406dcfb3cef6b9d5ed1c4fff759703d4a282f622aab3f4286a2",
+      "bytes": 2659,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/artifacts/browser-performance/kanban.json",
+      "sha256": "76810139e29a828c6287dccdf97b25f6793baee7c321b016b435450bbbeab045",
+      "bytes": 156,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/playwright-report/index.html",
+      "sha256": "a49781d3e40280b5f4b93b13b7be9e037548ecf2a28ca1f877d5753226da6d54",
+      "bytes": 595779,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-228d8-te-save-and-return-at-390px/invalid-handle-field.png",
+      "sha256": "032352dbfabc918d8bcb4b614a47644ddd1c6fdda972812b9cfaad41110e7898",
+      "bytes": 72147,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-228d8-te-save-and-return-at-390px/persisted-handle-field.png",
+      "sha256": "b00b225b8aaa9384c11ca6be106f2f1f92401268b29b459f7f08bdcf3a59c8b6",
+      "bytes": 73580,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-277a4-te-save-and-return-at-320px/invalid-handle-field.png",
+      "sha256": "c44fe2a6606c5c9da6bda9b8da1ccb59866c3625a940bc4fc19507874439acfa",
+      "bytes": 74883,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-277a4-te-save-and-return-at-320px/persisted-handle-field.png",
+      "sha256": "3f95edecb28024b891d7b44a666d9478dc6a98cb517c92ee0d39b05d58ef984b",
+      "bytes": 75956,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-31cc1-e-save-and-return-at-1280px/invalid-handle-field.png",
+      "sha256": "986695975dd1cabfe64d1ccc335426eb44cc22bb61d292541811d326d15a78c2",
+      "bytes": 94962,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-31cc1-e-save-and-return-at-1280px/persisted-handle-field.png",
+      "sha256": "badcd9b4fb8317d581b813358854c36c8a924bf80aacc8e756f11d15ee4cc2bf",
+      "bytes": 95969,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-41c8f-te-save-and-return-at-768px/invalid-handle-field.png",
+      "sha256": "203360d3a50f1a76ec89f282b471ad987b79cea56d9f2572d0d140d9a320868a",
+      "bytes": 82764,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-41c8f-te-save-and-return-at-768px/persisted-handle-field.png",
+      "sha256": "8fded9100c08aacae56b2e0fafbd51a09dcbf9d7b92222fbcd7a0d95cefeaf03",
+      "bytes": 84158,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-6afc6-turn-at-768px-with-200-text/invalid-handle-field.png",
+      "sha256": "92809c6e8ebb83b8fe28b7348cbbaf36812d30fd8fcdbee898711c71efabbe77",
+      "bytes": 171304,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/account-mention-handle-val-6afc6-turn-at-768px-with-200-text/persisted-handle-field.png",
+      "sha256": "06264a1e57cb2406ef55cf0c72de06b3c56abcd0eb1f0a4985b6c318d460362f",
+      "bytes": 172469,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+      "sha256": "651e72be69d4e7f88e3268a1d70a233def8dfee196e7861caacf8d117d38c0c3",
+      "bytes": 62532,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+      "sha256": "819fea29d78f1244c9a96361b6b03abc21072e768d78217ab48956b7772639a7",
+      "bytes": 98325,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+      "sha256": "2f46bdadb0bb79ecc9342c2e90a2b41364e3d880bf553d78c6a5d6924c8e13f0",
+      "bytes": 59610,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+      "sha256": "60aa7c066311a2b8ad5077469d49e0118b59192cbf0fe54a27f84f1a7d92980d",
+      "bytes": 36240,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+      "sha256": "b507626c0e7f37d9d88ee32c5ced2e5d1650a5240456d2a229108412931172f4",
+      "bytes": 41776,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/browser-evidence/test-results/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+      "sha256": "a0ab5cdb2ce03ec15d01da024826be6435bc2bcee1fabad0b1684128e1c38887",
+      "bytes": 30612,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/identity-provider.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/invitation-link-fixtures.json",
+      "sha256": "4122bdf491e072e0bb4b9dcfa877629d7109392a5387ca8db0a8cd92feb0bdce",
+      "bytes": 796,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/invitation-signup-fixtures.json",
+      "sha256": "41c79fe2661688679459591ca1cc90baba24d7997feb0f94034e2df1d69df2b5",
+      "bytes": 837,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-0.log",
+      "sha256": "09e7710c3872617ee6320bac7781cb425753973cf290b77d99bafd46dd2bd0fc",
+      "bytes": 3905,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-1.log",
+      "sha256": "f57c1f7deb95cafff5bea42508dd2ae88787a8b2b35b22bc672ced12b376b299",
+      "bytes": 14262,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-10.log",
+      "sha256": "b78330166ffd996e6a423e22ae85ccc7ce416e8d61e2a0e4eb74d7e5c1b1c021",
+      "bytes": 71,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-10.sh",
+      "sha256": "b4d5838a477e57b0190012e969131056803c2b621b58465235403d7ee300f222",
+      "bytes": 473,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-11.log",
+      "sha256": "82ea932f86ad6519f407212a708b202c356e5fc71e43a7272c3902ab505fd897",
+      "bytes": 95,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-11.sh",
+      "sha256": "b5e290e2debe34b0943ae7b15e700d4d0d674bd66ca63a17b3172c22d0792bdd",
+      "bytes": 33,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-12.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-12.sh",
+      "sha256": "256f5e71a8f66210943900c91a55f3c1715128f79df577a59de6cc3db163d1a0",
+      "bytes": 197,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-13.log",
+      "sha256": "a13fa0afdc82a83a6fa3391a553b0c258208e6c09b0a3d1e04fbb2b55dd69f18",
+      "bytes": 1189,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-13.sh",
+      "sha256": "6d31c5ee014e79fff34b6d38c98a6cf4961375bb79aa33cb11429bf9eb9dc3db",
+      "bytes": 274,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-14.log",
+      "sha256": "d277bbf9761e716f75bc76b05be522371381bf367109b02cfba6b2c9ab2ad2cb",
+      "bytes": 4177,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-14.sh",
+      "sha256": "578195dc202cfa64d8a11bbf87618c126aed50bcba286f90468b4f7ffb840232",
+      "bytes": 47,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-15.log",
+      "sha256": "482db16d8355dfd54fa71c4381351a5590506f70fd29c441e588e5f410a12367",
+      "bytes": 3609,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-15.sh",
+      "sha256": "5ffe23e318f597981e651c6a13ea75ce5245bc1b9322d2135ce39a1f647ef82d",
+      "bytes": 44,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-16.log",
+      "sha256": "85d21d74667fcdbbf1c829e5e87ff18282085879b2e10d818db2a7458f2df920",
+      "bytes": 461,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-16.sh",
+      "sha256": "6240bf6f1ffa778b6795316d9a1fc8184a4409636a5dd87494e723696accda87",
+      "bytes": 34,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-17.log",
+      "sha256": "f5cf46c5bd75e2d099acd0e85fe8b903553cf2daa2b214e6fb37d5644883ef88",
+      "bytes": 163,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-17.sh",
+      "sha256": "3f12c62c33ec3cc77097fc89f4782b7ad00bf52be4041d2308169cee8f10f578",
+      "bytes": 47,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-18.log",
+      "sha256": "2597a72e92aede7f900c0f6e2e01aff0577730450c1e15d07b24945805b072a1",
+      "bytes": 552,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-18.sh",
+      "sha256": "3b0d2629e4c84002bf60ba0f629c1c591b2d97893cee422b0804e77f9fcc3223",
+      "bytes": 41,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-19.log",
+      "sha256": "56e1dc4dfee53f6859c0c8eb627fa8d426c3ce4b03adab7628cfcc739bf2bad5",
+      "bytes": 110,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-19.sh",
+      "sha256": "a9edbf008cadab6b96900f77f1d9e029abad959a0f29b30df49307e7fd216cd4",
+      "bytes": 56,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-2.log",
+      "sha256": "df0f172cb0acd48af51e08f1b0ba7bfb1f211ca9f9d07e96a7b894b28c422229",
+      "bytes": 14697,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-20.log",
+      "sha256": "d0891f71a4cfb5816cf9b18015bad6426e8be8b7a7b693adf586ded1306299cd",
+      "bytes": 105,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-20.sh",
+      "sha256": "a6dff798120c9ea5df54a0d2a4410c5aa0b58beba6840abbd13b8af1cfbccf55",
+      "bytes": 45,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-21.log",
+      "sha256": "b51b353835bea6da6e6fa3522cdc81295545ea69a30a4549cbaccb77ebd7bab9",
+      "bytes": 114,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-21.sh",
+      "sha256": "58b5183e631e64c10f89c37cd5b2c3705f9158386b417810e14867b74fc752d4",
+      "bytes": 453,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-22.log",
+      "sha256": "bb163af82ac1d941b245f5ee4a7062355b2be37ebbb642bab117a25e885841ce",
+      "bytes": 1402,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-22.sh",
+      "sha256": "7ac9027d72de2d780e510d7e0bb45319ccd2250948c2e361c911d6f3dc927fdd",
+      "bytes": 223,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-23.log",
+      "sha256": "389ad31bc61ec8015ea4cd7fecce2f34ced4c6baa963814c8c607e0a3c90032b",
+      "bytes": 792,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-23.sh",
+      "sha256": "6d0a4ca466a53b91274601c5db385d92e843133b3dad79e43248f47cf1da6a3c",
+      "bytes": 1007,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-24.log",
+      "sha256": "42824b8aec0e05ef4d340d970bf9682ed47f43bfcb8e8b7d77424a1530578633",
+      "bytes": 1648,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-24.sh",
+      "sha256": "af0293cfa6c6cc03fce06761bc47a8ecf154b43f36e01cf74469113dd48b74a9",
+      "bytes": 39,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-25.log",
+      "sha256": "5a01acf2e7ea913402849698a004d99dcfdcbd6f9404c723b1f2e654d7927762",
+      "bytes": 280,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-25.sh",
+      "sha256": "cedf95ad58535aff1edbad2e2bf505088761948e804b23e4252a0f13f64f4863",
+      "bytes": 123,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-26.log",
+      "sha256": "da6c66e999a212d16354f2cf0836d8673be7768bc72a5f436ff11ed10d54d4fb",
+      "bytes": 2454349,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-27.log",
+      "sha256": "5ca468da53a577d44e03621bd262201d05aaa16b32b0ccdfc15dedad47b8edc6",
+      "bytes": 2175,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-3.log",
+      "sha256": "4409438e618f0f742a9bdff547f653a67bf4780df6baaba1adbde0d187786173",
+      "bytes": 205,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-4.log",
+      "sha256": "95d0956f19054c53c49e2075ca733a258edcf5848d1e6e090c9f7eef67efc545",
+      "bytes": 4061,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-4.sh",
+      "sha256": "38b70d24fa5e686470a243112d5d72d9ddb11de6b311c44100116dcbbb0bc507",
+      "bytes": 496,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-5.log",
+      "sha256": "6a13d450654bd7ffe41bbd8bc30cdc6e05c330c92b24e677240da9b53f99d558",
+      "bytes": 26886,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-5.sh",
+      "sha256": "194df8b0951f9636b0a10ad9bc5706ed021066a81ca93dbcf26a73de22c5194c",
+      "bytes": 35,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-6.log",
+      "sha256": "a661ca16221bb5a8f8865835d5a68bcdb240017b9d808b9a7101d79b0d347981",
+      "bytes": 808,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-6.sh",
+      "sha256": "32078c14ac6aa40c10e4afeece6aadd4a47f874640aa34926d28370b8912dbf8",
+      "bytes": 42,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-7.log",
+      "sha256": "e1282c7ee74b3d0a49557c1d7235529d399f4b550f10afe2dd8badad64ca4266",
+      "bytes": 77,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-7.sh",
+      "sha256": "d4abbbaa1cf6c3551de2c71725fee9e36ab54214dabb17189ce8ecf48c1fca53",
+      "bytes": 44,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-8.log",
+      "sha256": "cedd8054062e982a6e2316e4f56cee3d0814b4b48b6ce6bf0e67a0a364926047",
+      "bytes": 105,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-8.sh",
+      "sha256": "9f772c2092618812430c686adda160ca85bc7ced7544863914f9ee19bb4a666e",
+      "bytes": 57,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-9.log",
+      "sha256": "e7fe50c9c60dbcc04fcea6a482dac3d6508fdc78737d63b6c579ec6c4bd76f4d",
+      "bytes": 84,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime-9.sh",
+      "sha256": "140b1ecefb6d3f84e8f97f0db4c25d034b799feba2d9a8b64e2a48e10a843760",
+      "bytes": 54,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1/runtime.env",
+      "sha256": "b002408733843159106f0e3df4372a6fc2bff52c6a9f0bdb36f7f9a3bb5fca49",
+      "bytes": 1186,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1-launch.log",
+      "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5",
+      "bytes": 1909,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1-status.completed.json",
+      "sha256": "175b48c9aedb8e3fe051a9d2837ca70166b63e3d9614b3cbd5429330808f806f",
+      "bytes": 3859,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/runtime-attempt1-status.json",
+      "sha256": "175b48c9aedb8e3fe051a9d2837ca70166b63e3d9614b3cbd5429330808f806f",
+      "bytes": 3859,
+      "private": true
+    },
+    {
+      "path": "mention-handle-field-browser/visual-review.json",
+      "sha256": "c391bef7744713d3909844c4ebc01f39bd58d3fe2c4c8f87a37b96ec944f2609",
+      "bytes": 3056,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/0-repository-contracts.log",
+      "sha256": "14fd7fbd04e7e0a79db9a54345188da00cffcbb4142020949150f97209956bc4",
+      "bytes": 41411,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/0-repository-contracts.sh",
+      "sha256": "eb103a55255c3816e55d46a92c6f6be052ffbc6355c5159efbd5866d3dbd073c",
+      "bytes": 563,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/1-ledger.log",
+      "sha256": "7b8e969467e546e4abaf546f50d4edd9f87dfead176ce97aa8e35670c5b2e0ab",
+      "bytes": 67,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/2-integration-inventory.log",
+      "sha256": "b74a97dc322f64038d18c88579773f459f853ce7720462932364683b4689f502",
+      "bytes": 85,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/3-runtime-drift.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/4-selected-web-feature.log",
+      "sha256": "a02c8ae2cf22e669f5e3bdcc3096f22e25fb7b5438e17761400b642a0a6c4904",
+      "bytes": 25768,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/5-python-contracts.log",
+      "sha256": "a0057bfc750a4c79c08dca1c6c5bf87fb70bab4bc7a8e2d8926bb187d1c52597",
+      "bytes": 146,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/6-secret-scan.log",
+      "sha256": "bff9f945880bb5b696ad494fa6f8e47f864320297da742454dee36adb10ecccf",
+      "bytes": 4227,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/fast-plan/feature-plan.json",
+      "sha256": "38ce0d2e29ac7b8df86a898fb3ec7f95c4e7a22c0fce625c21daa94af09565e2",
+      "bytes": 42660,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/result.json",
+      "sha256": "81285009e53bf193deb2e0791d82d26f99728d2f8665e88ea9903d3e79ea575a",
+      "bytes": 55694,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/web-feature/discovery.json",
+      "sha256": "ac22b169eae2b7791b7b72ea674268a0c9d88712209f20bfe061cc7d2f589a0e",
+      "bytes": 912216,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/web-feature/lane.json",
+      "sha256": "9659e4adda8448feb5d46f6d6240a0dd168cb863256688a19171d7af922ccb7d",
+      "bytes": 29610,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/web-feature/selection.json",
+      "sha256": "50d0da57f15ee2f22110a2bfe99affe29ae2533761978a5463770e26152b4bdc",
+      "bytes": 14072,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/web-feature/summary.json",
+      "sha256": "8ccc2016884ca83bf8ac20177e088eaea6190bee8c6b19f8c2c2a9418bfbce49",
+      "bytes": 117,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/web-feature/ui/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/web-feature/ui/ui.smoke-compiled-sign-in--b244e-ard-retry-identity-at-390px/sign-in-landmark.png",
+      "sha256": "b1fbb6016e38b716554f002b26c45167fa33b2ee0ebd200bd6470d14318fdff3",
+      "bytes": 30296,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/web-feature/ui/ui.smoke-compiled-sign-in--f5a9d-rd-retry-identity-at-1280px/sign-in-landmark.png",
+      "sha256": "fdd4d8994d42d5367ec97b8d72081c245f14538c16389286f19bb3617ad52add",
+      "bytes": 34924,
+      "private": true
+    },
+    {
+      "path": "runs/1793586554818-4ca7ac9b/web-feature/web.xml",
+      "sha256": "bed6c96563211778afebf158aaf73a55ad38658de67534e1ac1a60226d47aeb7",
+      "bytes": 901925,
+      "private": true
+    }
+  ],
+  "limitations": [
+    "Targeted real-service field browser validation is not complete full-sanity/nightly/exact-production qualification or product/MVP acceptance. Full nightly and mandatory exact-candidate suite unchanged.",
+    "Broader identity conflict/lost-reply/revocation and selectedmention/privateinbox original9case evidence remains separately scoped in PR143, not rerun here.",
+    "Five original Board role/isolation baselines and unchanged runtime permission fixtures do not establish every PRD15 role/tenant/Portal journey.",
+    "Automated Axe/capture inspection is separate from manual assistive-technology or product/UX acceptance.",
+    "Newtestsource is local-qualified; fresh hosted selectedchecks/all5CodeQL/reviews still required after finalpublication. No automatic new PR merge."
+  ],
+  "productionQualified": false,
+  "productMvpAcceptance": false
+}
