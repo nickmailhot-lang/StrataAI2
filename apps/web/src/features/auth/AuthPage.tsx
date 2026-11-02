@@ -166,7 +166,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
           {notice ? <Alert severity="success" role="status">{notice}</Alert> : null}
           {verificationNeeded ? <Button component={Link} to="/verify-email">Request a verification link</Button> : null}
 
-          <Box component="form" onSubmit={submit}>
+          <Box component="form" aria-label={mode === 'login' ? 'Sign in' : 'Register'} onSubmit={submit}>
             <Stack spacing={2.5}>
               {mode === 'register' ? (
                 <TextField
