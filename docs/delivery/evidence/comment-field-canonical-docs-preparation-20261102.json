@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-02T10:22:22.733926+00:00",
+  "source": "06701a41fd5a8edd74cb09ae91296f6808172e6b",
+  "result": "Preparation failed before execution",
+  "reason": "Inline Python bytes literal contained a non-ASCII dash; parser refused before ANY forward transition/report/source write. Original private record retained; corrected UTF-8 heading then six legal transitions/report completed. No product test failed or source qualification rerun.",
+  "privateFailureSha256": "54cd059b5cdb48a29bef3a54a9200b6cd1adf7c9db2c99c8a7c38d0367feb642"
+}

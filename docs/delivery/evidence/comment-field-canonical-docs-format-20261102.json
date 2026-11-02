@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-02T10:25:06.482486+00:00",
+  "source": "06701a41fd5a8edd74cb09ae91296f6808172e6b",
+  "result": "Publication reviewability preparation refusal",
+  "reason": "A Python metadata append expanded the canonical one-record-per-line ledger to193451diff lines. Original docs gate did pass tree97161ff2f57e6097798c2cf460c2ba6a0f488baf and normalhooked8a4ba29fbackup remains. Before any publicref/API docscommit, normalized with repository serializeLedger and verified exact JSON semantic equality. No evidence/history erased or test/receipt altered. New exact DOCS qualification required for changed formatting tree.",
+  "normalBackup": "8a4ba29fedbb95637c68bf863aaaa9fc0ac18d60",
+  "originalReceiptSha256": "6d73a104abe7228b777c8f67051d9002b12f19457ed228a41ab412e5e95fb793",
+  "privateUnformattedLedgerSha256": "bd8bc752985182b5071eaca8a343f0450511a2eea4d4210bee603067c3e293b1"
+}
