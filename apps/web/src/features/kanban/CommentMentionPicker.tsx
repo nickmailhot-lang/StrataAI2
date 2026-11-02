@@ -11,14 +11,15 @@ type Props = AttachmentScope & { actor: string; version: number; disabled: boole
 export function CommentMentionPicker(props: Props) {
   const [prefix, setPrefix] = useState(''); const [page, setPage] = useState<CardMentionOptions>();
   const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<string>();
+  const [validationError, setValidationError] = useState<string>();
   const current = useRef(props); current.current = props;
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); current.current.onBusyChange(false); }; }, []);
   async function search(after?: string) {
     if (pending.current || props.disabled) return;
-    let normalized: string; try { normalized = normalizeMentionPrefix(prefix); } catch { setPage(undefined); setNotice('Use a username prefix, up to 40 letters, digits or underscores.'); return; }
+    let normalized: string; try { normalized = normalizeMentionPrefix(prefix); } catch { setPage(undefined); setNotice(undefined); setValidationError('Use a username prefix, up to 40 letters, digits or underscores.'); return; }
     if (after && (!page || page.prefix !== normalized || page.nextCursor !== after)) return;
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setPage(undefined); setNotice(undefined); props.onBusyChange(true);
+    const controller = new AbortController(); pending.current = controller; setBusy(true); setPage(undefined); setNotice(undefined); setValidationError(undefined); props.onBusyChange(true);
     const captured = props;
     const started = performance.now(); activityEvent('mention_read', 'use');
     try {
@@ -41,8 +42,10 @@ export function CommentMentionPicker(props: Props) {
   }
   const admitted = page && page.cardVersion === props.version && !props.disabled;
   return <Stack component="section" aria-label="Mention a teammate" spacing={1}>
-    <TextField label="Teammate username prefix" value={prefix} disabled={busy || props.disabled} slotProps={{ htmlInput: { maxLength: 40 } }}
-      onChange={event => { setPrefix(event.target.value); setPage(undefined); setNotice(undefined); }} />
+    <TextField label="Teammate username prefix" value={prefix} disabled={busy || props.disabled}
+      error={Boolean(validationError)} helperText={validationError}
+      slotProps={{ htmlInput: { maxLength: 40 }, formHelperText: { role: validationError ? 'alert' : undefined } }}
+      onChange={event => { setPrefix(event.target.value); setPage(undefined); setNotice(undefined); setValidationError(undefined); }} />
     <Button disabled={busy || props.disabled} onClick={() => void search()}>Find teammates</Button>
     {busy && <Typography role="status">Checking current teammates…</Typography>}
     {notice && <Typography role="status">{notice}</Typography>}

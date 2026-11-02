@@ -1,0 +1,231 @@
+{
+  "status": "Scoped locally qualified; hosted and broad acceptance pending",
+  "requirement": "PRD-15/COMMENT-FR-005; live issue16 sections16/17; TC03/11/12, UXA06/07",
+  "existingParent": "PRD-15-VS-02",
+  "proposedTaskId": "PRD-15-VS-02-T-04",
+  "proposedTestId": "PRD-15-VS-02-T-04-TEST-01",
+  "notAllocatedYet": false,
+  "observableOutcome": "An invalid teammate username prefix identifies/describes the field, announces the fixed local validation, sends no protected request, and clears on edit. A deliberate corrected search preserves exact normalized path/profile checks and immutable selection. Operational denial is separate.",
+  "source": "92add692907f4dc55867aaa084ee45e6ad77f34f",
+  "tree": "7bdff3cd0d43eee826ac131aec022a54c6a4271a",
+  "base": "6b0ca80d03eaaa42e8ad12655f1c6649066a9be9",
+  "implementationPaths": [
+    "apps/web/src/features/kanban/CommentMentionPicker.tsx",
+    "apps/web/src/features/kanban/CommentMentionPicker.validation.test.tsx"
+  ],
+  "evidence": {
+    "originalSource": "4 field-regression failures/1operational pass after correcting newfixture cleanup return; allinitialfailedattempts retained",
+    "targeted": "58cases4completefiles Passed",
+    "exactLocal": {
+      "run": "1793564613224-2fb8dd23",
+      "durationMs": 151048,
+      "tree": "4c94af4d5c66a40505462be13564c5c61801f1b9",
+      "passed": true,
+      "selected": "16files211PASS; types/lint/build/compiledsigninsmoke2/contracts/ledger/inventory/drift/Python/secrets"
+    },
+    "nativeCompiledPicker": "5browsercases320/390/768/1280+768200% passed; nativeTab/Enter/0requests invalid+edit/3guardedGETs/immutableoption/403withdrawal/0writes/0Axe; invalid and selected captures inspected",
+    "updatedMainFinal": {
+      "run": "1793576432832-ce9d427c",
+      "durationMs": 161338,
+      "tree": "7bdff3cd0d43eee826ac131aec022a54c6a4271a",
+      "result": "Passed",
+      "selected": "16 complete web files211passed, no skipped selectedcases; types/lint/build/compiledUI2/contracts/ledger/inventory/drift/Python/secrets"
+    }
+  },
+  "failures": {
+    "fixtureCleanup": "Initial beforeEach returned resetmock function; Vitest invoked ascleanup producing extra call/rejection. Corrected void-return fixture, no product or assertion relaxation. Allattempts retained.",
+    "privateHarnessBuild": "Attempt1config bundling andattempt2outside-root JSX resolution failed before browser. Nativeconfigloader andexplicitpreparedReactalias fixed; no source/dependency change. Logs retained.",
+    "privateFixtureVisual": "Browserattempt1 functional5passed but manual selected screenshots revealed fixture-only longJSONoutput overflow. Retained allcaptures. Replaced test-only output with readableSelected@alice, exactwholeoptiondataattribute asserted, addedpostselectionoverflowassertion. Browserattempt2all5pass, capturesinspected. Productlayout/assertionsunchanged."
+  },
+  "limitations": [
+    "Hosted selectedCI/reviews/all5CodeQL pending on final public head.",
+    "Actual picker+appTheme isolated syntheticHTTP evidence is not canonical Card/comment persistence/tenant/Portal/product or screen-reader acceptance.",
+    "Full nightly/exact production qualification and parent/product/MVP acceptance remain separate."
+  ],
+  "proposedLifecycle": "After allocation, create only missing scoped task/test via legalCLI, retain priorrecords; sourcequalifiedcommit paths/evidencehashes, broadNotRun/criteriaUnverified separate from scopedlocalpass, appendcycle/report beforedocsqualification/publication. NoDone/parentclosure.",
+  "canonicalCoordination": {
+    "authorization": "Human explicitly authorized coordination and shared-record handoff",
+    "base": "6b0ca80d03eaaa42e8ad12655f1c6649066a9be9",
+    "priorPR137RecordsPreserved": true,
+    "scope": "Only transferred canonical paths; independent recovery-landmark source/claim untouched."
+  },
+  "privateArtifacts": [
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-harness-build-attempt4.log",
+      "sha256": "c3cb284ff97e5a0ed59efa9cdf02c5eefe7529cc1f848425ce2dcf1911250ea1"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-harness-build-attempt1.log",
+      "sha256": "89721a632a22c03ae5a5edb3340d0f9823895c560d2ae4bef3adc2ba534b5944"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/original-source-red-attempt2.log",
+      "sha256": "967d324469a3ac7402d4d1ddbad7c8af5cd32ea6f8d74719ac396a78b4a8f3c9"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-harness-build-attempt3.log",
+      "sha256": "20f04910b91494f742a184f140500845d9abfd9cd187da6be6fa6acead477283"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/canonical-tracking-proposal.json",
+      "sha256": "1061d764f1b362a7ec8e9637e285f92770bdcca203b8e3b92363ebf597f3033e"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/lint.log",
+      "sha256": "0234f5d4c3c957d7722f8f12ee8fbd3f1e567696e8ae3ce94fbe68b1e7aaccf1"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-harness-build-attempt2.log",
+      "sha256": "202f58d8ac38c30a98046add17d23964ab2e4a8f83df0adb318e7c8383f9afbd"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/tracking-cli.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/explicit-code-main-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/typecheck.log",
+      "sha256": "1905e82db2daa00c413a7595a909e764192ca4ef015fb176f9482802c0ff0e71"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-attempt2.log",
+      "sha256": "7bf47cfea9d41e3ae2eaad4eda6f516980383a90675640cf45c2a33b5224122f"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-attempt1.log",
+      "sha256": "4d6c5e0cb3d34065acdcbae2f98892aceb1780628e16798ff591d43f285c31ea"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/final-local-attempt1.log",
+      "sha256": "99b50ef7ee020f5fd9aea449de0ae37b76493c69171e9d35c5e9b7bc0d7401e2"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/prefix.spec.mjs",
+      "sha256": "1d148687efcc5af022c144b65dc59e96cb160075002ec40ef9f0fb35c61843e6"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/attempt1-prefix.spec.mjs",
+      "sha256": "73802ca21ca99d85bef6458d614c6d19826e52de46aa0f697c93dfd3064929c3"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/final-local-main-attempt1.log",
+      "sha256": "7217261c984bc4cf73d027265c26eb8241889a293dedd02489b86d17430fac4a"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/operational-isolation.log",
+      "sha256": "2197bae584b4418ea5e67fc9cf2ece75b7f7f02a88ee045f85fd74a936dacb64"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/code-commit.log",
+      "sha256": "8aeca3a2848fa02006884847c851113c7907c422863e63ec913dbf481eeeb4a3"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/targeted-pass-attempt1.log",
+      "sha256": "314b7ec9934528e21389868247a5e0021af2719bb502ec6b6bbc927e33e83b6e"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/original-source-red-corrected-fixture.log",
+      "sha256": "fd9c63b25f2d9d9f1f12f095e6dfa6a21503e5d7859f44d16399beedd535bf74"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/original-source-red.log",
+      "sha256": "891cbcd69add81641aaf451b0d6ad7db6260b9d76ed0b337f4fbaa91e65d17ec"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/code-main-commit.log",
+      "sha256": "542c35b763b7bc8f77ba31e72f26b39f0740b6b27d5129bf958e1d27989ff22e"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/final-code-receipt.json",
+      "sha256": "c297a116667cfb3da3ac67c82510fe656664961cffe7186102128dc514acbe53"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-768px-text2x/selected-prefix.png",
+      "sha256": "a750d3e2c4710f5163c525de3c35cdce50e6a3061f86516f9bd417894707b76e"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-768px-text2x/invalid-prefix.png",
+      "sha256": "1ae056f8c8b65ab35c8e633cb45a43a824ff04e7a8628c2070bc61be4c2a3bf9"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-768px-text1x/selected-prefix.png",
+      "sha256": "1bd78f2fa9a3b17b9b9acff9dfc419d060caf40ccfe6c14d4f1a53d3a73d4d54"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-768px-text1x/invalid-prefix.png",
+      "sha256": "7bb2c69b28061febd4d06f68fa275159dbc7a4d9904aed2fea8909f186e4ee54"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-320px-text1x/selected-prefix.png",
+      "sha256": "ca99ea31b74bbbe76bab9301ccc64d296493af12b0eafb35cfbd16a6d9de6866"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-320px-text1x/invalid-prefix.png",
+      "sha256": "aa0962aa39f581edab32d59c484806c6bb12a07f153a942524956956e182970a"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-1280px-text1x/selected-prefix.png",
+      "sha256": "47be81a8859017ce3d6135623bfaec0a951338447567c155133c6cce7471b33d"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-1280px-text1x/invalid-prefix.png",
+      "sha256": "8e3f415f12916aec8f94d46d0547794ac53316988bed990f9fd4249fd6b33467"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-390px-text1x/selected-prefix.png",
+      "sha256": "4cba329c24c66469006033d96635b9a57d31ea7bfa30b696924423c6ad89b5ba"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt2/prefix-compiled-actual-picker-prefix-390px-text1x/invalid-prefix.png",
+      "sha256": "b0cdd2884794f7eb3326de39254aab26a523fe334e5a1f55f9b8e5f240eba7c2"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-768px-text2x/selected-prefix.png",
+      "sha256": "465787a38b27b256878c9118e226accc14a06df9f59bf344fcef766f629e8a5e"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-768px-text2x/invalid-prefix.png",
+      "sha256": "1ae056f8c8b65ab35c8e633cb45a43a824ff04e7a8628c2070bc61be4c2a3bf9"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-768px-text1x/selected-prefix.png",
+      "sha256": "18581ba0c0ca3dd6be0e6029f23721a829f087281bb4592c86b904b9ebeb7f72"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-768px-text1x/invalid-prefix.png",
+      "sha256": "7bb2c69b28061febd4d06f68fa275159dbc7a4d9904aed2fea8909f186e4ee54"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-320px-text1x/selected-prefix.png",
+      "sha256": "eecd9bb037193cc0be317591789b01cf9eb6c7cb91dc089f705ca8bbc218dfda"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-320px-text1x/invalid-prefix.png",
+      "sha256": "aa0962aa39f581edab32d59c484806c6bb12a07f153a942524956956e182970a"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-1280px-text1x/selected-prefix.png",
+      "sha256": "992e3b4943d77f69cb26a95a6d2ac9c632f1eed9c4196ab61a7190bea29cebc8"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-1280px-text1x/invalid-prefix.png",
+      "sha256": "00b41fd040b59fb0e62b688067c292ac1ca5b3d86e68dd3605be3517bb3caaf2"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-390px-text1x/selected-prefix.png",
+      "sha256": "5035c031baa9848156a3bfbee071f14bb0fc4a51574ebfcb39dc9643318cc4a2"
+    },
+    {
+      "path": "strataai-local/mention-prefix-validation/browser-results-attempt1/prefix-compiled-actual-picker-prefix-390px-text1x/invalid-prefix.png",
+      "sha256": "f6e6ea999f44bb6e6734bd291b6b115b423d30fdb4dc7b54282790e5bb5708d5"
+    }
+  ],
+  "candidateSourceBlobHashes": {
+    "apps/web/src/features/kanban/CommentMentionPicker.tsx": "20f88fed19a7825a74e3e6e495c8453460b78ea4",
+    "apps/web/src/features/kanban/CommentMentionPicker.validation.test.tsx": "a2a3f1ae7fbc3a2f0d82535c91a7493228b7abcd"
+  },
+  "originalModuleEvidenceRetained": "Native fixture tests preceded base integration; imported picker and test blobs match qualified updated-main source exactly. Updated-main combined final gate is fresh."
+}
