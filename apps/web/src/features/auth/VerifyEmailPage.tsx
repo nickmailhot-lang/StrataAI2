@@ -35,7 +35,7 @@ export function VerifyEmailPage() {
       if (result.status === 400 && recoveryObject(result.value).code === 'invalid_or_expired_token') setToken('');
     }
   }
-  return <Container maxWidth="sm" sx={{ py: 6 }}><Paper variant="outlined" sx={{ p: 3 }}>
+  return <Container component="main" maxWidth="sm" sx={{ py: 6 }}><Paper variant="outlined" sx={{ p: 3 }}>
     <Stack component="form" onSubmit={submit} spacing={3} aria-label="Verify email" aria-busy={busy}>
       <Typography variant="h4" component="h1">Verify your email</Typography>
       {error ? <Alert severity="error"><span>{error.message}</span>{error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}</Alert> : null}
