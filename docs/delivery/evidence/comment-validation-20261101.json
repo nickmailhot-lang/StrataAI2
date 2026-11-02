@@ -1,0 +1,514 @@
+{
+  "schemaVersion": 1,
+  "status": "Scoped local qualification; fresh hosted/review/full/product acceptance pending",
+  "source": "11cbfd6ec89326fd40998303851163bc39c17e46",
+  "tree": "aa4db56a19550130f9703248ad38522e689b1aac",
+  "base": "bacad858a073393def14301d568eb35466acd189",
+  "requirements": [
+    "PRD-15 COMMENT-FR-001/003; sections16/17; TC03/11/12",
+    "UXA03/04/05/06/07/08"
+  ],
+  "implementationPaths": [
+    "apps/web/src/features/kanban/CardCommentsControl.tsx",
+    "apps/web/src/features/kanban/CardCommentsControl.validation.test.tsx"
+  ],
+  "behavior": "Associate existing normalizeComment rejection with the current MUI New/Edit comment field via error/helperText/alert; retain draft/focus/no command on invalid text. Clear only local validation on deliberate edit or successful normalized selection/new review. Preserve exact explicit normalized command, authority, recovery and server result handling.",
+  "unchanged": [
+    "normalizeComment validation, original text/deadline/command key/body/version and all original permission/tenant/Portal checks.",
+    "No automatic replay, new write, exception suppression, retry/deadline/assertion weakening or helper/schema/API/event/theme change.",
+    "Full nightly and exact production-candidate workflows unchanged; fixed24functional+24deferred cases unchanged."
+  ],
+  "results": {
+    "originalComponent": {
+      "result": "Failed",
+      "failed": 8,
+      "passed": 1,
+      "scope": "Empty/control/unpairedUnicode new/edit field association and local-edit clearing failed; operational explicit valid command passed."
+    },
+    "originalNative": {
+      "result": "Failed",
+      "scope": "Actual compiled original source390px with successful protected review; invalid field retained focus and generic notice/no write, but aria-invalidfalse and no associated description; original5000ms assertion refused. Originalimage/errorcontext/trace retained and viewed."
+    },
+    "targeted": {
+      "result": "Passed",
+      "files": 4,
+      "cases": 62,
+      "durationSeconds": 4.4,
+      "scope": "New9dedicated validationcases plus complete original commentcontrol/parser/mentionselection contracts."
+    },
+    "typesLint": {
+      "result": "Passed"
+    },
+    "nativeAttempt1": {
+      "result": "Failed",
+      "cases": 10,
+      "cause": "Isolated fixture route omitted nestedPATCH path and returned stale precommand page during actual identity reconnect recovery. Fieldvalidation/focus checks passed; acknowledgment checks failed. Originalscreenshots/traces/network/logs retained.",
+      "resolution": "Only fixture HTTP route/state and actual SignalR handshake corrected; no application code or result assertion/budget weakened."
+    },
+    "nativeAttempt2": {
+      "result": "Passed",
+      "cases": 10,
+      "durationSeconds": 12.7
+    },
+    "nativeFinal": {
+      "result": "Passed",
+      "cases": 10,
+      "stats": {
+        "startTime": "2026-11-02T00:40:28.491Z",
+        "duration": 17990.692,
+        "expected": 10,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "scope": "NativeTab/Enter actualcompiled CardCommentsControl+appTheme/MUI Dialog at320/390/768/1280+768200%text. Bothnew/edit invalid input0writes/fieldfocus/associatederror; editclear0writes; explicit1POSTorPATCH exactnormalizedbody/version/key; authoritativefixtureack/render andClose launcherreturn. ZeroAxe ininvalidANDackstates/zerooverflow/zeroerrors,30sscenario/5000msresults/0retries. Stronger settledanimation screenshot assertions added after review of attempt2transitioncapture."
+    },
+    "exactLocal": {
+      "result": "Passed",
+      "run": "1793580072252-b94e9aff",
+      "durationMs": 156422,
+      "summary": {
+        "result": "Passed",
+        "files": 16,
+        "passed": 215,
+        "existingDeferred": 0,
+        "productionQualified": false
+      },
+      "scope": "All7selectedstages/types/browsertypes/lint/build/UI2/contracts/ledger/inventory/drift/Python/secrets."
+    }
+  },
+  "visualReview": "20attempt2capture originals plus10settled invalid-state attempt3captures inspected directly. Field-local message/visible focused error border/nooverflow atallwidths+200%. Original failureimage inspected. Unchanged320prefixlabel ellipsis is baselinefixturelimitation. Manualscreenreader/canonicalproduction acceptance remainsunverified.",
+  "preparationFailures": [
+    {
+      "result": "Failed",
+      "scope": "Newworktree coordination CLI before locked dependencyinstall",
+      "cause": "MissingTypeScript import; failedbeforeclaimmutation.",
+      "resolution": "Locked npmci once then normalCLIclaim succeeded."
+    },
+    {
+      "result": "Failed",
+      "scope": "Privateharnessconfig generation beforecompilation",
+      "cause": "Singleletterplaceholder collidedwith ChatGPTpath; originalconfig/logretained.",
+      "resolution": "Structured uniqueconfigconstruction; originalsourcecompiled unchanged."
+    },
+    {
+      "result": "Failed",
+      "scope": "Read/patch preparation only",
+      "cause": "Nonexistent separatevitestconfig and unmatched combineddeclaration patch; neither changed source.",
+      "resolution": "ReadactualViteconfig/correctliteralpatchcontext."
+    },
+    {
+      "result": "Failed",
+      "scope": "Preliminary private-artifact catalog audit only; original test receipts and assertions unaffected",
+      "cause": "LedgerCLI log was still empty/live at preliminary proof creation; path label later referred to completed bytes.",
+      "preliminaryManifestSha256": "15bbbabd46a24d9e62b64c96fe04cd1a16cef8b298c21d70bf6ec0a0f03c0b30",
+      "preservedPreliminaryManifest": "strataai-local/comment-validation-polish/preliminary-public-evidence-manifest.json",
+      "resolution": "Preserved empty snapshot and completedlog as distinct immutable artifacts; explicit originalLabel retained. No receipt/test/capture/log content edited. PR140 published earlier preliminary label independently clarified in PR body withoutsource/proof rewrite."
+    }
+  ],
+  "coordination": {
+    "at": "2026-11-02T00:44:42.303762+00:00",
+    "main": "bacad858a073393def14301d568eb35466acd189",
+    "policy": "Independent boundedsource branch startsverifiedmain; pendingPR139+140 source/tracking keptimmutableinbranches/snapshots, no copyingunmergedsource/no sourcepathwaiver. Futureintegrationmust reconcileunionandqualifyactualcombinedtree.",
+    "pendingPR139": {
+      "head": "7d5a17cf17c2380604581434612532500a38b17a",
+      "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/mention-picker-focus/canonical-transfer-snapshot.json",
+      "sha256": "7a6f40feb39e7ccbda2a6b51549bf30a3c8d209620b0869f7db06a1b07b0bdeb"
+    },
+    "pendingPR140": {
+      "head": "d58944b6f1a54a50a5113ba43bab668039642509",
+      "items": [
+        "PRD-15-VS-02-T-05",
+        "PRD-15-VS-02-T-05-TEST-01"
+      ],
+      "cycle": "CYCLE-PRD15-MENTION-PICKER-FOCUS-20261101",
+      "records": [
+        {
+          "path": "docs/delivery/progress.json",
+          "sha256": "b7eebaffae481928ae4039ed4e4f9bbbec3c7ae73e1e81f6f2df1478e99f67a4",
+          "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/comment-validation-polish/canonical-snapshots/pending-pr140/docs/delivery/progress.json"
+        },
+        {
+          "path": "docs/ux/delivery-report.md",
+          "sha256": "73f503da52b0dd39744291993f500c10a5c75e7ab995d5cc2c9d9938e52061d1",
+          "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/comment-validation-polish/canonical-snapshots/pending-pr140/docs/ux/delivery-report.md"
+        },
+        {
+          "path": "docs/delivery/evidence/mention-picker-focus-20261101.json",
+          "sha256": "8a481a3caf726792860ee409bca5789ac54685da157ed1eb92aa1a30d46ab4fc",
+          "snapshot": "/Users/nickmailhot/Documents/ChatGPT/StrataAI/.git/strataai-local/comment-validation-polish/canonical-snapshots/pending-pr140/docs/delivery/evidence/mention-picker-focus-20261101.json"
+        }
+      ]
+    },
+    "releasedPaths": [
+      "docs/delivery",
+      "docs/ux/delivery-report.md"
+    ],
+    "fromClaim": "PRD15-MENTION-PICKER-FOCUS-02",
+    "toClaim": "PRD15-COMMENT-VALIDATION-02",
+    "humanCoordinationAuthorized": true
+  },
+  "limitations": [
+    "Fresh actual publichead hostedselectedCI/all5CodeQL/reviewdiagnostics pending.",
+    "SyntheticHTTP/SignalR fixture acknowledgment is not realpersistedcomments/notifications/roles/tenantPortal or screenreaderacceptance.",
+    "Local selected16files215pass differs from broader hostedconservativefrontend scope.",
+    "Fullnightly/exactproduction and product/MVP/parentacceptance unverified."
+  ],
+  "productionQualified": false,
+  "sourceBlobHashes": {
+    "apps/web/src/features/kanban/CardCommentsControl.tsx": "b3f0a8be82c6a8684a0085c9468b0ff14506e417",
+    "apps/web/src/features/kanban/CardCommentsControl.validation.test.tsx": "f4d22929618f005b6fb44a86a556b59b18e34974"
+  },
+  "privateArtifacts": [
+    {
+      "path": "strataai-local/comment-validation-polish/validation.spec.mjs",
+      "sha256": "0b9612d6e00b5daa82f2aab7c5e4ee7b5297d0c930a8eff542e240382df4057c"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/original-harness-build.log",
+      "sha256": "5412ad272058a6a287cce9b526ad1c70635335eea48c9aa0678c12c3609fc411"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/native-original.log",
+      "sha256": "31edc600e42b69388ed5661369ed8cfda38729b86dd8b13b7f3a80c6468eb9a9"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/lint.log",
+      "sha256": "82438f41d0bf0cd89fd7825eb831585b87650deaa1bbb94a04d8af5fe866ed1e"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/npm-ci.log",
+      "sha256": "58fe8dea768724d11b3ebf13f9cfe03af151b6f1188cbcc8d8666106e927a456"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/targeted-attempt1.log",
+      "sha256": "81b5b42e734f9bad9cb01565b21e2cd798cf11ae113085f579b378b4aafabd0f"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/original-harness-build-attempt2.log",
+      "sha256": "c51a8fa00cc60dec192f8465d9618b7f05a2c29c631e8bc4ccdf490cdbff2ea5"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/tracking-cli-at-proof-snapshot.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalLabel": "strataai-local/comment-validation-polish/tracking-cli.log",
+      "scope": "Immutable empty snapshot captured before delivery transitions began; live completed log cataloged separately."
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/typecheck.log",
+      "sha256": "fcc39c051dbcbdc2f04abe5cd45a835e6f3f68991ffb690d8adbb172df4370dc"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/validation-attempt1.spec.mjs",
+      "sha256": "a3f1e2838e62521cd9722359e343101ca2153aa88615b1969d609e032c8a8ff9"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/native-shared-attempt1.mjs",
+      "sha256": "6879146b0a35a23c6e2537ea3a397712bcafc9aa7ae35878c8821e09ba540bd6"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-attempt2.log",
+      "sha256": "b0c50288696dc8f36b74bd1a486d17cd7f683c4686c3d03958671e8eb0f517a4"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/canonical-transfer.json",
+      "sha256": "32a9d80eac05a36f4329223a3f9d770292127cc2202a1708405f6fac7ca04d62"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-attempt3.log",
+      "sha256": "18ad1bbbfa7759ed4e53decc7f04b3c667775071a409931f864360e03293a8b9"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-attempt1.log",
+      "sha256": "0f175df5ab9589d43e8f3a19eb2da8cb50e5deb040623e079ccaa3b62442cab7"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/final-local-attempt1.log",
+      "sha256": "7245b103963e479b03c68f25d006d59e8d8ee9b3c847dd463007b6e851284d71"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/original-component-red.log",
+      "sha256": "302d475405624a1c83d48d84a92476054de095b7c8883ccf9a13b5cc9cd8cfa0"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/fixed-harness-build.log",
+      "sha256": "eb24436f6f7a4174df1a6ae9bac27a68bb1f36ccd2948b3bbb2f3585b2185ff5"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/explicit-code-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/code-commit.log",
+      "sha256": "7a1bdbaecfae773e9e62d30304b553b058da78e5ee6c9dde561db7a9f0d14fbb"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/hooks.log",
+      "sha256": "d0b46f0b13f71617c92646326f00b0939834d908a71b03806ae4d54633fb2acb"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/final-code-receipt.json",
+      "sha256": "96b141632458d419de6df53d5c8f093895cf1b2398beef089c47f44cfdcdca9e"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/original-CardCommentsControl.tsx",
+      "sha256": "d44c9f8ea2341d8c51ff0b6192f80b5351aec50d3aa3622c743396040456da5d"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/native-shared.mjs",
+      "sha256": "778c9159607ecfb0a905cac6d111feb940a5fffb458bdc40f0226ba42085ed58"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/native-original-results/native-original-original-compiled-comment-validation-390px/trace.zip",
+      "sha256": "50ac1e7630890252e17d9f32715ec96d38b2f3a1f530d9b9ea3adcba5e8ca782"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/native-original-results/native-original-original-compiled-comment-validation-390px/original-field-validation.png",
+      "sha256": "af032b597bf3c15244ff2033e8f9e7e550773143ff712307b43b49e4bf129829"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-1280px-text1x/invalid-field-focus.png",
+      "sha256": "7ffd880e0044e6cc2d62967dd9814013c8f80b4eb1eb5a14e8d765cc22ba5118"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-1280px-text1x/acknowledged-comment.png",
+      "sha256": "66d90b3c983f93f59a74933dded18f4ac13059dce7e94d95e3ae6c2311b0ff66"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-390px-text1x/invalid-field-focus.png",
+      "sha256": "28d7e2a379786f89b6e0ed7f7ddd55fa833246c4ed6ab33aa10f8afe9a2d1113"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-390px-text1x/acknowledged-comment.png",
+      "sha256": "f4d629963341cf1e6e1c9c4511b18f0136674367f4c8c3c1adc611bb3004dc0c"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-768px-text2x/invalid-field-focus.png",
+      "sha256": "6039e328b465312bb5ddb70482775c075bf3afebd0e53a836937ab6f3ad80e0b"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-768px-text2x/acknowledged-comment.png",
+      "sha256": "6f3b9a539e408215d7bd9726b4414eefaa5b566a99cd176854d351093fe4b645"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-320px-text1x/invalid-field-focus.png",
+      "sha256": "ba45db9a6d1bd83c901289dde232d81fe8dc352c33db6fad1446b51ce25a0b93"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-320px-text1x/acknowledged-comment.png",
+      "sha256": "1fb90791cb8b1940c9a9caebae12f24fda513dbd82c774d2dc315fd1047c24de"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-768px-text1x/invalid-field-focus.png",
+      "sha256": "fb0e47be0501c9c08ebdffa91555694297e1357ed2fb8a918de7b2fe16449414"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-768px-text1x/acknowledged-comment.png",
+      "sha256": "b0946566da93aca4dc5ea314e64de8a39b6844b492d9660656fd7d1f10c8708b"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-1280px-text1x/invalid-field-focus.png",
+      "sha256": "2d6f1e3504fb533d9b10ddbbb5378d8ac603db2674607dd15343ce96ee13c8d3"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-1280px-text1x/acknowledged-comment.png",
+      "sha256": "509f6f665aed0d4d2196ed4bd25008617a8da711d28e2b25757d11f542523483"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-390px-text1x/invalid-field-focus.png",
+      "sha256": "4e1df32538f5be918752204ce1abe8816e956c9de16223489e43c73321cd6c49"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-390px-text1x/acknowledged-comment.png",
+      "sha256": "3dd18393a736fb97d34a24685f3b80d4bd655f60e6769688216b3c281ca13554"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-320px-text1x/invalid-field-focus.png",
+      "sha256": "219430dc4f0dc6e4802bf5ac0cc4a77b2815126cdb63657c758eed0672dce7a2"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-new-comment-validation-320px-text1x/acknowledged-comment.png",
+      "sha256": "956d073b7fbc1dbd39d2b1e2284bea7b3750e34efc9f31143bd47acd11274726"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-768px-text2x/invalid-field-focus.png",
+      "sha256": "375d3d6a26cda45f0dde8e78d09ec79c1e9241a56bdbb7a05b488964b3a0f353"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-768px-text2x/acknowledged-comment.png",
+      "sha256": "3fa02f48b55f405ad908e9a503893cfb85dc7339ef630ea6cdb2873b7905d825"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-768px-text1x/invalid-field-focus.png",
+      "sha256": "8b52caaa3b607b7960d04c387b45d8010ae8df5702a48009f11278ce8f5b2f95"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt3/validation-compiled-edit-comment-validation-768px-text1x/acknowledged-comment.png",
+      "sha256": "8df6d5b890d0039e95f58976100ba469738c40631a1d443b18dff969b63935b2"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-1280px-text1x/invalid-field-focus.png",
+      "sha256": "d2e820193007a79504ccfef8d369f8351dbf46ed8bbfc3f9f4f1e5aaab20c567"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-1280px-text1x/acknowledged-comment.png",
+      "sha256": "931da1420841d5f4a71f1b0ad1475eb2dac9029730c8a5ef604f40f00408e7e0"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-390px-text1x/invalid-field-focus.png",
+      "sha256": "101beddeb679b9f5db0567ac87c2db4e6e8d1f19fe3cdd529601d9ddbf90684e"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-390px-text1x/acknowledged-comment.png",
+      "sha256": "5b2739e5af6b2327278e865423a5f4d47e75e9b6ad7b16adfcc4cac7589d9a05"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-768px-text2x/invalid-field-focus.png",
+      "sha256": "afdebbc9118a5307a9fe9d2aef735eac33a23039c41a6d2d0fa72af702be20f5"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-768px-text2x/acknowledged-comment.png",
+      "sha256": "6f3b9a539e408215d7bd9726b4414eefaa5b566a99cd176854d351093fe4b645"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-320px-text1x/invalid-field-focus.png",
+      "sha256": "01179d0c1f94835cea127ebdc4265657dc1daa51be058f0b0500673ffdba8999"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-320px-text1x/acknowledged-comment.png",
+      "sha256": "51aca22e2083b51a1d2c1cd88004b28a38560545683b471f8f62ed14d33f084c"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-768px-text1x/invalid-field-focus.png",
+      "sha256": "ea71b1394e83c98498e8ba3ce2ffe6104a96f1c991e247dcc1a1b8094b2b0fae"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-768px-text1x/acknowledged-comment.png",
+      "sha256": "0aca40da107aedec9e999de29e41b978c5b50d89d23f6cb17e0e2b3e3aeaf71f"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-1280px-text1x/invalid-field-focus.png",
+      "sha256": "74d2fa577664a76d389a0281e28d4eef25037354fe9ed449ae8df83c67474912"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-1280px-text1x/acknowledged-comment.png",
+      "sha256": "13bf66f18bc1bd508f827f37e636e1f34a91fae147220435911f5bf3dd12e557"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-390px-text1x/invalid-field-focus.png",
+      "sha256": "1bbceec8ab5cddb7cd81aaad72938095d08dbe42aeecee7075003478d9072653"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-390px-text1x/acknowledged-comment.png",
+      "sha256": "c272ee04851539bf454758baec1c6fc490918a5dd45abbd4ed3a0952e7a5daab"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-320px-text1x/invalid-field-focus.png",
+      "sha256": "7d9aba51fc6789f5ed95adc9ee14cf188a085bb13c152ea97117d92b727ff6a8"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-new-comment-validation-320px-text1x/acknowledged-comment.png",
+      "sha256": "956d073b7fbc1dbd39d2b1e2284bea7b3750e34efc9f31143bd47acd11274726"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-768px-text2x/invalid-field-focus.png",
+      "sha256": "e7247e1493fbd4322bc37f397e015ef459b9e155095ec82742a2960b710b280e"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-768px-text2x/acknowledged-comment.png",
+      "sha256": "3fa02f48b55f405ad908e9a503893cfb85dc7339ef630ea6cdb2873b7905d825"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-768px-text1x/invalid-field-focus.png",
+      "sha256": "133433f17ffdb9937d0ac51a9819ffc7a1859e77b1243bc501fa6490eca84c4c"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt2/validation-compiled-edit-comment-validation-768px-text1x/acknowledged-comment.png",
+      "sha256": "2995ab1295c0db1b0fcddf9dccb86276317fecea085ba3a1b588cdbbdd7fef36"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-1280px-text1x/trace.zip",
+      "sha256": "c8702a5da0b0ac9d96eaaaf1560dd759276dc4e821a657b2cc1838396c75656d"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-1280px-text1x/invalid-field-focus.png",
+      "sha256": "bb7b3102f8d04cb08af198be3c50e5560c8070ad7e9342b9335be320dd074afc"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-390px-text1x/trace.zip",
+      "sha256": "1572af0fb78b5c0913ef2153b6fdffafc6ccd65da0fafca842ef4af32c108e52"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-390px-text1x/invalid-field-focus.png",
+      "sha256": "15c78be0adb6915e9697095e455b13f7a41c694c8dfb05d15ec882a5b4942d87"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-768px-text2x/trace.zip",
+      "sha256": "097218b11bdb2fef3af13b7f93a06b806e93237883c71cf79d66770987ddeb35"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-768px-text2x/invalid-field-focus.png",
+      "sha256": "4d15a459f23429d7d73fea4e2b5927fe0b19bd5db3001fc0acfa872c02e5081e"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-320px-text1x/trace.zip",
+      "sha256": "6c0254e3d04701bcf3bc431d30f0eff10d88ca6bd2ca842dd3adab46abb5be1f"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-320px-text1x/invalid-field-focus.png",
+      "sha256": "295432f29e3beef22e9813d262ad2d1d17309b828d5e55db6adca3bc42e6028f"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-768px-text1x/trace.zip",
+      "sha256": "be5e3b29ade8dd3bad1066ecf34c50b6881c29b936712fbebd532709fdc21b85"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-768px-text1x/invalid-field-focus.png",
+      "sha256": "672ba1a7543fdcd7e4f449c47905d59e5c1a74ada24178c70de3eaa94a92a2a6"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-1280px-text1x/trace.zip",
+      "sha256": "03f1d2550c9d614f2d61f7853e67eaa8fc69f53a7d6d3c700e0746ba979950b6"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-1280px-text1x/invalid-field-focus.png",
+      "sha256": "99728027ac12370d3d5fed4e618f8cf3496715dee9cb20299a24fb0d76f44348"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-390px-text1x/trace.zip",
+      "sha256": "ddb6027828a12e7abd0544a22cadb6fd5e2e1af8cc7ae24428cc5e2acca5182a"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-390px-text1x/invalid-field-focus.png",
+      "sha256": "29cffbc5c2c2ac43fe021087a3a2159955690303ff83ebd9f5eeacec6f5090e9"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-320px-text1x/trace.zip",
+      "sha256": "1d32974e010f8c24fb6c6af9e1a9ef1825abd78b88c8e0942f5d49768edc80a5"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-new-comment-validation-320px-text1x/invalid-field-focus.png",
+      "sha256": "7d9aba51fc6789f5ed95adc9ee14cf188a085bb13c152ea97117d92b727ff6a8"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-768px-text2x/trace.zip",
+      "sha256": "c4f2c26a7a4f330665ee11a99bd17163b6a7d2d91b9a224f4f015ba45d20213e"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-768px-text2x/invalid-field-focus.png",
+      "sha256": "de2b839cb69d493443f061a0c84f93e2c35130b1e8cb1c7e1be7e32776ebba19"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-768px-text1x/trace.zip",
+      "sha256": "8463291789db2da90d255b6daf6f70e7d7d70d0554c50efed1b37e274a4e61c2"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/browser-results-attempt1/validation-compiled-edit-comment-validation-768px-text1x/invalid-field-focus.png",
+      "sha256": "e38dfb3fa9e85005b56f36f2f02392a8013a67e29cbde2956ab00a49f989356a"
+    },
+    {
+      "path": "strataai-local/comment-validation-polish/tracking-cli-completed.log",
+      "sha256": "96d4fee71bc4174094033017aee6e07728e36d00d1e4fafaba696e3697249465"
+    }
+  ]
+}
