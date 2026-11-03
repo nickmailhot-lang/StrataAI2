@@ -1,0 +1,435 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-02T10:18:31.512711+00:00",
+  "scope": "PRD-15 COMMENT-FR001/003, TC03/11/12, UXA02/03/04/05/06/07/08. Bounded owned comment-editor focus restoration and missing real-service new/edit field validation coverage; no new feature or command/authority/schema change.",
+  "source": {
+    "revision": "06701a41fd5a8edd74cb09ae91296f6808172e6b",
+    "tree": "ffabf3bcbca4591e403714f50bbfef2692d0b975",
+    "orderedParents": [
+      "d977719a5ee57b08b218aca5db31dd10afd29604"
+    ],
+    "normalHookedBackup": "546d4044b79b985fdd948751ec6c0a44c859b89a",
+    "paths": [
+      "apps/web/src/features/kanban/CardCommentsControl.tsx",
+      "apps/web/src/features/kanban/CardCommentsControl.editor-focus.test.tsx",
+      "tests/browser/card-comment-field-validation.spec.ts"
+    ]
+  },
+  "local": {
+    "status": "Passed",
+    "run": "1793613994558-075d5eed",
+    "stages": 7,
+    "durationMs": 411604,
+    "web": {
+      "files": 233,
+      "passed": 3156,
+      "originalCapacityDeferred": 24
+    },
+    "compiledSyntheticUI": 2,
+    "codeql": {
+      "findings": 0,
+      "rules": 87,
+      "status": "codeql/comment-field-canonical-fixture-20261102/status.json"
+    },
+    "receiptSha256": "7b483f65ca4991e3287fbe97df6a11921491d0cded8326c244a5dc2c80fded41"
+  },
+  "canonical": {
+    "status": "Passed",
+    "run": "2b82696a-dc1a-4ac2-9cc5-91d553d0c01b",
+    "stagedTree": "5c40b424ab04de40e0b8532c335ca59745cf84a6",
+    "totalSeconds": 1386.286,
+    "cases": 12,
+    "completeFiles": [
+      "tests/browser/board.spec.ts",
+      "tests/browser/card-comments.spec.ts",
+      "tests/browser/card-comment-field-validation.spec.ts"
+    ],
+    "newFieldCases": 5,
+    "viewports": [
+      "320",
+      "390",
+      "768",
+      "1280",
+      "768 at200%text"
+    ],
+    "skips": 0,
+    "retries": 0,
+    "capturesInspected": 26,
+    "images": "Three exact linux/amd64 images/tree labels and live bindings verified.",
+    "ownership": "Own containers/volumes/provider/wrapper/lock absent after completed original cleanup.",
+    "provenance": "Final source tree differs from canonical stagedtree ONLY in new dedicated component-test fixture. Actual app/browser/runtime/workflow blobs are unchanged. This does not claim canonical run executed the later unit-fixture tree.",
+    "assertions": [
+      "Invalid whitespace/control literals retain value, exact field aria-invalid/description/helper-alert, native focus/visible indicator/unobscured center-hit and no comment read/write.",
+      "Editing clears local validation without a command. One deliberate normalized POST and one PATCH use distinct original keys/exact body/CSRF; actual receipts and independent persisted row bind author and versions.",
+      "Card1->2->3, comment1->2/sameID, exact COMMENT_ADDED/COMMENT_EDITED events; visible Card return/reopen persisted content.",
+      "Default Axe/no overflow/no page errors; original Board5 and author/two-client/lost-reply/recovery/redaction2 preserved.",
+      "Original setup/security/permissions/privateBoard/restrictedroles/143unsafe-role refusals/abuse/scopedBoardWorker/finally and all deadlines/retries unchanged."
+    ]
+  },
+  "regression": {
+    "originalSourceCounterfactual": "Exact8case connected-dialog component fixture:4owned restoration failures plus4independent-destination passes; corrected all55cases3files pass. Original failed source retained.",
+    "correction": "Retain actual editor focus owner and same-dialog fallback through protected access reread; deliberate another destination cancels recovery. No added CSS, refocus of result in tests, permission or command-policy change.",
+    "controlledNative": "Five compiled production-router/theme widths pass valid scoped BoardLive-triggered protected reread/600ms response with5000ms joint focus/centerhit/2pxborder; all5captures reviewed. ControlledHTTP/SignalR is not canonical authority acceptance."
+  },
+  "retainedFailures": [
+    {
+      "attempt": "runtime1",
+      "result": "Failed before runtime",
+      "reason": "Outer redirect precreated guarded internal log; no UUID/Node/runtime/scenario executed."
+    },
+    {
+      "attempt": "runtime2",
+      "result": "7passed/5newfailed",
+      "reason": "New fixture wrongly assumed auth-only expected-user header on comment commands. Actual200 receipt author/cookie/CSRF were correct; fixture now checks actual response author plus persisted row. Failed source and traces retained."
+    },
+    {
+      "attempt": "runtime3",
+      "result": "10passed/2newmobilefocusfailed",
+      "reason": "Protected access reread removed owned editor after its restoration intent was cleared. Original7passed; downstream failed-case save/return/Axe and post-browser abuse NotRun."
+    },
+    {
+      "attempt": "first-final-gate",
+      "result": "3155passed/1newunitfailed/24originalcapacitydeferred",
+      "reason": "New unit fixture full MUI trap initial-focus redirect occurred before ownership operation. Matching production transition still reproduced initial focus interference. Existing connected-dialog unit fixture isolates component ownership; all real production-dialog assertions remain unchanged and passed runtime4. Downstream build/UI/secrets NotRun for failed gate; whole final rerun passed only after changed unit fixture."
+    },
+    {
+      "attempt": "other-preparation",
+      "result": "Retained separately",
+      "reason": "Wrong root Vitest no files; unfocused native launcher/new Dialog startup fixture failures; redundant RTL exact option type refusal; private diagnostic malformed unknown WS heads2pass/3fail corrected only known heads5pass. No original assertions weakened."
+    }
+  ],
+  "retainedPrivateArtifacts": [
+    {
+      "path": "comment-field-canonical/browser-types-attempt1.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34",
+      "bytes": 69
+    },
+    {
+      "path": "comment-field-canonical/browser-types-attempt2.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34",
+      "bytes": 69
+    },
+    {
+      "path": "comment-field-canonical/browser-types-attempt2.log.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "comment-field-canonical/browser-types-attempt3.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34",
+      "bytes": 69
+    },
+    {
+      "path": "comment-field-canonical/browser-types-attempt3.log.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "comment-field-canonical/browser-types-attempt4.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34",
+      "bytes": 69
+    },
+    {
+      "path": "comment-field-canonical/browser-types-attempt4.log.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "comment-field-canonical/browser-types-attempt5.log",
+      "sha256": "853a082f0f9e829741aef580d2a55ebd76b41f6d9af2ccd9803868c796da3c34",
+      "bytes": 69
+    },
+    {
+      "path": "comment-field-canonical/canonical-inventory-attempt1.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "comment-field-canonical/canonical-inventory-attempt2.json.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "comment-field-canonical/canonical-inventory-attempt3.json.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "comment-field-canonical/canonical-inventory-attempt4.json.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "comment-field-canonical/code-publication-identity-proof.json",
+      "sha256": "894aec859ef9b33cfbe94c68e348659e5a6f0fb0335a5d99a7bbb175cca2ae68",
+      "bytes": 1016
+    },
+    {
+      "path": "comment-field-canonical/component-fixture-readiness-correction.json",
+      "sha256": "d0cf81967d4146978a8736d4c800aaf1b859a4b1083a9d913632c5f95896404a",
+      "bytes": 1630
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-bounded-correction.json",
+      "sha256": "47fa8c7d062a7d4a499d7f0f5c5d542d81a57449b4186b11fc1fd98b55fe174c",
+      "bytes": 1475
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-build-attempt1.log",
+      "sha256": "38a22cb0d0c2c92e3bb2c8a9f5f0668d09122f6eb7874fdc0083a488f4e6c928",
+      "bytes": 1574
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-build-attempt2.log",
+      "sha256": "a0b47d9f419d0a086352d74a3f4d82b4275e28cef5ccb6569f4d56be1e3e06e7",
+      "bytes": 843
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-connected-dialog-original-red.log",
+      "sha256": "06e772c4b3e6ceeb8e0ed3df579ae6c44753fdde2621ecd38a5b12260d8e541c",
+      "bytes": 59917
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-connected-dialog-targeted.log",
+      "sha256": "23a94e9da29f039adc85c6894ef01ba44797b65e763a7ff3335c3e68fd1e265b",
+      "bytes": 469
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-exact-original-red-attempt4.log",
+      "sha256": "02140f433bec6f40fb0c8e1b9a2356d162556e8789df71bb0e9818289f61e47d",
+      "bytes": 64182
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-lint-attempt1.log",
+      "sha256": "82438f41d0bf0cd89fd7825eb831585b87650deaa1bbb94a04d8af5fe866ed1e",
+      "bytes": 59
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-original-red-attempt2.log",
+      "sha256": "6a6520e295833d8d0823ca91430e36ebe4a7a251281055e94c861f4e6ef68eee",
+      "bytes": 36115
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-original-red-attempt3.log",
+      "sha256": "bad33f2b6cc4d00bb9a3534189beb08df900801ead355720ef5d442728b104ac",
+      "bytes": 33925
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-original-red.log",
+      "sha256": "31b60813f6310a9a9bde2a2a397c25cb2f41730120eda4331107c68b162b13d2",
+      "bytes": 280
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-production-dialog-original-red.log",
+      "sha256": "93b0efe340ca78a970b46e32d34a370327d4cc84c91c01ce85d8356ff2bd50da",
+      "bytes": 63494
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-production-dialog-targeted-pass.log",
+      "sha256": "05a72eb26f28637f3c1bb3490a8270687acfcca4c562acc339a875b9573dd440",
+      "bytes": 9947
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-source-red-evaluation.json",
+      "sha256": "74013e3b93599eb08064466ac69ee701de1d2750cccac82f37fbbeb56771f68a",
+      "bytes": 1060
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-targeted-attempt1.log",
+      "sha256": "b6a06b96b211f7ea0fe4e2fe2cd79ce2f4d9af42a71bd46432a19b44f14f22fc",
+      "bytes": 10482
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-targeted-attempt2.log",
+      "sha256": "5936d0662e936d18d1fb9aa32648530e8d8c2f03734bd096d803707476a0326e",
+      "bytes": 469
+    },
+    {
+      "path": "comment-field-canonical/editor-focus-targeted-attempt3.log",
+      "sha256": "8297ca9805f3972fa65994ac96e95af8dc31f24ceb1dd72fcb85f5c4c5ffe761",
+      "bytes": 469
+    },
+    {
+      "path": "comment-field-canonical/explicit-code-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8",
+      "bytes": 85
+    },
+    {
+      "path": "comment-field-canonical/final-code-attempt2-receipt.json",
+      "sha256": "7b483f65ca4991e3287fbe97df6a11921491d0cded8326c244a5dc2c80fded41",
+      "bytes": 57380
+    },
+    {
+      "path": "comment-field-canonical/final-local-attempt1.log",
+      "sha256": "8df2a8ac049da8e5702cb7d4a44bfd93d9ae894aee63622c6d8943083635c4a4",
+      "bytes": 2215
+    },
+    {
+      "path": "comment-field-canonical/final-local-attempt2.log",
+      "sha256": "1512a5954d0a6bba361bbb07fbea1513f2c28ed3b13c0cb7fa574195788716d8",
+      "bytes": 1483
+    },
+    {
+      "path": "comment-field-canonical/final-validation-attempt1-failure-evaluation.json",
+      "sha256": "caf871d7b443d202f859456ed67d294782e4e6e3c1fd5197716aff0a780e5b8c",
+      "bytes": 2262
+    },
+    {
+      "path": "comment-field-canonical/final-validation-attempt2-wrapper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "comment-field-canonical/final-validation-wrapper.log",
+      "sha256": "848a43b6d4b4e86b1daa686440bd35ed56274e41aa4ac8057258a4e7b5a45714",
+      "bytes": 559
+    },
+    {
+      "path": "comment-field-canonical/fixture-contract-correction.json",
+      "sha256": "3770092df2113f1bc68cf62154e66272d9578ef40056ba1137d1cee302023c4f",
+      "bytes": 998
+    },
+    {
+      "path": "comment-field-canonical/native-editor-focus-probe-attempt1-visual-review.json",
+      "sha256": "13afb233a1ef7654481714143d10c2d72546bc454e6f822b43400d556ccf86ac",
+      "bytes": 2383
+    },
+    {
+      "path": "comment-field-canonical/native-editor-focus-probe-attempt1.log",
+      "sha256": "a86efad6505244fd282fadaf0ee9d64e7811311b67518c8bc07448d0dd6e8664",
+      "bytes": 1441
+    },
+    {
+      "path": "comment-field-canonical/native-probe1-network-contract-evaluation.json",
+      "sha256": "1a4d9880c09c4191ba66b682a045cf8e08a66cb7d79743dfabeb0d1ced0169f4",
+      "bytes": 784
+    },
+    {
+      "path": "comment-field-canonical/native-probe2-visual-review.json",
+      "sha256": "f51188ef700ff3fb25608166f83eacabbe0106f078528136e64e74e0985dc746",
+      "bytes": 416
+    },
+    {
+      "path": "comment-field-canonical/native-return-focus-probe-attempt1.log",
+      "sha256": "c63eaa2d07e4db5a07916f923c1829bf77919e793bfa5895bbd5b15c077acca6",
+      "bytes": 18668
+    },
+    {
+      "path": "comment-field-canonical/native-return-focus-probe-attempt2.log",
+      "sha256": "e1e16a03de3f7e0215efbb72cfb4ee433627085fd8c78bc5c4d3089ebc89f52f",
+      "bytes": 1440
+    },
+    {
+      "path": "comment-field-canonical/normal-code-commit.log",
+      "sha256": "26b48715fec9b625ed50fdac88d0191d3e898a4df5cd32d117ae0d5fc468d3a3",
+      "bytes": 408
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt1-launch.log",
+      "sha256": "72aba21d4e074f2abbf52419e3cd27969b84f88b66f06a912687b57b552f0665",
+      "bytes": 1275
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt1-preparation-failure.json",
+      "sha256": "19bccbbf6767e4534fbcac4380fdeb5ee2706970b976a2911e0af368fc4896e1",
+      "bytes": 663
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt2-failure-evaluation.json",
+      "sha256": "cdca24daa00f2eb930f17b684b2f4643eaa41dd68417fac0faacce1511ceef66",
+      "bytes": 66500
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt2-launch.log",
+      "sha256": "c9c9a904cfe4386b29401fb035fc6dc15dd3c36ebb5d208c2a84c97a8de33ba4",
+      "bytes": 3280
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt2-wrapper.log",
+      "sha256": "9850665842d533163a0e610daa17040b94934bc11865f16c82273366fea980c4",
+      "bytes": 588
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt3-failure-evaluation.json",
+      "sha256": "af40d08e8f982dbbc73541682c4e63dab20edd983a3fa713d792efe69feb799f",
+      "bytes": 23406
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt3-launch.log",
+      "sha256": "8ee5d9ed84eee89c47a6326ac1492ca2d6d341467c77cb7a59f9e868c68f1863",
+      "bytes": 3280
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt3-wrapper.log",
+      "sha256": "23648c181fad728efbb8e3e9aa4dc286e22fbdfaeea32e0172f28a056c780717",
+      "bytes": 550
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt4-artifact-inventory.json",
+      "sha256": "fc1b8a81eff18c891542e7d594810f3c26cc42b78ae3e11077770b7cde6d84b5",
+      "bytes": 15971
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt4-html-report-proof.json",
+      "sha256": "d866b20744ab820469ef6144fb1121c81b5a3fb56aa2f38ea4b95d172f9c8586",
+      "bytes": 4166
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt4-launch.log",
+      "sha256": "49c157e160cf2c6eb3458f78079d5b582e7e393819a1de7cb72635f3677fb7d5",
+      "bytes": 1909
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt4-live-image-binding.json",
+      "sha256": "e4440e67edc7eea857e92e49ab0222b6eae9801b752b99decfd9b0547f772b16",
+      "bytes": 4638
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt4-owned-cleanup-proof.json",
+      "sha256": "0ac7953a5ccbc3fe9fafbbaee554f09d03991244c4141c8c2ddf1e45722df930",
+      "bytes": 220
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt4-status.completed.json",
+      "sha256": "74447c48497a13ea2250038931ed1cda9652602fa47f4943a1f9c7874f8cd35f",
+      "bytes": 4083
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt4-visual-review.json",
+      "sha256": "390e50cc43237aab4a6729f4b428552440202693ad2e68c16868b44c50757bb1",
+      "bytes": 6845
+    },
+    {
+      "path": "comment-field-canonical/runtime-attempt4-wrapper.log",
+      "sha256": "3d41e1096a95f76272eed1098f11b745b3b26b44e2fc655620be905bd017abf0",
+      "bytes": 846
+    },
+    {
+      "path": "codeql/comment-field-canonical-20261102/status.json",
+      "sha256": "c5be203e8546785e07981aaad22f231464889d3ca0fd68b5109f992c54ffe0f1",
+      "bytes": 1706
+    },
+    {
+      "path": "codeql/comment-field-canonical-20261102/full.sarif",
+      "sha256": "6b41eac88d84651087c2ad7074e76f84bd4dbaf89458a0c483d0eeee5c8adb00",
+      "bytes": 1055622
+    },
+    {
+      "path": "codeql/comment-field-canonical-fixture-20261102/status.json",
+      "sha256": "5b3ea80e736249c357c8a0b68f0742a2a46f02f0d6636fe48ef364d47d45cc6c",
+      "bytes": 1730
+    },
+    {
+      "path": "codeql/comment-field-canonical-fixture-20261102/full.sarif",
+      "sha256": "f0680ed2d46317cc08fba99207d8a99eb8cd1fd3bc99acdf7a2525e9e5e509d5",
+      "bytes": 1055622
+    }
+  ],
+  "limitations": [
+    "Fresh selected hosted CI/all5CodeQL/reviews/target integration pending at publication.",
+    "Full nightly and mandatory exact production-candidate qualification remain separate; feature evidence cannot qualify production.",
+    "Scoped canonical validation is not whole PRD/product/MVP acceptance; broad Test NotRun and criteria Unverified retained.",
+    "Raw fixture environments, credentials, logs, captures and traces stay private; only hashes and sanitized scope are public."
+  ],
+  "productionQualified": false
+}

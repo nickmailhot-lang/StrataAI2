@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-02T17:04:06.598Z",
+  "source": {
+    "qualifiedRevision": "9713747cfb4cb2d1c00d82fc9eaf7aeb6b1f2bc7",
+    "tree": "d321dccd84cf42caeff3df7f32e1762d756d4aed",
+    "base": "d977719a5ee57b08b218aca5db31dd10afd29604",
+    "paths": [
+      "tests/browser/activity-history-canonical-focus.spec.ts"
+    ],
+    "normalHookedBackup": "820e27df17006b699a6d1973cd380ca8f6fbef1c",
+    "appSourceUnchanged": true
+  },
+  "scope": "Existing VS02T06/Test canonical real-service paging/focus/return coverage only. No new Task/appfix/parent closure/product or MVP acceptance.",
+  "requirements": [
+    "COMMENT-FR-008",
+    "COMMENT-FR-009",
+    "COMMENT-FR-011",
+    "PRD-15-TC-11",
+    "PRD-15-TC-12",
+    "UXA-02",
+    "UXA-03",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-08"
+  ],
+  "canonical": {
+    "run": "c798722b-b2e9-41cb-bf20-40118969759e",
+    "result": "Passed",
+    "durationSeconds": 1734.832,
+    "files": 4,
+    "cases": 22,
+    "retries": 0,
+    "skipped": 0,
+    "scope": "Complete original Board5+realhistory2+controlledfocus10+newcanonical5. New5 use actualproductionUI/cookies/API/Postgres at320/390/768/1280/768200%; real65PATCH receipts/immutablehistory/scopedBoardWorker/nativepaging/exactfullAPIrows/cursorcontinuations/zeroUIbusinesswrites/transport200/Axe/return. Originaltwo-client/revocation/archive/departedactor cases unchanged.",
+    "nativeCapturePairs": 45,
+    "allNativeBeforeAndImmediateAfterVerified": true,
+    "capturesDirectlyViewed": 71,
+    "captureScopes": {
+      "newCanonical": 45,
+      "originalControlled": 20,
+      "originalBoard": 6
+    },
+    "images": "Three exactlinuxamd64built IDs/tree/livebindings verified; onlyownruntimecontainers/volumes/providercommand/workspace/lock/wrapper/Nodeabsence verified",
+    "geometrySeparateFromCapture": true
+  },
+  "sourceQualification": {
+    "javascriptCodeql": {
+      "findings": 0,
+      "rules": 87,
+      "sarifSha256": "418b97e8f086134e7766c0627597f39752a625914ac6393a31512d6a239cfb85"
+    },
+    "selectedFinal": {
+      "runId": "1793638247948-5c0d5e76",
+      "durationMs": 427630,
+      "stages": [
+        {
+          "name": "repository-contracts",
+          "passed": true,
+          "durationMs": 63511
+        },
+        {
+          "name": "ledger",
+          "passed": true,
+          "durationMs": 11699
+        },
+        {
+          "name": "integration-inventory",
+          "passed": true,
+          "durationMs": 84
+        },
+        {
+          "name": "runtime-drift",
+          "passed": true,
+          "durationMs": 73
+        },
+        {
+          "name": "selected-web-feature",
+          "passed": true,
+          "durationMs": 343389
+        },
+        {
+          "name": "python-contracts",
+          "passed": true,
+          "durationMs": 1086
+        },
+        {
+          "name": "secret-scan",
+          "passed": true,
+          "durationMs": 6494
+        }
+      ],
+      "scope": "232completewebfiles3148PASS24originalcapacitydeferrals/UI2/contracts/history/Python/secrets; fullnightly/exactproduction separate"
+    },
+    "receiptSha256": "ffe3e3c70779824de94c2734fb2883fe02f2f9051275c2722fadbb68f68d7c61"
+  },
+  "failures": [
+    {
+      "attempt": 1,
+      "tree": "f4c1caf0688784440c88074d901a8e6abe3c40d4",
+      "result": "Failed",
+      "passed": 17,
+      "failed": 5,
+      "durationSeconds": 1705.971,
+      "cause": "Newfixture wrong2pxlinkexpectation, initialprotectedreread captureadmission andfullpagecapturegeometry changes. Alloriginalcasespassed; per-case downstreamNotRun retained."
+    },
+    {
+      "attempt": 2,
+      "tree": "c0ede7092470b0a9682b04d4213a02aeb9311919",
+      "result": "Failed",
+      "passed": 17,
+      "failed": 5,
+      "durationSeconds": 1717.152,
+      "cause": "Newfixture compared protectedexpiringcursorciphertextbytes; actualallrows/scopeunchanged. 45nativepairspassed; finalzeroUIwrites/pageerrorsandpostbrowserabuseNotRun."
+    },
+    {
+      "attempt": 3,
+      "tree": "6c01679caaf46758f480a70f340429d0abb34830",
+      "result": "Failed",
+      "passed": 17,
+      "failed": 5,
+      "durationSeconds": 1717.762,
+      "cause": "Newfixture businesswriteobservercountedoriginalSignalRPOST/boards/live/negotiate. Allcanonicalrows/bothcursorcontinuations/45nativepairs passedbeforeguard; pageerrorsandpostbrowserabuseNotRun."
+    }
+  ],
+  "preparation": "Missingnpm script refusedbeforeTS/browser; TS2353 directliteral correctedtoexistingcredentialsvariablepattern; originalunique logs retained. No tests/assertions/deadlines/retries orrolechecks suppressed.",
+  "controlledDiagnostics": "Exactruntime1webassets/no rebuild; basiccapturecomparison20PASS35.1s didnotreproduce, changedBoard-beforeCardclosedcapture viewport5PASS vsfullpage2PASS3FAIL25s. 5viewportclosed+3failurecaptures directlyviewed; otherprivateprobePNGsnotyetreviewed. ControlledIO notcanonicalacceptance.",
+  "pendingVariants": {
+    "manifest": "strataai-local/activity-history-canonical/pending-pr151-snapshot/manifest.json",
+    "sha256": "2e104e303fb61ccae64fa3bb2ba392cd0303b21638562484cc1fa60d36489b61",
+    "scope": "EntirependingPR151source/tracking/report/evidence privatelysnapshottedandchained150/149/147 beforeexplicitseriallease. Excludedfromthismainbasedcandidate; futurelosslessintegrationrequired."
+  },
+  "immutablePrivateProofs": [
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt4-status.completed.json",
+      "sha256": "8488632e7da6bb715d7fb328032548b2c2deccaae13757cfb155574d74eb30d9"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt4-html-report-proof.json",
+      "sha256": "bc3fc6da2af79b337aa97b9559ef1f0568b3eace3e3d38a1a3b51007af3e86e1"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt4-native-capture-state-proof.json",
+      "sha256": "eb5e91e5a1eae15c2a2b43f85bf7e5eec919d2c6524c1c7acfbefbcdc04fd933"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt4-visual-review.json",
+      "sha256": "ea17c9fe65d3aa3e95c3466c14b653d8ee853ff4483cd892d0cace11f4c3dbd2"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt4-live-image-binding.json",
+      "sha256": "639b9701c77448b07e60e735afc0a78ba851385d88a567082bcbb604a48c4acb"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt4-owned-cleanup-proof.json",
+      "sha256": "909a93e66cec56e3410214f4ba3b8243d7a4020ac9d5e77d8a09fbd6ce6f603e"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt4-artifact-inventory.json",
+      "sha256": "0cd5b9759c670d3b39391923424876121e689e2748e6a31d9514e8267b8384c4"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt1-failure-evaluation.json",
+      "sha256": "34093cebe79f7d1c8aeb299cd8643573f289925e9caf8d3cbb6be30e9e6b0590"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt2-failure-evaluation.json",
+      "sha256": "78dac726fb78f39f7a70954e73880e24d822e1ec224889f5ad18f0f7f098f670"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/runtime-attempt3-failure-evaluation.json",
+      "sha256": "ba37dec9b31eee1a1f2de25d18c65f3ea867014bd92ee0e3e657b35f5e076ce8"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/bounded-capture-correction-attempt2.json",
+      "sha256": "b6a81a6cc40c5db1a0206ab3f041e17996f9e45095a9b84c936eb80e92d89a95"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/bounded-cursor-correction-attempt3.json",
+      "sha256": "664aea430965fb6a7dbe883b9f9ade91b0dd55e03af22156bb3a2f44104001e7"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/bounded-transport-observer-correction-attempt4.json",
+      "sha256": "179bd68c012324dc553c35939e8679019170b755bbeb80393d898a5a3263e6e2"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/preparation-script-refusal-attempt1.json",
+      "sha256": "c7df96b470c82e6c2205386399f48f1dc277f14541862c885be3e26dcae8974b"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/preparation-types-evaluation-attempt1.json",
+      "sha256": "ff798f73c156a07fefee2cc69aa6a5e7f770673fb286f4e81d8b7167e650f2c9"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/native-capture-geometry-attempt2-visual-review.json",
+      "sha256": "664be55704ab73bbaf929a73fdf9c72ed7b5cfe72610aae3581c78a18b7e6aa6"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/final-code-attempt1-receipt.json",
+      "sha256": "ffe3e3c70779824de94c2734fb2883fe02f2f9051275c2722fadbb68f68d7c61"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/code-publication-identity-proof.json",
+      "sha256": "eb7d2b6f0e058a137edbcb27c936ce1883eb66aa7fb1deb2d7fc6f147f8dfb99"
+    },
+    {
+      "path": "strataai-local/activity-history-canonical/pending-pr151-snapshot/manifest.json",
+      "sha256": "2e104e303fb61ccae64fa3bb2ba392cd0303b21638562484cc1fa60d36489b61"
+    }
+  ],
+  "limitations": [
+    "Fullnightly/exactproduction/product/MVP andmanualscreen-readeracceptance remain unverified.",
+    "Hosted exacthead qualification pending; keep newPRdraft until actualall3web/CodeQL/reviews/originalartifacts verified.",
+    "No automatic merge authorization; existingReview/broadNotRun/criteriaUnverified/parentsunchanged.",
+    "Everyoriginalfailure/source/normalbackup/NotRun retained; rawlogs/env/tracesprivate."
+  ]
+}
