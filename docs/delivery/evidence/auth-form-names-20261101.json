@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "scope": "Accessible name on the existing native AuthPage form follows existing login/register mode. One aria-label only; no auth, request, retry, route, layout, authority or persistence change.",
+  "owningRequirement": {
+    "issue": 2,
+    "prd": "PRD-02",
+    "slice": "PRD-02-VS-02",
+    "support": [
+      "AUTH-FR-003",
+      "AUTH-FR-009",
+      "AUTH-FR-001 support",
+      "section16",
+      "PRD-02-TC-07",
+      "PRD-02-TC-11",
+      "PRD-02-TC-12",
+      "UXA-03",
+      "UXA-04",
+      "UXA-05",
+      "UXA-06",
+      "UXA-07",
+      "UXA-08"
+    ]
+  },
+  "source": {
+    "revision": "0f6abc5da7678868cb83667f929747ec30b6beac",
+    "tree": "301f3d2082f32d26ab97c0e7ec72f55560f07ee2",
+    "base": "bf64639c81632e63eaecfe401f1a6f248f422b22",
+    "normalHookedBackup": "18a58a0ead9355ed98199411220ec1cea4d125a7",
+    "paths": [
+      "apps/web/src/features/auth/AuthPage.tsx",
+      "apps/web/src/features/auth/AuthPage.form-landmark.test.tsx"
+    ]
+  },
+  "retainedFailures": [
+    {
+      "scope": "Original-source dedicated active-form landmark tests",
+      "result": "Failed",
+      "cases": 5,
+      "cause": "Existing form had no accessible name, so it was not discoverable as a named form landmark in either mode or after feedback/acknowledgement. This does not assert an original Axe violation.",
+      "correction": "Name existing form from existing current mode only; original new regression assertions retained.",
+      "owner": "integrator"
+    },
+    {
+      "scope": "Read-only canonical handoff preflight",
+      "result": "Failed before tests/source/allocation mutation",
+      "cause": "Summary expected qualifiedHead but actual peer schema uses head; corrected field inspection, with original error and initial explanatory-metadata correction retained.",
+      "correction": "Use actual head schema and verify snapshot hashes; no source or qualification change."
+    }
+  ],
+  "localValidation": {
+    "result": "Passed",
+    "runId": "1793594363568-1b3ca7cf",
+    "stages": 7,
+    "elapsedMs": 131943,
+    "selectedWeb": {
+      "files": 13,
+      "passed": 183,
+      "existingDeferred": 0
+    },
+    "checks": [
+      "repository-contracts",
+      "ledger",
+      "integration-inventory",
+      "runtime-drift",
+      "selected-web-feature",
+      "python-contracts",
+      "secret-scan"
+    ],
+    "targeted": {
+      "files": 5,
+      "passed": 73,
+      "durationSeconds": 4.35
+    },
+    "browser": {
+      "result": "Passed",
+      "cases": 10,
+      "durationSeconds": 17.3,
+      "widths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "textZoom": "768px at200%",
+      "retries": 0,
+      "scenarioTimeoutMs": 30000,
+      "expectTimeoutMs": 5000,
+      "source": "actual freshly compiled AuthPage/MUI/appTheme/router",
+      "http": "explicitly synthetic intercepted local responses",
+      "assertions": [
+        "exactly one active named form and correct active tab",
+        "nativeEnter login401->429 and register503->201 exactly2samekey/bodyPOSTs",
+        "draft preservation on refusal, safe uniform error and token privacy",
+        "registrationack changes name toSignIn and clears password without navigation/auth callback",
+        "forgot-password and verification-link routes return to namedSignIn form",
+        "zeroAxe/pageerrors/overflow"
+      ],
+      "visualInspection": [
+        "390sign-in-refusal",
+        "390registrationack",
+        "768at200%registrationack"
+      ]
+    }
+  },
+  "acceptance": {
+    "implemented": "Scoped semantic accessible-name change at exact recorded code revision.",
+    "tested": "Scoped local and compiled syntheticHTTP consumer checks only.",
+    "fullProduction": "Not run; nightly/exactcandidate mandatory.",
+    "productUXMVP": "Unverified; no parentDone or broad authentication acceptance.",
+    "notCertified": [
+      "realregistration or authentication persistence/cookies/sessions",
+      "realmail/tokenconsumption",
+      "serverrole/tenant/Portal/revocation coverage",
+      "manualscreenreader/product acceptance"
+    ]
+  },
+  "history": "Original authentication, invitation, recovery, return-path and API contracts/assertions/deadlines/retries unchanged. MergedPR139/146 records/backups/proofs retained. PendingPRD15history remains in separate qualified branches/snapshots; futureunion needs exactcombinedqualification.",
+  "privateArtifacts": [
+    {
+      "path": "auth-form-names/original-red.log",
+      "sha256": "d9cf5a167523d969d9c748b6347dd6c733f84587d256d98c28e97ab92333a26d"
+    },
+    {
+      "path": "auth-form-names/targeted.log",
+      "sha256": "2b26554a171b229212460ee9200231c9b7e081f79771eb684b83d7866a5c6209"
+    },
+    {
+      "path": "auth-form-names/final-source.log",
+      "sha256": "467a08e3bfa545857f4a7dbeee3b51ae3f03cf8a4ca8bf280927e5fa3f416f3b"
+    },
+    {
+      "path": "auth-form-names/final-source-receipt.json",
+      "sha256": "12d540818fb8fe7b414bfc07b4b4faaf8437bb1e13f1251cd7631fd7d7865c61"
+    },
+    {
+      "path": "auth-form-names/final-source-status.json",
+      "sha256": "06c5ee9652a979806dc4f990b673462ce12771eac8f31e2afa48a1bb6a8fb737"
+    },
+    {
+      "path": "auth-form-names/browser.log",
+      "sha256": "fca6b9122b795d59789399546dcdfba7708b3cb3e577652a3beac4c8e5642c65"
+    },
+    {
+      "path": "auth-form-names/browser.config.mjs",
+      "sha256": "7f5b2114e46bf9ecc489a6a3af641023d71c3401550186b6d9525a5cdc109294"
+    },
+    {
+      "path": "auth-form-names/auth.spec.mjs",
+      "sha256": "5de7d081f58339ca2e92f14a4e632668eba6feb639d034b1c929e685cb37ff43"
+    },
+    {
+      "path": "auth-form-names/source-commit.log",
+      "sha256": "bb1ec8adb64cf53bf905ed1634de41af63d1688b6859bc5fea9b74b384ee744b"
+    },
+    {
+      "path": "auth-form-names/source-explicit-prepush.log",
+      "sha256": "71edc3d2c36ee2fefe4fc2abab75becb81b6d6956d37d72488e0d4dd15cd06f8"
+    },
+    {
+      "path": "auth-form-names/source-publication-proof.json",
+      "sha256": "fc033ed2c827222cfb896a6e31fced8cd6c103c468cf7e6f20be4a3e5603626c"
+    },
+    {
+      "path": "auth-form-names/live-prd02.json",
+      "sha256": "338b26f8d143cb649c5595a57938b8f5d88073d65742219482e0aeb3316d1651"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-registration-acknowledgement-form-1280px-text1x/registration-acknowledgement.png",
+      "sha256": "bd151e9cc17ac76615bf279f80d9a9148eace27c207b05de38ef4412307b9155"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-registration-acknowledgement-form-320px-text1x/registration-acknowledgement.png",
+      "sha256": "a44b7a24469c1346f58bb604511cab831d163ba9a4a9c3b4f28ed33f31d01cc3"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-registration-acknowledgement-form-390px-text1x/registration-acknowledgement.png",
+      "sha256": "2a34d567b8fba02b7a815185ae2cadd291c6d28c6eb2216b26bb873808f17343"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-registration-acknowledgement-form-768px-text1x/registration-acknowledgement.png",
+      "sha256": "c4d2f50d0a7cd219861a379ee681f9fdf5a47e19ba66df504cd777dccad93b33"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-registration-acknowledgement-form-768px-text2x/registration-acknowledgement.png",
+      "sha256": "8e4ff2fe823f66e16b6d10f385f85db3ec98e57e2f11e1a3922d1cf1f5fbd1ff"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-sign-in-retry-form-1280px-text1x/sign-in-refusal.png",
+      "sha256": "883d3cf4202d4eba1b20f623aa7c17a24142f793a20512e77637255dbb13c009"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-sign-in-retry-form-320px-text1x/sign-in-refusal.png",
+      "sha256": "3b2061634228a180ada7cf8ba0f8c748aaf51317842a5e5750bf82eaa3e9520a"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-sign-in-retry-form-390px-text1x/sign-in-refusal.png",
+      "sha256": "83eccce1d7cb17b8288e72b14d6f6ca5f78ea23eb625f66826111d1ac6fd97b0"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-sign-in-retry-form-768px-text1x/sign-in-refusal.png",
+      "sha256": "0067156d8f9b76f7c597b50c14a8b9717abef429a402298ba4036ab6fb9c5acb"
+    },
+    {
+      "path": "auth-form-names/browser-results/auth-named-sign-in-retry-form-768px-text2x/sign-in-refusal.png",
+      "sha256": "960716fc0650f44f44a6d6a6413ebe28fd6699a310ae6ed0d96a8f7bfde0b056"
+    },
+    {
+      "path": "auth-form-names/canonical-preflight-attempt1.json",
+      "sha256": "0877de5adf51439d321ada57c606c19f4e516009bee26f01b671f6d977e35358"
+    },
+    {
+      "path": "auth-form-names/canonical-preflight-attempt1-summary-initial.json",
+      "sha256": "0877de5adf51439d321ada57c606c19f4e516009bee26f01b671f6d977e35358"
+    },
+    {
+      "path": "auth-form-names/canonical-preflight-attempt1-corrected.json",
+      "sha256": "7152fac56eac8abc2ac3fc9ff08fed7e3e6bcb387e24899460c1e0b9946e054b"
+    }
+  ],
+  "publicPrivacy": "Only scope/counters and hashes; no raw private traces or credentials published."
+}

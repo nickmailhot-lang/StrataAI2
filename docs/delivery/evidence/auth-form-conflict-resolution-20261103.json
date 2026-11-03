@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-03T01:24:37.616Z",
+  "humanAuthorization": "Merge PR147 once all required checks pass, preserving all existing work and evidence; bring substantive decisions to human.",
+  "source": {
+    "qualifiedRevision": "f23e0fc01351a135a472c1d91c00f8d1a3d06dd8",
+    "tree": "10c4d0889c38b681768ccdb1f193471196854922",
+    "base": "30f241122b794b117ebc2c5157b19d8e24c176f1",
+    "orderedMergeParents": [
+      "30f241122b794b117ebc2c5157b19d8e24c176f1",
+      "88bbb17da8fee025a29aac757b67e64cd53ba894"
+    ],
+    "originalPR147": "88bbb17da8fee025a29aac757b67e64cd53ba894",
+    "normalHookedBackup": "backup/auth-form-conflict-resolution-qualified-code",
+    "originalSourceBlobsUnchanged": true
+  },
+  "scope": "Mechanical integration of existing PR147 into actual main; no new feature, app behavior, acceptance or lifecycle change. One original form aria-label and original five dedicated tests retained unchanged.",
+  "requirements": [
+    "AUTH-FR-003",
+    "AUTH-FR-009",
+    "PRD-02-TC-07",
+    "PRD-02-TC-11",
+    "PRD-02-TC-12",
+    "UXA-03",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-07",
+    "UXA-08"
+  ],
+  "preservation": {
+    "at": "2026-11-03T01:12:24.346Z",
+    "main": "30f241122b794b117ebc2c5157b19d8e24c176f1",
+    "pr147": "88bbb17da8fee025a29aac757b67e64cd53ba894",
+    "commonBase": "bf64639c81632e63eaecfe401f1a6f248f422b22",
+    "mechanicalOnly": true,
+    "applicationSourceAndDedicatedTestUnchanged": {
+      "apps/web/src/features/auth/AuthPage.tsx": "89f1b197c912c75de6f5d77a8c9bf4f948c6e910",
+      "apps/web/src/features/auth/AuthPage.form-landmark.test.tsx": "44037a4aa1d71dac44be1f94d47f7b970bc5c30b",
+      "docs/delivery/evidence/auth-form-names-20261101.json": "679b0ea60fb5f925a6b6333973719230646a8f91"
+    },
+    "appendedIds": {
+      "items": [
+        "PRD-02-VS-02-T-02",
+        "PRD-02-VS-02-T-02-TEST-01"
+      ],
+      "criteria": [
+        "PRD-02-VS-02-T-02/LANDMARK",
+        "PRD-02-VS-02-T-02-TEST-01/REGRESSION"
+      ],
+      "evidence": [
+        "EVIDENCE-PRD02-AUTH-FORM-NAMES-20261101"
+      ],
+      "cycles": [
+        "CYCLE-PRD02-AUTH-FORM-NAMES-20261101"
+      ]
+    },
+    "allMainRowsFieldsHistoryEvidenceCyclesRetained": true,
+    "allPR147AddedRowsAndHistoryExact": true,
+    "evolutionAgainstBothHeadsPassed": true,
+    "report": {
+      "mainBytes": 539435,
+      "pr147FullSnapshotBytes": 456798,
+      "exactPR147SuffixBytes": 6375,
+      "combinedBytes": 545810,
+      "entireMainPrefixPreserved": true,
+      "fullOriginalPR147ReportSnapshotRetained": true,
+      "combinedSHA256": "a5ea663c975689870070cad043b197ddd349ffbe5180c34aec0172483cfed7f4"
+    },
+    "noNewLifecyclePromotionOrAcceptance": true
+  },
+  "qualification": {
+    "javascriptCodeql": {
+      "rules": 87,
+      "findings": 0,
+      "sarifSha256": "6da75e3d98c97389f0097fda805e013d4bc9dbd62df2c4accd5eabac6c81a2a3"
+    },
+    "selectedFinal": {
+      "runId": "1793668551696-840cffeb",
+      "durationMs": 435104,
+      "summary": {
+        "result": "Passed",
+        "files": 234,
+        "passed": 3161,
+        "existingDeferred": 24,
+        "productionQualified": false
+      },
+      "compiledUiSmokePassed": 2,
+      "stages": [
+        {
+          "name": "repository-contracts",
+          "passed": true,
+          "durationMs": 64570
+        },
+        {
+          "name": "ledger",
+          "passed": true,
+          "durationMs": 12025
+        },
+        {
+          "name": "integration-inventory",
+          "passed": true,
+          "durationMs": 88
+        },
+        {
+          "name": "runtime-drift",
+          "passed": true,
+          "durationMs": 75
+        },
+        {
+          "name": "selected-web-feature",
+          "passed": true,
+          "durationMs": 349239
+        },
+        {
+          "name": "python-contracts",
+          "passed": true,
+          "durationMs": 1141
+        },
+        {
+          "name": "secret-scan",
+          "passed": true,
+          "durationMs": 6492
+        }
+      ]
+    },
+    "native": {
+      "cases": 10,
+      "stats": {
+        "startTime": "2026-11-03T01:23:21.367Z",
+        "duration": 17721.962,
+        "expected": 10,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "scope": "Original synthetic HTTP native sign-in/refusal and registration/acknowledgement/retry/form-name/return/Axe/nooverflow/pageerrors cases at320/390/768/1280+768200%. Reused exact newly built assets, original timeouts/retries/assertions unchanged.",
+      "capturesDirectlyViewedAndHashed": 10,
+      "sourceAndBuiltAssetsUnchanged": true
+    }
+  },
+  "originalEvidence": "docs/delivery/evidence/auth-form-names-20261101.json",
+  "originalEvidenceSHA256": "1aeb49a830c6bcdb79c744f802fa3314feed6590b8f72676f9ce4539c1cd62cc",
+  "immutablePrivateProofs": [
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/originals-manifest.json",
+      "sha256": "f29431f4bb877538e9d6287999559b2dc4d2c82f348187495e96a5b161a5e868"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/originals/serial-handoff/handoff.json",
+      "sha256": "df7dd918d4dd3dd6b53260b47669bf34909a17858b7b14148f9d47fa0c53067f"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/originals/serial-handoff/authorization-addendum.json",
+      "sha256": "536d27e3231b49620d47a8318fed0c84e51376a9bf34b283f938e8a3ffae2d78"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/source-review-attempt1.json",
+      "sha256": "816004b85a10a463b0b634708f6d88bfae278fdfe1171098521300552112fe3f"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/lossless-conflict-resolution-proof.json",
+      "sha256": "fb6f584592928bc85ebf53835c2770167af80f598ed1111e5bfa410ef6a33d51"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/dependency-reuse-proof.json",
+      "sha256": "895cce7e4661817a256cc3a95f7b3756a3892a7b22e25bb270d2d47b07bf2c5f"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/final-code-attempt1-receipt.json",
+      "sha256": "00e1884388dd757a6fc325bef4b000e0acc75a0b0b12cf28f868662a20e7e101"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/native-auth-attempt1-report.json",
+      "sha256": "e235bfba71b0a0d132db75fd96bf8e3a02c6bc651b13908184be4bc9070b4ecb"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/native-auth-attempt1-built-assets.json",
+      "sha256": "be1b384fd6096a45cf1af9d1742ceb9d6bddf6247b1abf447ded153b9e24750e"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/native-auth-attempt1-capture-inventory.json",
+      "sha256": "356f282a301ba07afd21d940c1fdc388009ac40f5d59aa76185ddcb2f1d766e1"
+    },
+    {
+      "path": "strataai-local/auth-form-conflict-resolution/native-auth-attempt1-proof.json",
+      "sha256": "5b95a427a2540d8154e9194dad74f59da6ce1a5fff21bc09bc66a7d7ab0e733a"
+    }
+  ],
+  "limitations": [
+    "Fresh hosted exact-head qualification remains pending; keep draft until complete.",
+    "Synthetic HTTP does not certify actual account persistence, cookies, mail/token delivery, sessions, tenant/Portal or manual screenreader acceptance.",
+    "Full nightly and every exact production candidate remain mandatory; no broad authentication/product/MVP or parent Done claim.",
+    "Original red/preparation failures and all PR149–153 evidence/history remain unchanged."
+  ]
+}
