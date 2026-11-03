@@ -13,6 +13,7 @@ export function ResetPasswordPage() {
   const { busy, request } = useRecoveryRequest();
   const [completed, setCompleted] = useState(false);
   const [error, setFailure] = useState<{ message: string; reference: string | null }>();
+  const confirmationMismatch = error?.message === 'Passwords must match.' && password !== confirmation;
   function setError(message: string | undefined, reference: string | null = null) {
     setFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
   }
@@ -43,7 +44,7 @@ export function ResetPasswordPage() {
       {error ? <Alert severity="error"><span>{error.message}</span>{error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}</Alert> : null}
       {completed ? <Alert severity="success" role="status">Password reset. Sign in with your new password.</Alert> : token ? <>
         <TextField label="New password" type="password" autoComplete="new-password" required disabled={busy} value={password} onChange={event => setPassword(event.target.value)} helperText="Use at least 12 characters. The server enforces your organization's policy." slotProps={{ htmlInput: { minLength: 12 } }} />
-        <TextField label="Confirm new password" type="password" autoComplete="new-password" required disabled={busy} value={confirmation} onChange={event => setConfirmation(event.target.value)} />
+        <TextField label="Confirm new password" type="password" autoComplete="new-password" required disabled={busy} value={confirmation} onChange={event => setConfirmation(event.target.value)} error={confirmationMismatch} helperText={confirmationMismatch ? 'Enter the same password in both fields.' : undefined} />
         <Button type="submit" variant="contained" disabled={busy}>{busy ? 'Resetting…' : 'Reset password'}</Button>
       </> : <Alert severity="warning">This reset link is missing, invalid, or expired. Request a new link.</Alert>}
       {!completed ? <Button component={Link} to="/forgot-password">Request a new link</Button> : null}
