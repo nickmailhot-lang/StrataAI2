@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-02T18:48:48.164Z",
+  "source": {
+    "qualifiedRevision": "db0d019f15d0affffa736899f7e023fc135245f2",
+    "tree": "1f6dd0d0a391af9f68a1ec16258aeb843abc5e13",
+    "base": "d977719a5ee57b08b218aca5db31dd10afd29604",
+    "paths": [
+      "tests/browser/account-handle-admission-focus.spec.ts"
+    ],
+    "normalHookedBackup": "7b7cfcc63a779586d5f5629ba57805245e935f07",
+    "appSourceUnchanged": true
+  },
+  "scope": "Evidence-only real-service delayed protected handle admission focus on existing VS02T03/Test. No new Task/appfix/lifecycle promotion/parent/product/MVP acceptance.",
+  "requirements": [
+    "COMMENT-FR-005",
+    "PRD-15-TC-11",
+    "PRD-15-TC-12",
+    "UXA-02",
+    "UXA-03",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-07",
+    "UXA-08"
+  ],
+  "canonical": {
+    "run": "1e0254ba-1388-4be0-8d06-f0eae2b6923e",
+    "result": "Passed",
+    "durationSeconds": 1417.248,
+    "files": 4,
+    "cases": 17,
+    "retries": 0,
+    "skipped": 0,
+    "scope": "Complete original Board5+account original recovery/conflict/revocation2+canonical field validation5+new delayed admission5 at320/390/768/1280+768200%. Actual production UI/cookies/API/Postgres. Hold one actual200 setting reply unchanged until actual ancestor Fade opacity1/no finite animations; native initial fieldfocus judged before explicit targetfocus/input. Exact one normalized PATCH/key/actor/CSRF/body/actual200receipt plus independentpersisteduserV2/handleV2/singleprofileevent, Axe/nativeClose+return/reopen/pageerrors/nooverflow.",
+    "nativeFocusCapturePairs": 20,
+    "pendingAncestorEntryCapturePairs": 5,
+    "allBeforeAndImmediateAfterVerified": true,
+    "capturesDirectlyViewed": 41,
+    "captureScopes": {
+      "newAdmission": 25,
+      "originalFieldValidation": 10,
+      "originalBoard": 6
+    },
+    "images": "Three exactlinuxamd64built IDs/tree/livebindings verified; allowncontainers/volumes/provider/actualobservedworkspace/lock/wrapper/Nodeabsent",
+    "geometryAndAxeSeparateFromCapture": true
+  },
+  "sourceQualification": {
+    "javascriptCodeql": {
+      "findings": 0,
+      "rules": 87,
+      "sarifSha256": "6890cf2dc5f21dd915733ae94b1b0513413c111f50930e9ad74696824b2c80c6"
+    },
+    "selectedFinal": {
+      "runId": "1793644533775-ff2b31f4",
+      "durationMs": 413344,
+      "stages": [
+        {
+          "name": "repository-contracts",
+          "passed": true,
+          "durationMs": 64236
+        },
+        {
+          "name": "ledger",
+          "passed": true,
+          "durationMs": 11757
+        },
+        {
+          "name": "integration-inventory",
+          "passed": true,
+          "durationMs": 75
+        },
+        {
+          "name": "runtime-drift",
+          "passed": true,
+          "durationMs": 74
+        },
+        {
+          "name": "selected-web-feature",
+          "passed": true,
+          "durationMs": 328503
+        },
+        {
+          "name": "python-contracts",
+          "passed": true,
+          "durationMs": 1086
+        },
+        {
+          "name": "secret-scan",
+          "passed": true,
+          "durationMs": 6280
+        }
+      ],
+      "summary": {
+        "result": "Passed",
+        "files": 232,
+        "passed": 3148,
+        "existingDeferred": 24,
+        "productionQualified": false
+      },
+      "compiledUiSmokePassed": 2
+    },
+    "receiptSha256": "77fc6ee19b9c9620ed896ab1a9f15ee06d0d94a89fc0a5ab07667bff286d166d"
+  },
+  "history": [
+    {
+      "attempt": 1,
+      "tree": "9f2cfc5196874837b0188dad073e6b467602061f",
+      "result": "Passed",
+      "cases": 17,
+      "skipped": 0,
+      "retries": 0,
+      "durationSeconds": 1392.734,
+      "nativeFocusPairs": 20,
+      "capturesReviewed": 41,
+      "afterEntryOrdering": "Unverified",
+      "disposition": "All5pendingreadPNGs translucent. New paper-subtree animation query excluded actual ancestor MUI Fade. Functional pass retained without after-entry qualification or retroactive failure. Strengthened only newtest ancestor entry observation; original artifacts/spec/TREEref retained. No application defect/fix established."
+    }
+  ],
+  "preparation": "Browsertypes and explicit17case inventories passed perattempt. Initial readonlyps argument refusal corrected to commaPIDs; same originalwrapper, no relaunch/functionalred. Originallogs retained privately.",
+  "pendingVariants": {
+    "manifest": "strataai-local/handle-admission-canonical/pending-pr152-snapshot/manifest.json",
+    "sha256": "e1d5950232c766c80290f1b975a52033188a5df9b73c8b08697be3293130e8f4",
+    "scope": "Entire pending152 source/tracking/report/evidence snapshot chained151/150/149/147 retained before explicitseriallease. Excluded from main-based candidate; future lossless integration required."
+  },
+  "immutablePrivateProofs": [
+    {
+      "path": "strataai-local/handle-admission-canonical/source-reconciliation.json",
+      "sha256": "015823d65684ddda0d4e00b378386468e90267747a8a5c2e60289e02873650ed"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/previous-worktree-identity.json",
+      "sha256": "cd1d6ac62802697cb820871b08e43c317c0b4f741522f255d50deeb3fd402039"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-status.completed.json",
+      "sha256": "74bf84dc10ab070af2f08bcb8da0bb732b40f14cd13df408b12782c73c11aae5"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-html-report-proof.json",
+      "sha256": "46a9b059def075d34e7b40892ae1acf9123f2e689f6ecf064e12b2d4141101b6"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-native-capture-state-proof.json",
+      "sha256": "c080abd3c1eec11dc8884b1c43425da2c9efca72ea4e206a97785edaf02e43b2"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-native-entry-state-proof.json",
+      "sha256": "258d2de7da18e0ed1daf04e3b1d8577321dda40d6b9051392d9b445af9e52669"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-visual-review.json",
+      "sha256": "47951922557dde1c72752296fc9a8d56c886df3492c87b7005016797fa0ffd48"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-live-image-binding.json",
+      "sha256": "575e9bba2a630a974aa7ac8480247fce248de7827e319eb7ccf41bea0212968a"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-owned-cleanup-proof.json",
+      "sha256": "76715d6ef75d6b97f19a51c6a502785f6b5e6635885a53dad7279fa11137e34b"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-artifact-inventory.json",
+      "sha256": "03cad0485ba624b1f6a1101c48897005e9e36d56de1f052f24be9b6000c5d830"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt2-capture-inventory.json",
+      "sha256": "47d4bb210b93c0292ab496d4a18ad67452fc8ecdfea04cf9ce740b5bfaa95c1b"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt1-status.completed.json",
+      "sha256": "2f76393ab3ace0e2b5903c7e6618014308d753d943d78c6e5ad3671a8df014ff"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt1-html-report-proof.json",
+      "sha256": "054e3ddfdff5f83e0573118abcab462ce42f62c35b96f083119af3465262ba66"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt1-native-capture-state-proof.json",
+      "sha256": "6a48f6d3e24c95a018bedf97c35eeb2f5a6a0bac3f72310290177bbec65cedde"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt1-visual-review.json",
+      "sha256": "cff66587a766b830a9f9aebd076bea4e65c1097b5b9d94575fb1d8a1d42a0b71"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt1-owned-cleanup-proof.json",
+      "sha256": "85bb3368efe0d6adf7ae81d13a82038249cce8d76bc091245553f9ba2e570c73"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt1-artifact-inventory.json",
+      "sha256": "79f941412af274c9d352811dac8de9771def67075f525698d2d94436b7b04aa2"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/runtime-attempt1-entry-ordering-evaluation.json",
+      "sha256": "45b51f0272028f313448d4431c151ff902e4c26b15fdc06e001e3b141b6d1e62"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/bounded-entry-observer-correction-attempt2.json",
+      "sha256": "9a1e4674c2b358628ac6caf465966343ebd95e880a7b42ebc796677d7948e27e"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/initial-process-observation-refusal.json",
+      "sha256": "199fca8801975ec07a3b951b9cfe6a79f4a5ab8812e81eaa1d0aefa5a2bb338b"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/final-code-attempt1-receipt.json",
+      "sha256": "77fc6ee19b9c9620ed896ab1a9f15ee06d0d94a89fc0a5ab07667bff286d166d"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/code-publication-identity-proof.json",
+      "sha256": "3c3228b6bb82c6e958008ac4c95b3ba7f5bfe5d30c78f111ab2d3e71098bb3c4"
+    },
+    {
+      "path": "strataai-local/handle-admission-canonical/pending-pr152-snapshot/manifest.json",
+      "sha256": "e1d5950232c766c80290f1b975a52033188a5df9b73c8b08697be3293130e8f4"
+    }
+  ],
+  "limitations": [
+    "Fullnightly/exactproduction/product/MVP andmanualscreenreaderacceptance remain unverified.",
+    "Fresh hosted exacthead qualification pending; keep draft until all3web/CodeQL/reviews/originalartifacts pass.",
+    "No automatic merge authorization, lifecyclepromotion orparentclosure; originalReview/broadNotRun/criteriaUnverified unchanged.",
+    "Originalfunctionalpassing predecessor andunqualifiedafter-entry observation remain distinct; rawlogs/env/tracesprivate."
+  ]
+}

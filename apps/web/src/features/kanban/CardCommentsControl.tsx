@@ -47,6 +47,13 @@ function CommentsControl(props: CardCommentsProps) {
     focusOwner.current = owner; focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner);
   }
   function blur(event: React.FocusEvent<HTMLElement>) { if (!ownsRecoveryFocus(event.relatedTarget, event.currentTarget, focusDialog.current)) restoreFocus.current = false; }
+  function ownEditorFocus(event: React.FocusEvent<HTMLElement>) {
+    // A protected access reread temporarily removes the draft field. Retain
+    // only its owned fallback; another deliberate destination cancels in blur.
+    focusOwner.current = event.currentTarget;
+    focusDialog.current = event.currentTarget.closest('[role="dialog"][data-mui-focusable]');
+    restoreFocus.current = true;
+  }
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); callbacks.current.onBusyChange(false); callbacks.current.onRecoveryChange(false); }; }, []);
   useEffect(() => { props.onRecoveryChange(!!draft || !!intent || blocked); }, [draft, intent, blocked, props.onRecoveryChange]);
   useEffect(() => {
@@ -55,7 +62,7 @@ function CommentsControl(props: CardCommentsProps) {
     const previous = retained && Array.from(container.current?.querySelectorAll<HTMLButtonElement>('button[data-comment-action]') ?? [])
       .find(button => button.dataset.commentAction === retained.action && button.dataset.commentId === retained.comment && !button.disabled);
     const target = intent ? retry.current : blocked ? discard.current : draft ? draft.deleting ? consent.current : editor.current : previous ?? primary.current;
-    if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = !!intent || blocked; }
+    if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = !!draft || !!intent || blocked; }
   }, [disabled, draft, intent, blocked, review]);
   recover.current = () => {
     refreshQueued.current = true;
@@ -231,7 +238,7 @@ function CommentsControl(props: CardCommentsProps) {
           <TextField label={draft.original ? 'Edit your comment' : 'New comment'} multiline minRows={3} inputRef={editor} value={draft.text}
             error={Boolean(commentError)} helperText={commentError}
             disabled={disabled || !!intent || blocked || conflict || !props.editable}
-            slotProps={{ htmlInput: { maxLength: 10000 }, formHelperText: { role: commentError ? 'alert' : undefined } }}
+            slotProps={{ htmlInput: { maxLength: 10000, onFocus: ownEditorFocus, onBlur: blur }, formHelperText: { role: commentError ? 'alert' : undefined } }}
             onChange={event => { setCommentError(undefined); setDraft({ ...draft, text: event.target.value, cardGroup: false, boardGroup: false }); }} />}
         {!draft.deleting && !intent && <>
           {(declaredGroups.card || declaredGroups.board) && <Typography variant="body2">Group mentions stay plain text unless confirmed. New group deliveries are limited to three per board in ten minutes.</Typography>}
