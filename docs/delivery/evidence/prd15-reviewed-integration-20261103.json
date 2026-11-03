@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-03T00:54:04.621Z",
+  "source": {
+    "qualifiedRevision": "99489194065627a9acdecf11ab32f5d7081e072b",
+    "tree": "0a6108e02f578bb10ba026c923e128dfa41932e9",
+    "base": "d977719a5ee57b08b218aca5db31dd10afd29604",
+    "normalHookedMergeAncestry": {
+      "at": "2026-11-03T00:53:26.925664+00:00",
+      "qualifiedTree": "0a6108e02f578bb10ba026c923e128dfa41932e9",
+      "merges": [
+        {
+          "pr": 149,
+          "head": "8cfb2c4976786495fe7934ae3ee4f17bfb3ad576",
+          "parents": [
+            "d977719a5ee57b08b218aca5db31dd10afd29604",
+            "3be4ebdd036c1bfd4a5ed1c769107dcda5d68ab9"
+          ],
+          "tree": "0a6108e02f578bb10ba026c923e128dfa41932e9",
+          "backup": "backup/prd15-reviewed-integration-pr149"
+        },
+        {
+          "pr": 150,
+          "head": "7763a841d381115824e8ce8b951219f3127b796d",
+          "parents": [
+            "8cfb2c4976786495fe7934ae3ee4f17bfb3ad576",
+            "e2b774d2e04218f5e83606e063ade313d120d1fe"
+          ],
+          "tree": "0a6108e02f578bb10ba026c923e128dfa41932e9",
+          "resolvedPathsToQualifiedUnion": [
+            "docs/delivery/progress.json",
+            "docs/ux/delivery-report.md"
+          ],
+          "backup": "backup/prd15-reviewed-integration-pr150"
+        },
+        {
+          "pr": 151,
+          "head": "b8f2859c7d998ca85bf7f5744d93c4edb5cd812c",
+          "parents": [
+            "7763a841d381115824e8ce8b951219f3127b796d",
+            "93b5ce2818861ad1deee932065b406184fc0d61d"
+          ],
+          "tree": "0a6108e02f578bb10ba026c923e128dfa41932e9",
+          "resolvedPathsToQualifiedUnion": [
+            "docs/delivery/progress.json",
+            "docs/ux/delivery-report.md"
+          ],
+          "backup": "backup/prd15-reviewed-integration-pr151"
+        },
+        {
+          "pr": 152,
+          "head": "0f0d1ff3ad6b14016eb99f574e84b12a77b43038",
+          "parents": [
+            "b8f2859c7d998ca85bf7f5744d93c4edb5cd812c",
+            "4c24eee51a73a2e773f0b3c371bda2c34221c9f2"
+          ],
+          "tree": "0a6108e02f578bb10ba026c923e128dfa41932e9",
+          "resolvedPathsToQualifiedUnion": [
+            "docs/delivery/progress.json",
+            "docs/ux/delivery-report.md"
+          ],
+          "backup": "backup/prd15-reviewed-integration-pr152"
+        },
+        {
+          "pr": 153,
+          "head": "99489194065627a9acdecf11ab32f5d7081e072b",
+          "parents": [
+            "0f0d1ff3ad6b14016eb99f574e84b12a77b43038",
+            "eb7a5642a1c804ca12ffc2ea8e2418e76db2248b"
+          ],
+          "tree": "0a6108e02f578bb10ba026c923e128dfa41932e9",
+          "resolvedPathsToQualifiedUnion": [
+            "docs/delivery/progress.json",
+            "docs/ux/delivery-report.md"
+          ],
+          "backup": "backup/prd15-reviewed-integration-pr153"
+        }
+      ]
+    },
+    "originalPullRequests": [
+      149,
+      150,
+      151,
+      152,
+      153
+    ],
+    "excludedPullRequests": [
+      147
+    ]
+  },
+  "scope": "Human-authorized reviewed lossless integration of five existing increments; no new feature, lifecycle promotion, parent closure or product acceptance.",
+  "requirements": [
+    "COMMENT-FR-005",
+    "COMMENT-FR-008",
+    "COMMENT-FR-009",
+    "COMMENT-FR-011",
+    "PRD-15-TC-11",
+    "PRD-15-TC-12",
+    "UXA-02",
+    "UXA-03",
+    "UXA-04",
+    "UXA-05",
+    "UXA-06",
+    "UXA-07",
+    "UXA-08"
+  ],
+  "preservation": {
+    "originalSourceAndEvidenceBlobs": 14,
+    "originalNewEvidenceRows": 14,
+    "originalCycles": 5,
+    "entirePriorReportBytes": 532973,
+    "allOriginalHistoryRetained": true
+  },
+  "runtime": {
+    "result": "Passed",
+    "uniqueCases": 55,
+    "caseExecutions": 60,
+    "uniqueCompleteFiles": 13,
+    "fileExecutions": 14,
+    "repeatedBoardBaselineCases": 5,
+    "skipped": 0,
+    "retries": 0,
+    "partitions": [
+      {
+        "partition": "a",
+        "run": "c646a1a9-a89e-4498-b6a4-05f2612b97ed",
+        "cases": 29,
+        "completeFiles": 6,
+        "htmlSHA256": "ae678ae9650e12f890f7c11edcee13c2bf3bf13e3d4f9417a8c4d78a20883f98"
+      },
+      {
+        "partition": "b",
+        "run": "39a1294e-2d18-4126-b2cb-5ceaec7b1873",
+        "cases": 31,
+        "completeFiles": 8,
+        "htmlSHA256": "91ff4392de8f646b528e64822935b5415048c39d1139cb61566dc50bd04918cd"
+      }
+    ],
+    "nativeFocusPairs": 80,
+    "pendingEntryPairs": 5,
+    "actualCapturesDirectlyViewed": 187,
+    "originalArtifactsHashed": 193,
+    "originalSecurityRolesAndPostBrowserAbusePassed": true,
+    "eachPartitionThreeExactLinuxAmd64ImagesAndLiveBindingsRetained": true,
+    "ownedCleanupAndActualObservedWorkspaceAbsenceVerified": true
+  },
+  "sourceQualification": {
+    "javascriptCodeql": {
+      "rules": 87,
+      "findings": 0,
+      "sarifSha256": "c41ab533939174af9857d593dcfb87fa0c5b31f439786bbfe58657c0618b0963"
+    },
+    "selectedFinal": {
+      "runId": "1793666746066-f7e4dc78",
+      "durationMs": 419641,
+      "summary": {
+        "result": "Passed",
+        "files": 233,
+        "passed": 3156,
+        "existingDeferred": 24,
+        "productionQualified": false
+      },
+      "compiledUiSmokePassed": 2,
+      "stages": [
+        {
+          "name": "repository-contracts",
+          "passed": true,
+          "durationMs": 64311
+        },
+        {
+          "name": "ledger",
+          "passed": true,
+          "durationMs": 11710
+        },
+        {
+          "name": "integration-inventory",
+          "passed": true,
+          "durationMs": 88
+        },
+        {
+          "name": "runtime-drift",
+          "passed": true,
+          "durationMs": 74
+        },
+        {
+          "name": "selected-web-feature",
+          "passed": true,
+          "durationMs": 334778
+        },
+        {
+          "name": "python-contracts",
+          "passed": true,
+          "durationMs": 1075
+        },
+        {
+          "name": "secret-scan",
+          "passed": true,
+          "durationMs": 6428
+        }
+      ]
+    },
+    "receiptSha256": "9b484652ca12e268551ce3a723b1c78c42eaf1657d4f94a9fae18589f8bcf73c"
+  },
+  "retainedHistory": [
+    {
+      "attempt": "runtime1",
+      "result": "Failed",
+      "cases": 55,
+      "passed": 47,
+      "failed": 8,
+      "reason": "Original single-invocation 30-minute browser step cutoff inferred from exact timing/source; ECONNREFUSED before remaining UI assertions. Separate ENOSPC finally masked original stage error. Entire failed run retained; no app defect established.",
+      "artifacts": 219,
+      "failedBlankPNGsDirectlyViewed": 8,
+      "nativeFocusPairsPassedSeparately": 77,
+      "pendingEntryPairsPassedSeparately": 5
+    },
+    {
+      "attempt": "serial-runtime2-B-prelaunch",
+      "result": "Not Run",
+      "reason": "A actually passed29; B refused before launch for capacity. A preserved without rerun; owned reversible archival restored capacity before unique remaining B run."
+    }
+  ],
+  "visualReview": {
+    "observation": [
+      "Five selected-prefix-draft captures show label/text intersection immediately after native selection/focus. This is preserved, not silently accepted as settled-label evidence.",
+      "The original PR150 had already recorded the same capture observation and independently evaluated native MUI label transitions at all five widths: immediate data-shrink true with in-flight transform, settled transform translate(14,-9) scale(.75), preserved value/focus. Installed InputLabel.js uses the existing shorter-duration transform transition; integration app delta contains no label/theme/layout change. These observations are consistent with the existing transition, and do not establish a persistent integration regression. No new canonical pass is inferred from the prior controlled diagnostic.",
+      "Native focus outlines, validation feedback, persisted results and return controls agree with scoped metadata. Existing 200% shell wrapping and original full-page capture artifacts are retained; broad UX, full release and product acceptance remain unverified."
+    ],
+    "priorControlledEvaluationSha256": "2eee4d5a9c7c9728cd4f2efe9d10a672a4ce52442bc183f82961b622a863cefe",
+    "newApplicationDefectEstablished": false,
+    "geometryAxeAndCaptureReviewSeparate": true
+  },
+  "immutablePrivateProofs": [
+    {
+      "path": "strataai-local/prd15-reviewed-integration/originals-manifest.json",
+      "sha256": "3e2e43c51d4d92dcabc6bdd3e6dcbebaaeadf9dbcb528fab6a1092b52d2fd4e2"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/source-review-attempt1.json",
+      "sha256": "52a2675ece5e4c2c89981ec289b3997a7506e0d0fb289733b5f1bbf4fc09132a"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/combined-preservation-proof.json",
+      "sha256": "a2f50c0ba012ed23f5cde5ec511b297778fed0dbe832be7e9ecbfc7a0aa8a5cb"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/combined-runtime-original-report-and-cleanup-proof.json",
+      "sha256": "6462d82f74ddb6258d2298075f880b36a86ca2ab2d9502b54803eb3960ac4b3c"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/combined-runtime-native-state-proof.json",
+      "sha256": "51d6a5af8582cd134e537f175187845eeb760310bd1c617b044ad859b35ada31"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/combined-runtime-visual-review.json",
+      "sha256": "ae0b41ff86c0b7c876c276ece4b65725f99ded3cda534284e8c12c45656450e2"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/combined-runtime-direct-visual-review-progress.json",
+      "sha256": "e0820ab2175a441c51e1ef627065703e031c7ceb1c03537bfb58cab2d4aa5d37"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/combined-runtime-artifact-inventory.json",
+      "sha256": "be341cafd2d4b89facb6af53b5b91017992be74682dfaf247c7701b42339d08b"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/combined-runtime-capture-inventory.json",
+      "sha256": "18e4bfd782f1076447464269542fe0022bca30e15ad6a52029fca329b0a8013f"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt2-a-html-report-proof.json",
+      "sha256": "01477095ee0ca5cee4ed729599cbd3e7632f7eaa5afe9d22c7b742af8523165d"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt2-a-owned-cleanup-proof.json",
+      "sha256": "5da0bb97d308bf100d160fc087420f233cedf25cfe31963d8010ad0cd618a957"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt2-a-live-image-binding.json",
+      "sha256": "87e67864517cb7c1345324415aa14d90cbe86b67fd762e1d0c89a9747cd919f4"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-b-attempt3-b-html-report-proof.json",
+      "sha256": "380b509f26fd062547fc3c11ec663cfa26f146a978afe8042171f90aab8303a2"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-b-attempt3-b-live-image-binding.json",
+      "sha256": "bdb9d56909ee6dda6efd64037c0a1604188af4bb6717ef799d8d3cd42184b31e"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-b-attempt3-status.json",
+      "sha256": "74ba97d1c5048981378c16f2ca31885128481aa0d36b7878fe6dca04fae86307"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt1-status.completed.json",
+      "sha256": "276a744a7f60b551c7b578a6a112ff6b8e5a8302f225684c24be65f08712ad02"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt1-failure-evaluation.json",
+      "sha256": "cfe50e2addb26955216c85ea8a97961bd2d62431efcc64ff5939006b653ba22c"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt1-html-report-proof.json",
+      "sha256": "295072b63ff3e85316eccd7aa9972f3027667c8b89b64dbc1114c40d5b2e82d8"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt1-native-state-proof.json",
+      "sha256": "4ead129be2831f83fc4ad44794e307396efd8d8b1f6ead79f0f9404511ff2465"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt1-owned-cleanup-proof.json",
+      "sha256": "75c66f0cc00fcb11c15c433d25125d2cbff1d3491296ff10a6b3a14d24942b2d"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt2-capacity-refusal-evaluation.json",
+      "sha256": "0059c707528fed64973e5a03d9c8e4601da2599adee89f5bce51391693556fe5"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime-attempt1-image-preservation-proof.json",
+      "sha256": "b71398fe5722cfa905a7fd73afa621ab2c3f4e448c01259725fc82b8e3d3deba"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/codeql-archive-preservation-proof.json",
+      "sha256": "69e8c20aed12b3f47b072f9c29085c7fcc0108dae9bb769a1a56f04b88bbb1b6"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/owned-ci-codeql-archive-preservation-proof.json",
+      "sha256": "fbd3b19a553e3edfe340f4274fa3f62ffe91cc564a644ec8eeb4244cb8f0972d"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/runtime1-remaining-owned-cache-remediation-proof.json",
+      "sha256": "5d1881ae46d727919123779d8664b87f14fe1023142000ec391a0f15d3005224"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/final-code-attempt1-receipt.json",
+      "sha256": "9b484652ca12e268551ce3a723b1c78c42eaf1657d4f94a9fae18589f8bcf73c"
+    },
+    {
+      "path": "strataai-local/prd15-reviewed-integration/normal-merge-ancestry-proof.json",
+      "sha256": "106dbcbe41f6188899d20afcba518fc19c8679717671d5104853781ffdc1f103"
+    }
+  ],
+  "limitations": [
+    "Hosted checks on the final published combined head remain pending; keep draft until verified.",
+    "Full nightly, exact production, manual screenreader, broad UX and product/MVP acceptance remain unverified.",
+    "Original failed, skipped, not-run and predecessor functional-pass-but-after-entry-unqualified evidence remains unchanged.",
+    "No PR147 source or tracking imported; no parent Done promotion."
+  ]
+}
